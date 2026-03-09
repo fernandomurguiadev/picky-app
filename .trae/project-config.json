@@ -1,0 +1,28 @@
+{
+  "project": {
+    "name": "PickyApp"
+  },
+  "frontend": {
+    "framework": "Angular 19",
+    "conventions": {
+      "component_model": "Standalone Components",
+      "state_management": "signals",
+      "control_flow": ["@if", "@for", "@switch"],
+      "mobile_first_viewport": "360px"
+    },
+    "lint_rules": {
+      "forbidden_patterns": ["NgModule", "*ngIf"],
+      "preferred_patterns": ["@if", "@for", "@switch"]
+    }
+  },
+  "backend": {
+    "framework": "NestJS",
+    "multi_tenancy_field": "tenant_id",
+    "dto_validation_library": "class-validator",
+    "api_response_envelope_spec": "openspec/specs/api/envelope.md",
+    "lint_rules": {
+      "dto_validation_library": "class-validator",
+      "api_response_envelope_marker": "ApiEnvelope"
+    }
+  }
+}

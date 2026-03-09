@@ -1,0 +1,35 @@
+schema: spec-driven
+
+# Contexto global del proyecto PickyApp
+# Proporciona a la IA la base técnica y funcional para la creación de artefactos.
+context: |
+  Tech Stack:
+    - Frontend: Angular 19 (Standalone Components, Signals, Control Flow nativo).
+    - Backend: NestJS 10+ (TypeScript, Modular architecture).
+    - Database: PostgreSQL con TypeORM (Multi-tenant por tenant_id).
+    - Real-time: Socket.io para gestión de pedidos.
+    - Styles: SCSS + Angular Material 3 (Mobile-first absoluto, viewport 360px).
+    - Infrastructure: Docker + docker-compose.
+  
+  Convenciones y Estándares:
+    - Metodología: OpenSpec / SDD (Spec-Driven Development).
+    - Código: TypeScript estricto, Clean Code, Arquitectura por capas.
+    - API: RESTful JSON, envoltorio de respuesta estándar (Envelope).
+    - UX: Feedback inmediato (<100ms), Skeleton loaders obligatorios.
+    - Agentes: Coordinación vía Agente Orquestador y seguimiento por Change Tracker Agent.
+
+# Reglas específicas por tipo de artefacto (opcional)
+rules:
+  proposal:
+    - Siempre incluir una sección de "Impacto en Multi-tenancy".
+    - Definir claramente si el cambio afecta la Tienda Pública o el Panel Admin.
+  specs:
+    - Los specs de módulos funcionales deben incluir una tabla de funcionalidades con prioridad.
+    - Incluir interfaces TypeScript para los modelos de datos de dominio.
+    - Definir criterios de aceptación (CA) verificables para cada módulo.
+  design:
+    - Para UI, especificar comportamiento en viewport de 360px (mobile-first).
+    - Para API, definir el endpoint, método, DTOs de entrada y respuesta.
+  tasks:
+    - Dividir las tareas en fases de implementación según el Roadmap (F0 a F8).
+    - Cada tarea debe ser atómica y permitir verificación independiente.
