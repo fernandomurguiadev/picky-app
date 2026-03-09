@@ -52,6 +52,127 @@ Se adopta **Opción A**: existe la skill `openspec-sync-specs` para verificació
 
 ---
 
+## 📉 Deuda Técnica Documentada
+
+Las siguientes decisiones de diseño se han tomado conscientemente para simplificar la implementación actual, pero representan límites conocidos que deben abordarse al escalar:
+
+1.  **Lock de Archivo Local**: El mecanismo de concurrencia usa `.contextpacket.lock`, que es local al proceso. No funcionará en despliegues distribuidos o multi-nodo.
+2.  **Polling Router ↔ Supervisor**: El Router usa polling con backoff para detectar recuperación. En escenarios de alta concurrencia, esto debe reemplazarse por un sistema de eventos (Pub/Sub).
+
+---
+
+## 🎯 Modos de Ejecución
+
+El sistema ejecuta en dos modos con diferente complexidad y costo de tokens.
+La selección es automática basada en heurística de strings (sin LLM).
+
+### MODO LITE (Default)
+
+**Cuándo se activa:**
+- proposal.length ≤ 500 caracteres
+- proposal menciona ≤ 2 componentes del sistema
+- proposal NO contiene keywords: auth, security, permission, crypto, token, migration, refactor, architecture, oauth, jwt, encrypt, role, credential, certificate, sensitive, private, password
+- NO hay Epic de Jira asociado
+- team_config.alwaysFull ≠ true
+
+**Pipeline:**
+```
+Router → SDD Agent → [Security Auditor CONDICIONAL] → QA Agent → [Change Tracker CONDICIONAL]
+```
+
+**Agentes activos:**
+| Agente | Skills | Condición |
+|--------|--------|-----------|
+| Router | agent-factory, skill-factory | siempre |
+| Jira Reader | - | ❌ DESACTIVADO |
+| Tech Agent | - | ❌ DESACTIVADO |
+| SDD Agent | propose, design, validate, apply, archive | ✅ siempre |
+| Security Auditor | security-audit | ⚠️ si proposal contiene keyword seguridad |
+| QA Agent | implementation-audit | ✅ siempre |
+| Change Tracker | change-tracking, changelog-management | ⚠️ config-dependent |
+
+**Tokens estimados:**
+- Tarea pequeña: 8,000 - 10,000 tokens
+- Tarea mediana: 10,000 - 13,000 tokens
+
+**Cuándo es apropiado:**
+- Agregar campo a modelo
+- Crear endpoint CRUD simple
+- Actualizar validación de DTO
+- Cambios de UI acotados
+- Bug fixes sin cross-sistem impact
+
+---
+
+### MODO FULL
+
+**Cuándo se activa:**
+- proposal.length > 500 caracteres, O
+- proposal menciona > 2 componentes, O
+- proposal contiene keyword de seguridad/arquitectura, O
+- Hay Epic de Jira asociado, O
+- team_config.alwaysFull = true
+
+**Pipeline:**
+```
+Router → Jira Reader → Tech Agent → SDD Agent → Security Auditor → QA Agent → Change Tracker
+```
+
+**Agentes activos:**
+| Agente | Skills | Condición |
+|--------|--------|-----------|
+| Router | agent-factory, skill-factory | siempre |
+| Jira Reader | requirement-sync | ✅ siempre |
+| Tech Agent | architecture-design, technical-slicing, master-planning | ✅ siempre |
+| SDD Agent | propose, design, validate, apply, archive | ✅ siempre |
+| Security Auditor | security-audit | ✅ siempre |
+| QA Agent | implementation-audit | ✅ siempre |
+| Change Tracker | change-tracking, changelog-management | ✅ siempre |
+
+**Tokens estimados:**
+- Tarea mediana compleja: 16,000 - 20,000 tokens
+- Tarea grande: 22,000 - 35,000 tokens
+
+**Cuándo es apropiado:**
+- Implementar autenticación/autorización
+- Migración de base de datos
+- Refactor de componente crítico
+- Integración con servicio externo
+- Cambios de arquitectura multi-componente
+- Rate limiting, caching, seguridad de datos
+
+---
+
+### Overhead: FULL vs LITE
+
+| Dimensión | LITE | FULL | Diferencia |
+|-----------|------|------|-----------|
+| Agentes | 3-4 | 7 | +75% |
+| Skills | 6-7 | 12-14 | +85% |
+| Contexto Jira | ❌ | ✅ | +1,850 tok |
+| Diseño técnico | ❌ | ✅ Tech Agent | +3,370 tok |
+| Gates condicionales | ⚠️ | ✅ | +1,870 tok |
+| Tokens total promedio | 9,500 | 18,000 | +89% |
+| Tiempo estimado | 8-12s | 15-25s | +100% |
+
+**Decisión de modo es DETERMINÍSTICA basada en heurística de strings:**
+```typescript
+function selectMode(proposal: string): 'LITE' | 'FULL' {
+  const keywords = /auth|security|permission|crypto|token|migration|refactor|architecture/i;
+  const components = proposal.split(/[,;]/).length;
+
+  if (proposal.length > 500 || components > 2 || keywords.test(proposal)) {
+    return 'FULL';
+  }
+  return 'LITE'; // default
+}
+```
+
+No hay "auto-upgrade" a FULL basado en complejidad LLM-detectada.
+La decisión ocurre en el Paso 0 del Router SIN llamada LLM adicional.
+
+---
+
 ## 🔄 Flujo de Trabajo Resumido
 
 1.  **Sincronización**: El **Jira Reader Agent** trae la tarea a `openspec/jira/`.

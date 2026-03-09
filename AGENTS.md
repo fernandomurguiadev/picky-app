@@ -26,7 +26,6 @@ PickyApp utiliza un sistema de agentes especializados coordinados por Router + S
 | **Tech Agent** | [.trae/agents/tech-agent.md](.trae/agents/tech-agent.md) | **Arquitecto**. Transforma historias en Master Plans técnicos. | `master-planning`, `technical-slicing`, `architecture-design` |
 | **Change Tracker Agent** | [.trae/agents/change-tracker-agent.md](.trae/agents/change-tracker-agent.md) | **Observer**. Registra eventos y cambios sin bloquear. | `change-tracking`, `changelog-management` |
 | **Security Auditor Agent** | [.trae/agents/security-auditor-agent.md](.trae/agents/security-auditor-agent.md) | **Gate Seguridad**. Audita diseños. | `security-audit` |
-| **CI Auditor Agent** | [.trae/agents/ci-auditor-agent.md](.trae/agents/ci-auditor-agent.md) | **Gate CI**. Analiza deltas de código. | `ci-audit` |
 | **QA / Verification Agent** | [.trae/agents/qa-agent.md](.trae/agents/qa-agent.md) | **Gate QA**. Verifica implementación. | `implementation-audit` |
 
 ---
@@ -34,7 +33,7 @@ PickyApp utiliza un sistema de agentes especializados coordinados por Router + S
 ## Reglas de Invocación
 
 - **SDD Agent**: El ciclo `propose → design → validate → apply → archive` es interno. El SDD Agent nunca invoca agentes externos. Su único canal de salida es un `AgentOutput` hacia el Router o un `AgentError` hacia el Supervisor.
-- **Security Auditor Agent, CI Auditor Agent, QA Agent**: Son invocados por el Router con el `ContextPacket` en status `applied`.
+- **Security Auditor Agent, QA Agent**: Son invocados por el Router con el `ContextPacket` en status `applied`.
 
 ---
 

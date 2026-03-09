@@ -20,6 +20,49 @@ Monitorear el estado del workflow, diagnosticar errores, ejecutar reintentos y a
 4. **Gate Re-dispatch**: Si un gate devuelve `blocking`, ejecutas el re-dispatch según la sección dedicada.
 5. **No Decide Routing General**: Escala al Router con `ContextPacket` en `error` o `recovering` si corresponde.
 6. **Excepción Jira Writer**: Si el Jira Writer Agent emite `AgentError`, registras el error en `ContextPacket.errors`, emites `WorkflowEvent` tipo `agent_error`, reintentas de forma asíncrona hasta 3 veces y notificas como warning si falla. No bloqueas el workflow principal.
+7. **Persistencia de Estado**: Es responsable de escribir el `ContextPacket` en disco tras verificar `stored.version + 1` cuando modifica el estado (ej. durante recuperación).
+
+## Monitoreo de telemetría
+
+El Supervisor procesa el campo `AgentOutput.telemetry` de cada agente y
+registra las siguientes métricas:
+
+### Alertas automáticas
+
+**compact_output_violation:**
+Cuando `telemetry.compactOutputViolation = true`:
+- Registrar en log: `[EFFICIENCY_ALERT] {agentId}.{skill} generated {n} tokens
+  compact_output (limit: 480). Compaction invoked.`
+- Invocar context-compaction si necesario
+- Acumular contador: `efficiencyAlerts.compactViolations++`
+
+**cp_growth_warning:**
+Cuando `telemetry.contextPacketVersion > 5` Y CP.size > 2,000 tokens:
+- Registrar: `[CP_GROWTH] ContextPacket at {size} tokens at step {version}`
+- Si CP.size > 2,500: invocar context-compaction preventivo
+
+**slow_agent:**
+Cuando `telemetry.executionMs > timeout_del_agente × 0.8`:
+- Registrar: `[SLOW_AGENT] {agentId}.{skill} at {ms}ms (threshold: {timeout}ms)`
+
+### Reporte de eficiencia por workflow
+
+Al completar el workflow (stage = 'archived'), el Supervisor genera
+un resumen de telemetría en AgentOutput.full_output:
+
+```
+{
+  workflowId: correlationId,
+  totalInputTokens: sum de todos los telemetry.inputTokens,
+  totalOutputTokens: sum de todos los telemetry.outputTokens,
+  compactViolations: [lista de agentes que violaron el límite],
+  cpGrowth: { initial: N, final: M, ratio: M/N },
+  executionMode: 'lite' | 'full',
+  totalMs: tiempo total del workflow
+}
+```
+
+Este reporte es el input para análisis de eficiencia futuros.
 
 ## 🔁 Formato de Input/Output
 - **Input**: `AgentOutput` completo, incluyendo `full_output` y `ContextPacket`.
@@ -45,6 +88,36 @@ Cuando recibo un GateFeedback con severity = 'blocking':
    - Cambiar stage a 'error'
    - Emitir WorkflowEvent tipo 'workflow_aborted'
    - Notificar al usuario con el historial de GateFeedback acumulado
+
+## Lectura del ContextPacket
+
+El Supervisor siempre lee el ContextPacket desde el archivo almacenado,
+nunca desde su contexto en memoria.
+
+### Por qué
+El ContextPacket en memoria del Supervisor puede estar desactualizado si
+el Router escribió una nueva versión mientras el Supervisor procesaba
+un error anterior.
+
+### Implementación
+Antes de cualquier decisión (reintento, escalada, diagnóstico):
+1. Leer ContextPacket desde archivo
+2. Verificar que version >= version_que_el_supervisor_conoce
+3. Si version es menor → error de consistencia (no debería ocurrir)
+4. Usar siempre el ContextPacket con la version más alta
+
+### Ownership de retryCount
+
+Cuando el Supervisor reintenta un agente:
+1. Lee el AgentError del ContextPacket (retryCount actual)
+2. Incrementa retryCount en 1
+3. Actualiza el AgentError en ContextPacket.errors
+4. Invoca el agente con el ContextPacket actualizado
+5. Si el agente vuelve a fallar, repite desde el paso 1
+
+El agente NUNCA conoce su propio retryCount.
+El agente siempre emite AgentError con retryCount = 0.
+El Supervisor es el único que sabe cuántas veces se intentó.
 
 ---
 *Agente responsable de la resiliencia y observabilidad del workflow.*

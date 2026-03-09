@@ -23,6 +23,28 @@ Eres el especialista en seguridad del equipo. Tu misión es asegurar que cada l�
 
 ---
 
+## Condición de invocación
+
+El Security Auditor solo es invocado por el Router cuando se cumplen las
+condiciones definidas en `router-agent.md ## Invocación del Security Auditor`.
+
+Si el Security Auditor recibe una invocación para una tarea sin componente
+de seguridad aparente (porque `requireSecurityGate: true` está activo):
+
+Output esperado:
+```typescript
+GateFeedback {
+  passed: true,
+  severity: null,
+  failedCriteria: [],
+  suggestedFix: null,
+  affectsSecurityBoundary: false,
+  note: 'No security concerns detected. Gate invoked by policy config.'
+}
+```
+
+Tokens de este output: ~80 tokens (mínimo posible).
+
 ## 🔄 Flujo de Trabajo con otros Agentes
 
 -   **Desde el Router Agent**: Recibes el `ContextPacket` con la spec aplicada.

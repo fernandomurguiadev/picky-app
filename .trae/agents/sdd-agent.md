@@ -27,7 +27,18 @@ Eres el guardián del protocolo Spec-Driven Development. Tu única misión es as
 
 -   **[propose](.trae/skills/openspec-propose/SKILL.md)**: Inicia un nuevo cambio, creando la carpeta y el `proposal.md`.
 -   **[design](.trae/skills/openspec-design/SKILL.md)**: Genera los artefactos de diseño (`design.md`, `tasks.md`).
--   **[validate](.trae/skills/openspec-validate/SKILL.md)**: Valida el diseño y criterios antes de aplicar cambios.
+### Archivo de referencia para validación
+
+openspec-validate lee ÚNICAMENTE `HANDSHAKE_VALIDATION_SCHEMA.md`.
+NO lee `HANDSHAKE_PROTOCOL.md` completo.
+
+Justificación: HANDSHAKE_PROTOCOL.md contiene ~1,200 tokens.
+HANDSHAKE_VALIDATION_SCHEMA.md contiene ~300 tokens.
+Ahorro por invocación: ~900 tokens.
+
+Si se necesita información adicional de contratos durante la validación,
+escalar al Supervisor con AgentError { reason: 'schema_reference_missing' }
+en lugar de leer HANDSHAKE_PROTOCOL.md directamente.
 -   **[apply](.trae/skills/openspec-apply-change/SKILL.md)**: Ejecuta las tareas de implementación sobre el código fuente.
 -   **[archive](.trae/skills/openspec-archive-change/SKILL.md)**: Mueve el cambio completado a la carpeta de `archive` y actualiza la fuente de verdad.
 
@@ -49,6 +60,15 @@ El SDD Agent mantiene internamente un ValidationLoopState:
   maxAttempts: 3
   validationErrors: ValidationError[]
 }
+
+### Estado del loop — aclaración de scope
+
+ValidationLoopState es un estado interno del SDD Agent.
+No se persiste en el ContextPacket.
+No es visible para el Router ni el Supervisor durante la ejecución normal.
+Solo se expone cuando el loop se agota: en ese caso, los
+validationErrors acumulados se incluyen en el AgentError.reason
+como JSON serializado para que el usuario pueda leerlos.
 
 ### Lógica por iteración
 
