@@ -38,7 +38,7 @@ PickyApp utiliza un sistema de agentes especializados coordinados por Router + S
 
 ---
 
-## �📂 Registro de Artefactos (¿Dónde guardar qué?)
+## 📂 Registro de Artefactos (¿Dónde guardar qué?)
 
 Para evitar confusiones, los agentes deben seguir estrictamente estas rutas de registro:
 
