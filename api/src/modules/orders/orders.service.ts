@@ -12,7 +12,7 @@ import type { CreateOrderAdminDto } from './dto/create-order-admin.dto.js';
 import type { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
 import type { UpdateOrderNotesDto } from './dto/update-order-notes.dto.js';
 import type { OrdersQueryDto } from './dto/orders-query.dto.js';
-import type { OrdersGateway } from './orders.gateway.js';
+import { OrdersGateway } from './orders.gateway.js';
 
 const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   [OrderStatus.PENDING]:   [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],

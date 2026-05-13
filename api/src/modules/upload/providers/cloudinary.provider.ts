@@ -7,12 +7,19 @@ export const CloudinaryProvider = {
   provide: CLOUDINARY,
   inject: [ConfigService],
   useFactory: (cfg: ConfigService): typeof cloudinary => {
-    const options: ConfigOptions = {
-      cloud_name: cfg.getOrThrow<string>('CLOUDINARY_CLOUD_NAME'),
-      api_key: cfg.getOrThrow<string>('CLOUDINARY_API_KEY'),
-      api_secret: cfg.getOrThrow<string>('CLOUDINARY_API_SECRET'),
-    };
-    cloudinary.config(options);
+    const cloudName = cfg.get<string>('CLOUDINARY_CLOUD_NAME');
+    const apiKey = cfg.get<string>('CLOUDINARY_API_KEY');
+    const apiSecret = cfg.get<string>('CLOUDINARY_API_SECRET');
+
+    if (cloudName && apiKey && apiSecret) {
+      const options: ConfigOptions = {
+        cloud_name: cloudName,
+        api_key: apiKey,
+        api_secret: apiSecret,
+      };
+      cloudinary.config(options);
+    }
+
     return cloudinary;
   },
 };
