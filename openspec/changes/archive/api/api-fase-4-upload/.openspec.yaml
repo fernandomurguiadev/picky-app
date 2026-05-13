@@ -1,7 +1,7 @@
 name: api-fase-4-upload
 project_id: api
 version: "1.0.0"
-status: active
+status: done
 created_at: "2026-05-13"
 scope:
   - api/src/modules/upload/upload.controller.ts
@@ -23,5 +23,5 @@ artifacts:
     status: done
     path: design.md
   tasks:
-    status: active
+    status: done
     path: tasks.md
