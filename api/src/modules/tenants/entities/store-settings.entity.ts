@@ -77,6 +77,9 @@ export class StoreSettings {
   @Column({ type: 'boolean', default: false })
   cardEnabled!: boolean;
 
+  @Column({ type: 'boolean', nullable: true, default: null })
+  isManualOpen!: boolean | null;
+
   @CreateDateColumn()
   createdAt!: Date;
 

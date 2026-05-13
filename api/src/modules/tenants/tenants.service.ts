@@ -12,6 +12,7 @@ import type { UpdateStoreSettingsDto } from './dto/update-store-settings.dto.js'
 export interface StoreStatusResult {
   isOpen: boolean;
   nextChange: string | null;
+  source: 'manual' | 'schedule';
 }
 
 // ─── Helpers de timezone ──────────────────────────────────────────────────
@@ -38,7 +39,7 @@ function getCurrentTimeInTz(timezone: string): { day: string; time: string } {
 function calcStoreStatus(
   schedule: DaySchedule[] | null,
   timezone: string,
-): StoreStatusResult {
+): Omit<StoreStatusResult, 'source'> {
   if (!schedule || schedule.length === 0) {
     return { isOpen: false, nextChange: null };
   }
@@ -99,13 +100,23 @@ export class TenantsService {
 
     const settings = await this.settingsRepo.findOne({
       where: { tenantId: tenant.id },
-      select: { schedule: true, timezone: true },
+      select: { schedule: true, timezone: true, isManualOpen: true },
     });
 
-    return calcStoreStatus(
-      settings?.schedule ?? null,
-      settings?.timezone ?? 'America/Argentina/Buenos_Aires',
-    );
+    if (settings?.isManualOpen === true) {
+      return { isOpen: true, nextChange: null, source: 'manual' };
+    }
+    if (settings?.isManualOpen === false) {
+      return { isOpen: false, nextChange: null, source: 'manual' };
+    }
+
+    return {
+      ...calcStoreStatus(
+        settings?.schedule ?? null,
+        settings?.timezone ?? 'America/Argentina/Buenos_Aires',
+      ),
+      source: 'schedule',
+    };
   }
 
   /** B3.4 — Configuración completa del tenant autenticado */
@@ -124,5 +135,22 @@ export class TenantsService {
     }
 
     return this.settingsRepo.save(settings);
+  }
+
+  /** B8 — Override manual de apertura/cierre (null = volver al horario) */
+  async toggleStoreStatus(
+    tenantId: string,
+    isManualOpen: boolean | null,
+  ): Promise<{ isManualOpen: boolean | null }> {
+    let settings = await this.settingsRepo.findOne({ where: { tenantId } });
+
+    if (!settings) {
+      settings = this.settingsRepo.create({ tenantId, isManualOpen } as Partial<StoreSettings> & { tenantId: string });
+    } else {
+      settings.isManualOpen = isManualOpen;
+    }
+
+    await this.settingsRepo.save(settings);
+    return { isManualOpen };
   }
 }

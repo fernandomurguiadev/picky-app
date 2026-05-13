@@ -6,12 +6,12 @@
 
 ### B8.1 — Entidad `StoreSettings`
 
-- [ ] Agregar columna en `api/src/modules/tenants/entities/store-settings.entity.ts`:
+- [x] Agregar columna en `api/src/modules/tenants/entities/store-settings.entity.ts`:
   ```typescript
   @Column({ type: 'boolean', nullable: true, default: null })
   isManualOpen!: boolean | null;
   ```
-- [ ] Colocar el campo antes de `createdAt`
+- [x] Colocar el campo antes de `createdAt`
 
 **Criterio de done:** TypeScript compila. El campo es `boolean | null`, no `boolean`.
 
@@ -32,9 +32,9 @@
 
 ### B8.3 — `ToggleStoreStatusDto`
 
-- [ ] Crear `api/src/modules/tenants/dto/toggle-store-status.dto.ts`
-- [ ] Campo `isManualOpen: boolean | null` con decorador `@IsBoolean()` + `@IsOptional()`
-- [ ] Valor por defecto `null`
+- [x] Crear `api/src/modules/tenants/dto/toggle-store-status.dto.ts`
+- [x] Campo `isManualOpen: boolean | null` con decorador `@IsBoolean()` + `@IsOptional()`
+- [x] Valor por defecto `null`
 
 **Criterio de done:** `{ isManualOpen: true }`, `{ isManualOpen: false }` y `{ isManualOpen: null }` pasan validación. Body vacío `{}` también pasa (valor es `null` por defecto).
 
@@ -42,13 +42,13 @@
 
 ### B8.4 — `TenantsService`
 
-- [ ] Actualizar `StoreStatusResult` en `tenants.service.ts` para agregar campo `source: 'manual' | 'schedule'`
-- [ ] Modificar `getStoreStatus(slug)`:
+- [x] Actualizar `StoreStatusResult` en `tenants.service.ts` para agregar campo `source: 'manual' | 'schedule'`
+- [x] Modificar `getStoreStatus(slug)`:
   1. Agregar `isManualOpen` al `select` de la query de `settingsRepo`
   2. Si `isManualOpen === true` → retornar `{ isOpen: true, nextChange: null, source: 'manual' }`
   3. Si `isManualOpen === false` → retornar `{ isOpen: false, nextChange: null, source: 'manual' }`
   4. Si `isManualOpen === null` → flujo existente + agregar `source: 'schedule'` al retorno
-- [ ] Agregar método `toggleStoreStatus(tenantId, isManualOpen)`:
+- [x] Agregar método `toggleStoreStatus(tenantId, isManualOpen)`:
   - Cargar `StoreSettings` del tenant (o crear si no existe)
   - Asignar `settings.isManualOpen = isManualOpen`
   - `save` y retornar `{ isManualOpen }`
@@ -59,13 +59,13 @@
 
 ### B8.5 — `TenantsController`
 
-- [ ] Agregar endpoint en `api/src/modules/tenants/tenants.controller.ts`:
+- [x] Agregar endpoint en `api/src/modules/tenants/tenants.controller.ts`:
   - `@Patch('me/status')` + `@UseGuards(JwtAuthGuard)`
   - Recibe `@Body() dto: ToggleStoreStatusDto`
   - Recibe `@TenantId() tenantId: string`
   - Llama `tenantsService.toggleStoreStatus(tenantId, dto.isManualOpen)`
   - Retorna `{ data: { isManualOpen } }`
-- [ ] Importar `ToggleStoreStatusDto` en el controller
+- [x] Importar `ToggleStoreStatusDto` en el controller
 
 **Criterio de done:** `PATCH /stores/me/status` con `{ "isManualOpen": true }` → 200. Sin JWT → 401. Tenant A no puede afectar a tenant B (garantizado por `@TenantId()` del JWT).
 
@@ -73,7 +73,7 @@
 
 ### B8.6 — Verificación final
 
-- [ ] `npm run typecheck` sin errores en `api/`
+- [x] `npm run typecheck` sin errores en `api/`
 - [ ] Flujo completo:
   1. `PATCH /stores/me/status` con `{ "isManualOpen": false }` → tienda cerrada
   2. `GET /stores/:slug/status` → `{ isOpen: false, source: 'manual' }`

@@ -13,6 +13,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
 import { TenantsService } from './tenants.service.js';
 import { UpdateStoreSettingsDto } from './dto/update-store-settings.dto.js';
+import { ToggleStoreStatusDto } from './dto/toggle-store-status.dto.js';
 
 @Controller('stores')
 export class TenantsController {
@@ -34,6 +35,17 @@ export class TenantsController {
     @Body() dto: UpdateStoreSettingsDto,
   ) {
     return this.tenantsService.updateMySettings(tenantId, dto);
+  }
+
+  @Patch('me/status')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async toggleStatus(
+    @TenantId() tenantId: string,
+    @Body() dto: ToggleStoreStatusDto,
+  ) {
+    const result = await this.tenantsService.toggleStoreStatus(tenantId, dto.isManualOpen);
+    return { data: result };
   }
 
   // ─── Rutas públicas ──────────────────────────────────────────────────────
