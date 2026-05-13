@@ -17,9 +17,12 @@ interface ConfirmModalProps {
   description?: string;
   confirmLabel?: string;
   cancelLabel?: string;
+  /** @deprecated use variant instead */
   destructive?: boolean;
+  variant?: "destructive" | "default";
   onConfirm: () => void;
   isLoading?: boolean;
+  isPending?: boolean;
 }
 
 export function ConfirmModal({
@@ -30,9 +33,13 @@ export function ConfirmModal({
   confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
   destructive = false,
+  variant,
   onConfirm,
   isLoading = false,
+  isPending = false,
 }: ConfirmModalProps) {
+  const isDestructive = variant === "destructive" || destructive;
+  const loading = isLoading || isPending;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm">
@@ -46,16 +53,16 @@ export function ConfirmModal({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isLoading}
+            disabled={loading}
           >
             {cancelLabel}
           </Button>
           <Button
-            variant={destructive ? "destructive" : "default"}
+            variant={isDestructive ? "destructive" : "default"}
             onClick={onConfirm}
-            disabled={isLoading}
+            disabled={loading}
           >
-            {isLoading ? "Procesando..." : confirmLabel}
+            {loading ? "Procesando..." : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

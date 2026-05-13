@@ -71,7 +71,7 @@
 
 ---
 
-### FASE 2 — Admin: Módulo Catálogo
+### ✅ FASE 2 — Admin: Módulo Catálogo
 
 **Objetivo:** CRUD completo de categorías y productos con todas las funcionalidades del spec.
 
@@ -99,7 +99,7 @@
 
 ---
 
-### FASE 3 — Admin: Configuración de Tienda
+### ✅ FASE 3 — Admin: Configuración de Tienda
 
 **Objetivo:** Panel de configuración completo con todas las secciones del spec.
 
