@@ -41,20 +41,23 @@ export interface StoreSettings {
 }
 ```
 
-## 4. Especificaciones Técnicas (Angular 19)
+## 4. Especificaciones Técnicas (Next.js 15)
 
-### Componentes Clave
-- `SettingsLayoutComponent`: Layout del panel de ajustes.
-- `StoreInfoFormComponent`: Formulario de información del negocio.
-- `HoursEditorComponent`: Editor de horarios por día.
-- `DeliverySettingsComponent`: Configuración de entregas.
-- `PaymentMethodsComponent`: Configuración de pagos.
-- `ThemeEditorComponent`: Selector de colores con preview lateral.
+### Arquitectura de Rutas (`app/`)
+- `(admin)/dashboard/settings/page.tsx`: Formulario centralizado dividido por pestañas (`tabs` de shadcn/ui).
+- `(admin)/dashboard/settings/theme/page.tsx`: Editor de temas interactivo con previsualización integrada iframe.
 
-### Servicios
-- `StoreSettingsService`: Gestión de la configuración del comercio.
-- `UploadService`: Subida del logo.
-- `TenantThemeService`: Aplicación de los colores CSS variables.
+### Componentes de Interfaz (RCC)
+- `StoreInfoForm`: Formulario controlado de React Hook Form con inputs de texto y textarea.
+- `HoursScheduler`: Matriz interactiva para activar/desactivar días e ingresar rangos temporales (Horas:Minutos).
+- `ThemeColorPicker`: Integra una paleta y genera variables HSL dinámicas.
+- `TenantLivePreview`: Componente iframe que renderiza temporalmente `/(store)/[slug]?preview=true` con los colores en memoria sin impactar BD.
+
+### Mecanismo de Inyección de Tema (SSR / CSS Variables)
+- La tienda pública consume `StoreSettings.theme` en `layout.tsx` (Server Component).
+- Se renderiza un bloque `<style>` embebido en el `<head>` mapeando el color primario a variables Tailwind CSS v4 (`--color-primary`, `--color-primary-foreground`).
+- Esto garantiza **cero parpadeo (no-FOUC)** al cargar en el cliente móvil.
+
 
 ## 5. Criterios de Aceptación
 - CA-001: Al guardar un cambio en la configuración, este persiste en la base de datos.

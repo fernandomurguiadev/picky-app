@@ -208,43 +208,78 @@ async findPaginated(paginationDto: PaginationDto, filters: any) {
 }
 ```
 
-## Manejo en el Cliente (Angular)
+## Manejo en el Cliente (Next.js / TanStack Query)
 
-### Componente de Paginación
+### Query Hook con Paginación Stateful
+En React, la paginación se gestiona sincronizando el estado local o los URL searchParams con las Query Keys de TanStack Query.
+
 ```typescript
-export class ProductListComponent {
-  products = signal<Product[]>([]);
-  pagination = signal({
-    currentPage: 1,
-    totalPages: 1,
-    totalItems: 0
-  });
+// hooks/use-products.ts
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api/client';
 
-  loadProducts(page: number = 1) {
-    this.catalogService.getProducts({ page, limit: 20 })
-      .subscribe(response => {
-        this.products.set(response.data);
-        this.pagination.set({
-          currentPage: response.meta.currentPage,
-          totalPages: response.meta.totalPages,
-          totalItems: response.meta.totalItems
-        });
+export function useProducts(page = 1, limit = 20) {
+  return useQuery({
+    queryKey: ['products', { page, limit }],
+    queryFn: async () => {
+      // El cliente Axios intercepta y devuelve directamente la data paginada
+      const response = await apiClient.get('/admin/products', {
+        params: { page, limit },
       });
-  }
-
-  nextPage() {
-    if (this.pagination().currentPage < this.pagination().totalPages) {
-      this.loadProducts(this.pagination().currentPage + 1);
-    }
-  }
-
-  previousPage() {
-    if (this.pagination().currentPage > 1) {
-      this.loadProducts(this.pagination().currentPage - 1);
-    }
-  }
+      return response; // Devuelve { data: Product[], meta: Meta }
+    },
+    placeholderData: (previousData) => previousData, // Mantiene datos anteriores para evitar saltos visuales (UI Flicker)
+  });
 }
 ```
+
+### Componente de UI con Controles
+```tsx
+// components/admin/product-list.tsx
+'use client';
+
+import { useState } from 'react';
+import { useProducts } from '@/hooks/use-products';
+import { Button } from '@/components/ui/button';
+
+export function ProductList() {
+  const [page, setPage] = useState(1);
+  const { data, isLoading, isPlaceholderData } = useProducts(page);
+
+  if (isLoading) return <div>Cargando...</div>;
+
+  const { totalPages, currentPage } = data.meta;
+
+  return (
+    <div>
+      {/* Renderizar lista data.data */}
+      
+      <div className="flex justify-between mt-4">
+        <Button 
+          onClick={() => setPage(p => Math.max(p - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          Anterior
+        </Button>
+        
+        <span>Página {currentPage} de {totalPages}</span>
+        
+        <Button 
+          onClick={() => {
+            if (!isPlaceholderData && currentPage < totalPages) {
+              setPage(p => p + 1);
+            }
+          }}
+          disabled={currentPage === totalPages || isPlaceholderData}
+        >
+          Siguiente
+        </Button>
+      </div>
+    </div>
+  );
+}
+```
+
 
 ## Recursos sin Paginación
 

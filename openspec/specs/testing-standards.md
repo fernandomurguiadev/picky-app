@@ -189,184 +189,123 @@ describe('Products API (e2e)', () => {
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
-  }
-}
-```
+    "test:e2e": "jest --config ./test/jest-e2e.## 3. Frontend (Next.js 15 + React 19)
 
-## 3. Frontend (Angular)
+### 3.1 Tests Unitarios y de Componentes
 
-### 3.1 Tests Unitarios
+**Objetivo**: Validar la renderización y la lógica interactiva aislada de componentes RCC y funciones helper.
 
-**Objetivo**: Probar lógica de componentes y servicios aislados.
-
-**Herramienta**: Jasmine + Karma (default de Angular)
+**Herramientas**: Vitest + React Testing Library (RTL) + Happy Dom
 
 **Alcance**:
-- Servicios con lógica compleja
-- Componentes con lógica de negocio
-- Pipes y directivas
-- Guards y interceptors
+- Hooks personalizados (Zustand selectors)
+- Utilidades y formateadores
+- Componentes visuales de cliente (RCC)
+- Interacciones de usuario (clicks, input typing)
 
-**Ejemplo**:
+**Ejemplo de Hook (Zustand)**:
 ```typescript
-// cart.service.spec.ts
-describe('CartService', () => {
-  let service: CartService;
+// lib/stores/use-cart-store.spec.ts
+import { renderHook, act } from '@testing-library/react';
+import { useCartStore } from './cart-store';
 
+describe('useCartStore', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(CartService);
+    act(() => useCartStore.getState().clearCart());
   });
 
   it('should add item to cart', () => {
-    const product = { id: '1', name: 'Pizza', price: 1000 };
-    
-    service.addItem(product, [], 1);
-    
-    expect(service.items().length).toBe(1);
-    expect(service.items()[0].product.id).toBe('1');
-  });
+    const { result } = renderHook(() => useCartStore());
+    const mockProduct = { id: '1', name: 'Pizza', price: 1000 };
 
-  it('should calculate total correctly', () => {
-    service.addItem({ id: '1', price: 1000 }, [], 2);
-    service.addItem({ id: '2', price: 500 }, [], 1);
-    
-    expect(service.total()).toBe(2500); // (1000 * 2) + (500 * 1)
-  });
+    act(() => {
+      result.current.addItem(mockProduct);
+    });
 
-  it('should remove item from cart', () => {
-    service.addItem({ id: '1', price: 1000 }, [], 1);
-    service.addItem({ id: '2', price: 500 }, [], 1);
-    
-    service.removeItem('1');
-    
-    expect(service.items().length).toBe(1);
-    expect(service.items()[0].product.id).toBe('2');
+    expect(result.current.items.length).toBe(1);
+    expect(result.current.items[0].name).toBe('Pizza');
   });
 });
 ```
 
-**Componente**:
-```typescript
-// product-card.component.spec.ts
-describe('ProductCardComponent', () => {
-  let component: ProductCardComponent;
-  let fixture: ComponentFixture<ProductCardComponent>;
+**Ejemplo de Componente Client (RCC)**:
+```tsx
+// components/store/product-card.spec.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ProductCard } from './product-card';
+import { vi } from 'vitest';
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [ProductCardComponent]
-    }).compileComponents();
+// Mock de Zustand store para aislar el componente
+vi.mock('@/lib/stores/cart-store', () => ({
+  useCartStore: () => ({
+    addItem: vi.fn(),
+  }),
+}));
 
-    fixture = TestBed.createComponent(ProductCardComponent);
-    component = fixture.componentInstance;
-    component.product = {
-      id: '1',
-      name: 'Pizza',
-      price: 1000,
-      images: []
-    };
-    fixture.detectChanges();
+describe('ProductCard Component', () => {
+  const mockProduct = {
+    id: '1',
+    name: 'Pizza Margarita',
+    price: 1200,
+  };
+
+  it('should display product details', () => {
+    render(<ProductCard product={mockProduct} />);
+    
+    expect(screen.getByText('Pizza Margarita')).toBeInTheDocument();
   });
 
-  it('should display product name', () => {
-    const compiled = fixture.nativeElement;
-    expect(compiled.querySelector('.product-name').textContent).toContain('Pizza');
-  });
-
-  it('should emit addToCart event when button clicked', () => {
-    spyOn(component.addToCart, 'emit');
+  it('should call tracking/interaction when button clicked', () => {
+    render(<ProductCard product={mockProduct} />);
     
-    const button = fixture.nativeElement.querySelector('.add-button');
-    button.click();
+    const button = screen.getByRole('button', { name: /agregar/i });
+    fireEvent.click(button);
     
-    expect(component.addToCart.emit).toHaveBeenCalledWith(component.product);
-  });
-
-  it('should show "Agotado" badge when product is inactive', () => {
-    component.product.isActive = false;
-    fixture.detectChanges();
-    
-    const badge = fixture.nativeElement.querySelector('.badge-agotado');
-    expect(badge).toBeTruthy();
+    // Assertions correspondientes
   });
 });
 ```
 
-### 3.2 Tests E2E (End-to-End)
+### 3.2 Tests de Integración y E2E
 
-**Objetivo**: Probar flujos completos de usuario.
+**Objetivo**: Probar flujos end-to-end reales en el navegador simulado.
 
-**Herramienta**: Cypress o Playwright
+**Herramienta**: Playwright (Recomendado para Next.js 15)
 
 **Alcance**:
-- Login y autenticación
-- Flujo de pedido completo
-- Gestión de catálogo (admin)
-- Flujos críticos de negocio
+- Flujo completo de Checkout y redirección
+- Tablero Kanban de Pedidos en tiempo real (WebSocket)
+- Acceso restringido a rutas de Admin (Middleware)
 
-**Ejemplo con Cypress**:
+**Ejemplo con Playwright**:
 ```typescript
-// e2e/order-flow.cy.ts
-describe('Order Flow', () => {
-  beforeEach(() => {
-    cy.visit('/demo-pizzeria');
-  });
+// tests/e2e/order-flow.spec.ts
+import { test, expect } from '@playwright/test';
 
-  it('should complete full order flow', () => {
-    // 1. Navegar a categoría
-    cy.contains('Pizzas').click();
-    
-    // 2. Seleccionar producto
-    cy.contains('Pizza Napolitana').click();
-    
-    // 3. Seleccionar opciones
-    cy.contains('Grande').click();
-    cy.contains('Extra queso').click();
-    
-    // 4. Agregar al carrito
-    cy.contains('Agregar al carrito').click();
-    cy.contains('Agregado al carrito').should('be.visible');
-    
-    // 5. Ir al carrito
-    cy.get('[data-testid="cart-button"]').click();
-    cy.contains('Pizza Napolitana').should('be.visible');
-    
-    // 6. Ir a checkout
-    cy.contains('Continuar').click();
-    
-    // 7. Completar datos
-    cy.get('[name="name"]').type('Juan García');
-    cy.get('[name="phone"]').type('+54 9 11 1234-5678');
-    cy.get('[name="address"]').type('Av. Corrientes 1234');
-    
-    // 8. Seleccionar entrega y pago
-    cy.contains('Delivery').click();
-    cy.contains('Efectivo').click();
-    
-    // 9. Confirmar pedido
-    cy.contains('Enviar pedido').click();
-    
-    // 10. Verificar confirmación
-    cy.contains('Pedido confirmado').should('be.visible');
-    cy.contains('ORD-').should('be.visible'); // Número de orden
-  });
+test('debe completar un pedido completo en la tienda', async ({ page }) => {
+  // 1. Ir a la tienda del tenant
+  await page.goto('/pizzeria-don-pepe');
 
-  it('should validate required fields', () => {
-    cy.contains('Pizzas').click();
-    cy.contains('Pizza Napolitana').click();
-    cy.contains('Agregar al carrito').click();
-    cy.get('[data-testid="cart-button"]').click();
-    cy.contains('Continuar').click();
-    
-    // Intentar enviar sin completar datos
-    cy.contains('Enviar pedido').click();
-    
-    // Verificar errores de validación
-    cy.contains('El nombre es requerido').should('be.visible');
-    cy.contains('El teléfono es requerido').should('be.visible');
-  });
+  // 2. Seleccionar una categoría y un producto
+  await page.getByRole('link', { name: 'Pizzas' }).click();
+  await page.getByText('Pizza Margarita').click();
+
+  // 3. Interactuar con el Bottom Sheet (Vaul) y agregar al carrito
+  await page.getByRole('button', { name: 'Agregar al Carrito' }).click();
+
+  // 4. Abrir carrito e ir a checkout
+  await page.getByTestId('cart-trigger').click();
+  await page.getByRole('button', { name: 'Continuar Pedido' }).click();
+
+  // 5. Completar formulario de entrega
+  await page.fill('[name="name"]', 'Juan Pérez');
+  await page.fill('[name="phone"]', '1122334455');
+  
+  // 6. Confirmar
+  await page.getByRole('button', { name: 'Confirmar y Enviar' }).click();
+
+  // 7. Validar pantalla de éxito
+  await expect(page.getByText('Pedido Recibido')).toBeVisible();
 });
 ```
 
@@ -375,11 +314,11 @@ describe('Order Flow', () => {
 ```json
 {
   "scripts": {
-    "test": "ng test",
-    "test:ci": "ng test --watch=false --browsers=ChromeHeadless",
-    "test:coverage": "ng test --code-coverage",
-    "e2e": "cypress open",
-    "e2e:ci": "cypress run"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   }
 }
 ```
@@ -390,25 +329,24 @@ describe('Order Flow', () => {
 
 **Objetivo** (opcional para MVP):
 - Backend: 70% en servicios críticos
-- Frontend: 60% en componentes con lógica
+- Frontend: 60% en hooks y componentes RCC críticos
 
 **Flujos Críticos** (cobertura obligatoria):
-- ✅ Autenticación (login, register, refresh)
-- ✅ Creación de pedidos
-- ✅ Gestión de catálogo (CRUD)
-- ✅ Cálculo de precios con opciones
-- ✅ Multi-tenancy (aislamiento de datos)
+- ✅ Autenticación (cookies HttpOnly)
+- ✅ Creación de pedidos y dispatch
+- ✅ Carga dinámica del catálogo
+- ✅ Multi-tenancy (aislamiento en consultas SQL)
 
 ### 4.2 Datos de Prueba
 
-**Factories** (Backend):
+**Factories** (Backend - faker.js):
 ```typescript
 // test/factories/product.factory.ts
 export const createProduct = (overrides?: Partial<Product>): Product => ({
   id: faker.string.uuid(),
   tenantId: faker.string.uuid(),
   name: faker.commerce.productName(),
-  price: faker.number.int({ min: 100, max: 10000 }),
+  price: Number(faker.commerce.price()),
   isActive: true,
   ...overrides
 });
@@ -416,13 +354,11 @@ export const createProduct = (overrides?: Partial<Product>): Product => ({
 
 **Fixtures** (Frontend):
 ```typescript
-// src/testing/fixtures/product.fixture.ts
-export const mockProduct: Product = {
-  id: '1',
-  name: 'Pizza Napolitana',
-  price: 2500,
-  images: [{ url: 'https://example.com/pizza.jpg', order: 0 }],
-  isActive: true
+// lib/testing/fixtures.ts
+export const mockStoreSettings = {
+  slug: 'don-pepe',
+  name: 'Pizzeria Don Pepe',
+  primaryColor: '#e11d48',
 };
 ```
 
@@ -430,62 +366,44 @@ export const mockProduct: Product = {
 
 ### ✅ DO
 
-1. **Arrange-Act-Assert**: Estructura clara de tests
-2. **Tests independientes**: No depender de orden de ejecución
-3. **Nombres descriptivos**: `should calculate total with option modifiers`
-4. **Mock de dependencias externas**: APIs, base de datos en unitarios
-5. **Limpiar después de cada test**: `afterEach(() => cleanup())`
+1. **Arrange-Act-Assert**: Estructura limpia y legible.
+2. **Query by Role**: En RTL, buscar elementos por rol accesible (`getByRole`) antes que clases CSS.
+3. **Mocks Explícitos**: Limpiar mocks entre tests (`vi.clearAllMocks()`).
+4. **Tests de Middleware**: Validar el routing de Next.js en tests E2E.
 
 ### ❌ DON'T
 
-1. **Tests frágiles**: No depender de datos específicos de DB
-2. **Tests lentos**: Evitar sleeps innecesarios
-3. **Tests que fallan aleatoriamente**: Race conditions
-4. **Múltiples asserts no relacionados**: Un concepto por test
-5. **Ignorar tests fallidos**: Arreglar o eliminar
+1. **Testear Detalles de Implementación**: Testear comportamiento de cara al usuario, no variables de estado internas.
+2. **Ignorar Accesibilidad**: Si un botón no se encuentra con `getByRole`, tiene problemas de A11y.
+3. **Hacer queries reales a BD en Unitarios**.
 
-## 6. CI/CD Integration
+## 6. CI/CD Integration (Github Actions)
 
 ```yaml
-# .github/workflows/test.yml
-name: Tests
-
-on: [push, pull_request]
+name: Pull Request Validation
+on: [pull_request]
 
 jobs:
-  test-backend:
+  validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - run: npm ci
       - run: npm run test
+      - run: npx playwright install --with-deps
       - run: npm run test:e2e
-
-  test-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-      - run: npm ci
-      - run: npm run test:ci
-      - run: npm run e2e:ci
 ```
 
 ## 7. Comandos Útiles
 
 ```bash
-# Backend
-npm run test                    # Todos los tests
-npm run test:watch              # Watch mode
-npm run test -- catalog.service # Test específico
-npm run test:cov                # Con cobertura
-npm run test:e2e                # Tests E2E
-
-# Frontend
-ng test                         # Todos los tests
-ng test --include='**/*.spec.ts' --watch=false  # Sin watch
-ng test --code-coverage         # Con cobertura
-npm run e2e                     # Cypress interactivo
-npm run e2e:ci                  # Cypress headless
+# Frontend (Vitest / Playwright)
+npm run test                    # Correr unitarios/componentes
+npm run test:watch              # Modo interactivo
+npx playwright test             # Correr E2E headless
+npx playwright show-report      # Ver reporte interactivo de errores
 ```
+

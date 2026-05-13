@@ -189,46 +189,48 @@ if (category.productCount > 0) {
 }
 ```
 
-## Manejo en el Cliente (Angular)
+## Manejo en el Cliente (Next.js / React 19)
 
-### Interceptor de Errores
+### Interceptores Globales y Redirección
+El manejo de errores global se orquesta integrando la instancia de `apiClient` con un manejador visual de notificaciones (por ejemplo, `sonner`).
+
 ```typescript
-export class ErrorInterceptor implements HttpInterceptor {
-  constructor(private toastService: ToastService) {}
+// lib/api/error-handler.ts
+import { toast } from 'sonner';
 
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<any> {
-    return next.handle(req).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.error?.success === false) {
-          const errorData = error.error.error;
-          
-          // Mostrar toast con el mensaje de error
-          this.toastService.error(error.error.message);
-          
-          // Manejar errores específicos
-          switch (errorData?.code) {
-            case 'TOKEN_EXPIRED':
-            case 'UNAUTHORIZED':
-              // Redirigir a login
-              this.router.navigate(['/auth/login']);
-              break;
-            
-            case 'VALIDATION_ERROR':
-              // Los errores de validación se manejan en el componente
-              break;
-            
-            default:
-              // Log para debugging
-              console.error('API Error:', errorData);
-          }
-        }
-        
-        return throwError(() => error);
-      })
-    );
+export function handleApiError(error: any, router: any) {
+  const message = error.message || 'Ocurrió un error inesperado';
+  const code = error.code;
+
+  // Manejar códigos de error específicos de negocio
+  switch (code) {
+    case 'TOKEN_EXPIRED':
+    case 'UNAUTHORIZED':
+      toast.error('Sesión expirada', {
+        description: 'Por favor, vuelva a iniciar sesión.',
+      });
+      router.push('/auth/login');
+      break;
+
+    case 'FORBIDDEN':
+      toast.error('Acceso Denegado', {
+        description: 'No tiene permisos para ver esta sección.',
+      });
+      break;
+
+    case 'VALIDATION_ERROR':
+      // Generalmente manejado por React Hook Form (setError)
+      break;
+
+    default:
+      toast.error('Error del Sistema', {
+        description: message,
+      });
+      console.error('[API_ERROR]:', error);
   }
 }
 ```
+
 
 ## Logging de Errores
 

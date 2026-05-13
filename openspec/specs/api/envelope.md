@@ -211,32 +211,63 @@ No se envía body. Solo código HTTP 204.
     -   `currentPage`: Página actual
     -   `itemsPerPage`: Items por página
 
-## Manejo en el Cliente (Angular)
+## Manejo en el Cliente (Next.js / React 19)
 
+### Tipado del Envelope en TypeScript
 ```typescript
-// Interceptor para manejar el envelope automáticamente
-export class EnvelopeInterceptor implements HttpInterceptor {
-  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<any> {
-    return next.handle(req).pipe(
-      map(event => {
-        if (event instanceof HttpResponse) {
-          const body = event.body;
-          if (body?.success) {
-            return event.clone({ body: body.data });
-          }
-        }
-        return event;
-      }),
-      catchError(error => {
-        if (error.error?.success === false) {
-          // Extraer mensaje de error del envelope
-          const message = error.error.message || 'Error desconocido';
-          const code = error.error.error?.code;
-          throw new ApiError(message, code, error.status);
-        }
-        throw error;
-      })
-    );
-  }
+// lib/api/types.ts
+export interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data: T;
+  meta?: {
+    itemCount: number;
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    itemsPerPage: number;
+  };
+}
+
+export interface ApiErrorResponse {
+  success: false;
+  message: string;
+  error: {
+    code: string;
+    details: string | any[];
+  };
 }
 ```
+
+### Configuración de Instancia Axios
+```typescript
+// lib/api/client.ts
+import axios from 'axios';
+
+export const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true, // Enviar cookies HttpOnly automáticamente
+});
+
+// Interceptor de Respuesta para desempaquetar automáticamente el "data" del envelope
+apiClient.interceptors.response.use(
+  (response) => {
+    // Si la respuesta tiene la estructura de envelope, devolver directamente data
+    if (response.data && response.data.success) {
+      return response.data.data;
+    }
+    return response.data;
+  },
+  (error) => {
+    // Formatear el error para propagar el mensaje y código de negocio
+    const apiError = error.response?.data as ApiErrorResponse | undefined;
+    return Promise.reject({
+      message: apiError?.message || 'Ocurrió un error inesperado',
+      code: apiError?.error?.code || 'NETWORK_ERROR',
+      status: error.response?.status || 500,
+      details: apiError?.error?.details,
+    });
+  }
+);
+```
+

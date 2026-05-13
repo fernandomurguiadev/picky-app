@@ -57,25 +57,22 @@ RATE_LIMIT_MAX=100
 LOG_LEVEL=debug
 ```
 
-### 2.2 Frontend (Angular)
+### 2.2 Frontend (Next.js 15)
 
-```typescript
-// src/environments/environment.ts
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:3000',
-  wsUrl: 'ws://localhost:3000',
-  cloudinaryCloudName: 'your-cloud-name'
-};
+```env
+# app/.env.local (Desarrollo local)
+NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_WS_URL=ws://localhost:3000
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
 
-// src/environments/environment.prod.ts
-export const environment = {
-  production: true,
-  apiUrl: 'https://api.pickyapp.com',
-  wsUrl: 'wss://api.pickyapp.com',
-  cloudinaryCloudName: 'pickyapp-prod'
-};
+# app/.env.production (Producción - se reemplaza por config del hosting)
+NEXT_PUBLIC_API_URL=https://api.pickyapp.com
+NEXT_PUBLIC_WS_URL=wss://api.pickyapp.com
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=pickyapp-prod
 ```
+
+Las variables con prefijo `NEXT_PUBLIC_` se inyectan automáticamente y son legibles tanto en Client Components (RCC) como en Server Components (RSC).
+
 
 ## 3. Validación de Configuración
 

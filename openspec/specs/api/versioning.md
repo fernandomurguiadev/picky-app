@@ -116,24 +116,19 @@ Cada versión tendrá su propia documentación:
 
 ## Compatibilidad con Clientes
 
-### Angular (Frontend)
+### Next.js (Frontend)
 ```typescript
-// Configuración de versión en environment
-export const environment = {
-  apiVersion: 'v1',
-  apiUrl: `/api/${apiVersion}`
-};
+// .env.local
+NEXT_PUBLIC_API_VERSION=v1
+NEXT_PUBLIC_API_URL=https://api.ejemplo.com/api/${NEXT_PUBLIC_API_VERSION}
 
-// Interceptor para agregar versión
-export class VersionInterceptor implements HttpInterceptor {
-  intercept(req: HttpRequest<any>, next: HttpHandler) {
-    const versionedReq = req.clone({
-      url: `/api/${environment.apiVersion}${req.url}`
-    });
-    return next.handle(versionedReq);
-  }
-}
+// lib/api/client.ts
+// La URL ya incluye la versión vía variables de entorno en tiempo de compilación/ejecución
+const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL
+});
 ```
+
 
 ### Versionado por Cliente
 Permitir que diferentes clientes usen diferentes versiones:

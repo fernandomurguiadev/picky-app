@@ -23,7 +23,6 @@ Especificaciones para el desarrollo e integración de la API.
 - [**Paginación**](api/pagination.md): Estrategia de paginación y metadatos.
 - [**Filtrado y Ordenamiento**](api/filtering-sorting.md): Query params estándar.
 - [**Versionado**](api/versioning.md): Estrategia de versionado de API.
-- [**Idempotencia**](api/idempotency.md): Manejo de operaciones críticas repetidas.
 
 ### 💾 Datos y Persistencia
 Diseño del modelo de datos y gestión de cambios.
@@ -36,7 +35,6 @@ Políticas y mecanismos de protección.
 - [**Visión General de Seguridad**](security/security-overview.md): Principios y mitigaciones de riesgos comunes.
 - [**JWT Claims**](security/jwt-claims.md): Estructura y contenido de los tokens de acceso.
 - [**Rate Limiting**](security/rate-limiting.md): Protección contra abuso y DoS.
-- [**Auditoría y Logging**](security/audit-logging.md): Registro de eventos críticos.
 
 ### ☁️ Infraestructura y DevOps
 Despliegue, configuración y operación.
@@ -71,23 +69,24 @@ PickyApp es una plataforma de e-commerce de proximidad diseñada para comercios 
 
 | Capa | Tecnología | Versión | Justificación |
 | :--- | :--- | :--- | :--- |
-| **Frontend** | Angular | 19.x | Standalone components, signals, control flow @if/@for |
-| **Estado** | NgRx Signals / Services | Angular 19 | Signals API nativa, sin overhead de Redux clásico |
-| **Estilos** | SCSS + Angular CDK | — | Variables CSS, breakpoints, máximo control |
-| **UI Components** | Angular Material 3 | 17+ | Componentes accesibles, tema personalizable |
-| **Backend** | NestJS | ^10 | REST API modular, TypeScript, decoradores |
-| **Base de Datos** | PostgreSQL + TypeORM | — | Multi-tenant por tenant_id, migraciones versionadas |
-| **Storage** | Cloudinary / S3 | — | Imágenes con transformación on-the-fly |
-| **Auth** | JWT + Refresh Tokens | — | Access 15min, refresh 7d, httpOnly cookie |
-| **WebSocket** | Socket.io | — | Pedidos en tiempo real en panel admin |
-| **Contenedores** | Docker + docker-compose | — | Dev y producción unificados |
+| **Frontend** | Next.js (App Router) | 15.x | SSR nativo, RSC, optimización de imágenes, file-system routing |
+| **Estado Global** | Zustand | ^5 | Liviano, sin boilerplate, altamente compatible con Server Components |
+| **Cache de Servidor** | TanStack Query | ^5 | Cacheo inteligente de estado del servidor, optimistic updates |
+| **Estilos** | Tailwind CSS v4 | ^4 | Utility-first, mobile-first por defecto, purge automático ultrarrápido |
+| **UI Components** | shadcn/ui + Vaul | latest | Componentes accesibles (Radix), Vaul para drag gestures nativos en móviles |
+| **Backend** | NestJS | ^10 | REST API modular, TypeScript, robusto y tipado |
+| **Base de Datos** | PostgreSQL + TypeORM | PG 16 | Multi-tenant por tenant_id, robustez relacional |
+| **Storage** | Cloudinary / S3 | — | Imágenes con transformación y optimización on-the-fly |
+| **Auth** | JWT + Refresh Tokens | — | Access 15min, refresh 7d, httpOnly cookie vía BFF |
+| **WebSocket** | Socket.io | ^4 | Pedidos en tiempo real. Cliente conecta directo al servidor NestJS |
+| **Contenedores** | Docker + docker-compose | — | Dev y producción unificados mediante Dockerfiles |
 
 ### Diagrama de Alto Nivel
 
 ```mermaid
 flowchart TB
-    subgraph Client["Cliente"]
-        Web["Angular 19 App<br/>(Tienda + Admin)"]
+    subgraph Client["Cliente (Browser)"]
+        Web["Next.js 15 App<br/>(Tienda + Admin)"]
     end
 
     subgraph Backend["Backend Services"]
@@ -101,7 +100,7 @@ flowchart TB
     end
 
     Web -->|REST API| API
-    Web -->|WebSocket| API
+    Web -->|WebSocket Directo| API
     API --> Auth
     API --> DB
     API --> Storage
@@ -121,8 +120,8 @@ CRUD completo de categorías y productos con variantes. Back-office del administ
 Front-end del cliente final. Zero login. Responsive, animada.
 - Home con categorías y productos destacados
 - Indicador abierto/cerrado basado en horarios
-- Detalle de producto con selector de variantes
-- Carrito persistente (localStorage)
+- Detalle de producto con selector de variantes (usando Vaul Bottom Sheet en móvil)
+- Carrito persistente (localStorage vía Zustand)
 - Checkout en 2 pasos
 - Dispatch por WhatsApp
 
@@ -140,7 +139,7 @@ Toda la personalización del comercio.
 - Horarios de atención por día
 - Formas de entrega (delivery, take away, presencial)
 - Métodos de pago
-- Tema visual (colores primario y acento)
+- Tema visual dinámico (colores primario y acento desde SSR anti-FOUC)
 - Anuncios en tienda
 
 ### MOD-05: Panel Administrador
@@ -153,8 +152,8 @@ Layout, navegación, dashboard y UX del back-office.
 ### MOD-06: Autenticación y Seguridad
 Login, registro, protección de rutas.
 - Registro de comerciante
-- Login con JWT
-- Auth Guard para rutas /admin
+- Login con JWT vía HttpOnly cookies
+- Middleware de autenticación para rutas `/admin`
 - Refresh token automático
 - Recuperar contraseña
 
@@ -172,13 +171,13 @@ sequenceDiagram
 
     C->>T: Navega categorías
     C->>T: Selecciona producto + variantes
-    T->>T: Agrega al carrito (localStorage)
+    T->>T: Agrega al carrito (Zustand localStorage)
     C->>T: Ir a checkout
     C->>T: Completa datos (nombre, teléfono, dirección)
     C->>T: Selecciona entrega y pago
     C->>T: Confirma pedido
     T->>API: POST /orders (sin auth)
-    API->>API: Genera orderNumber
+    API->>API: Genera orderNumber y guarda en DB
     API-->>T: 201 Created + Order
     API->>A: WebSocket: order:new
     A->>A: Notificación sonora + visual
@@ -191,23 +190,23 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant A as Admin
-    participant Panel as Admin Panel
-    participant API as Backend API
+    participant Panel as Admin Panel (React)
+    participant API as Backend API (NestJS)
     participant DB as PostgreSQL
 
     A->>Panel: Login
-    Panel->>API: POST /auth/login
-    API-->>Panel: JWT tokens
+    Panel->>API: POST /auth/login (Set-Cookie httpOnly)
+    API-->>Panel: 200 OK
     A->>Panel: Navega a Catálogo
-    Panel->>API: GET /admin/products
-    API->>DB: SELECT * WHERE tenantId
+    Panel->>API: GET /admin/products (con Cookie)
+    API->>DB: SELECT * WHERE tenant_id = x
     DB-->>API: Products[]
-    API-->>Panel: Products list
+    API-->>Panel: Products JSON
     A->>Panel: Crea nuevo producto
-    Panel->>API: POST /admin/products + images
+    Panel->>API: POST /admin/products (FormData + images)
     API->>DB: INSERT product
     API-->>Panel: 201 Created
-    Panel->>Panel: Toast "Producto creado"
+    Panel->>Panel: Toast con shadcn "Producto creado"
 ```
 
 ### 4.3. Flujo de Pedido en Tiempo Real (Admin)
@@ -216,75 +215,73 @@ sequenceDiagram
 sequenceDiagram
     participant C as Cliente
     participant API as Backend
-    participant WS as WebSocket
+    participant WS as WebSocket (NestJS)
     participant A1 as Admin (Desktop)
     participant A2 as Admin (Móvil)
 
-    A1->>WS: Connect + join-tenant
-    A2->>WS: Connect + join-tenant
+    A1->>WS: socket.connect() + joinRoom(tenantId)
+    A2->>WS: socket.connect() + joinRoom(tenantId)
     C->>API: POST /orders
-    API->>API: Crea pedido
-    API->>WS: Emit order:new a sala tenant
-    WS->>A1: order:new event
-    WS->>A2: order:new event
-    A1->>A1: Sonido + badge parpadeante
-    A2->>A2: Sonido + badge parpadeante
+    API->>API: Crea pedido persistente
+    API->>WS: emit('order:new', data) a sala tenantId
+    WS->>A1: event 'order:new'
+    WS->>A2: event 'order:new'
+    A1->>A1: Play audio + invalidate queries
+    A2->>A2: Play audio + invalidate queries
     A1->>API: PATCH /admin/orders/:id/status
-    API->>WS: Emit order:status-changed
-    WS->>A2: Actualiza estado en Kanban
+    API->>WS: emit('order:status-changed')
+    WS->>A2: Reactiva Kanban en vivo
 ```
 
 ## 5. Plan de Implementación (Resumen)
 
 ### Fase 0: Setup y Fundamentos (Semana 1)
-- Configuración de repositorio y estructura de proyecto
-- Setup de Angular 19 con standalone components
-- Setup de NestJS con módulos base
-- Docker compose con PostgreSQL
-- Sistema de diseño base (variables SCSS, breakpoints)
+- Configuración del monorepo con scopes `api` y `app`
+- Setup de Next.js 15 (App Router, Tailwind CSS v4, shadcn/ui)
+- Setup de NestJS modular (Base de datos PostgreSQL, TypeORM)
+- Docker compose local unificado
+- Estrategia SSR anti-FOUC para inyección de temas del tenant
 
 ### Fase 1: Autenticación y Base (Semana 1-2)
-- MOD-06: Registro, login, JWT, guards
-- Layout del admin panel
-- Componentes shared básicos
+- MOD-06: Registro, login, HttpOnly cookies, interceptors
+- Layout responsivo del panel admin (Sidebar/BottomNav)
+- Componentes compartidos base
 
 ### Fase 2: Catálogo (Semana 2-3)
-- MOD-01: CRUD de categorías
-- MOD-01: CRUD de productos con variantes
-- Upload de imágenes
+- MOD-01: CRUD de categorías y ordenamiento
+- MOD-01: CRUD de productos y gestor de variantes
+- Subida de imágenes con Cloudinary
 
 ### Fase 3: Tienda Pública (Semana 3-4)
-- MOD-02: Home de tienda
-- MOD-02: Listado de productos
-- MOD-02: Detalle de producto
-- MOD-02: Carrito
+- MOD-02: Home y listado optimizado por categorías
+- MOD-02: Ficha de producto (Bottom Sheet Vaul en móviles)
+- MOD-02: Carrito reactivo con Zustand
 
 ### Fase 4: Checkout y Pedidos (Semana 4-5)
-- MOD-02: Checkout completo
-- MOD-02: Integración WhatsApp
-- MOD-03: Centro de pedidos Kanban
-- MOD-03: WebSocket en tiempo real
+- MOD-02: Checkout en dos pasos e integración con WhatsApp
+- MOD-03: Centro de monitoreo Kanban de pedidos
+- MOD-03: Conexión directa WebSocket Socket.io para actualizaciones en tiempo real
 
 ### Fase 5: Configuración y Dashboard (Semana 5-6)
-- MOD-04: Configuración de tienda
-- MOD-05: Dashboard con métricas
-- MOD-05: Onboarding wizard
+- MOD-04: Personalización completa del comercio (Horarios, Temas, Anuncios)
+- MOD-05: Dashboard de analíticas diarias
+- MOD-05: Wizard de onboarding guiado
 
 ### Fase 6: Pulido y Testing (Semana 6)
-- Animaciones y micro-interacciones
-- Testing E2E de flujos críticos
-- Optimización de performance
-- Documentación final
+- Micro-animaciones y gestos optimizados
+- Tests unitarios y de integración críticos
+- Optimización de carga inicial (LCP, CLS)
+- Entrega de documentación técnica final
 
 ## 6. Criterios de Éxito del MVP
 
 | Criterio | Métrica | Objetivo |
 | :--- | :--- | :--- |
 | **Demo funcional** | Flujo completo sin errores | Zero errores bloqueantes en demo de 20 min |
-| **Mobile-first** | Usabilidad en 360px | Sin scroll horizontal, todos los elementos accesibles |
-| **Performance** | Carga inicial | < 2 segundos en 4G |
-| **UX superior** | Comparación con Pedix | Evaluación subjetiva positiva |
-| **Autonomía admin** | Onboarding sin ayuda | Comerciante puede configurar tienda sin documentación |
+| **Mobile-first** | Usabilidad en 360px | Sin scroll horizontal, gestos drag Vaul nativos |
+| **Performance** | Carga inicial en 4G | LCP < 2.5 segundos |
+| **UX superior** | Feedback vs Pedix | Interfaz animada, transiciones premium, fluidez nativa |
+| **Autonomía admin** | Setup autónomo | El comerciante puede autogestionar el 100% del MVP |
 
 ## 7. Exclusiones del MVP
 
@@ -296,3 +293,4 @@ Los siguientes módulos NO están incluidos en el MVP:
 - ❌ Módulo de marketing / Meta Ads
 - ❌ Multi-sucursal
 - ❌ Analytics avanzado
+

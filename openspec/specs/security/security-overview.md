@@ -15,18 +15,17 @@
 **Riesgo**: Inyección de scripts maliciosos en la aplicación.
 
 **Mitigaciones**:
--   **Angular**: Escapado automático de templates (DomSanitizer)
+-   **React 19**: Escapado automático nativo en JSX.
 -   **CSP Headers**: Content Security Policy restrictivo
 -   **Validación de inputs**: Sanitizar datos de usuario
 -   **HttpOnly cookies**: Tokens no accesibles desde JavaScript
 
-```typescript
-// Angular escapa automáticamente
-<div>{{ userInput }}</div>  // ✅ Seguro
+```tsx
+// React escapa automáticamente todas las variables en JSX
+<div>{ userInput }</div>  // ✅ Seguro
 
-// Para HTML confiable, usar DomSanitizer
-constructor(private sanitizer: DomSanitizer) {}
-safeHtml = this.sanitizer.bypassSecurityTrustHtml(trustedHtml);
+// Para inyectar HTML confiable, usar la propiedad explícita
+<div dangerouslySetInnerHTML={{ __html: trustedHtml }} />
 ```
 
 **CSP Header (NestJS)**:
@@ -35,7 +34,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"], // Solo para Angular
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Para Next.js inline dynamic scripts
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
       connectSrc: ["'self'", 'wss://api.pickyapp.com']
@@ -59,7 +58,7 @@ app.enableCors({
   origin: [
     'https://pickyapp.com',
     'https://admin.pickyapp.com',
-    process.env.NODE_ENV === 'development' ? 'http://localhost:4200' : ''
+    process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : ''
   ].filter(Boolean),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],

@@ -28,19 +28,22 @@ export interface DashboardMetrics {
 }
 ```
 
-## 4. Especificaciones Técnicas (Angular 19)
+## 4. Especificaciones Técnicas (Next.js 15)
 
-### Componentes Clave
-- `AdminLayoutComponent`: Layout general del panel administrador.
-- `BottomNavComponent`: Barra de navegación para móviles.
-- `SidebarComponent`: Barra lateral para desktop.
-- `DashboardComponent`: Resumen visual con métricas y gráficos.
-- `OnboardingWizardComponent`: Wizard paso a paso para nuevos usuarios.
+### Arquitectura de Rutas y Layouts (`app/`)
+- `(admin)/layout.tsx`: Valida autenticación del lado del servidor (RSC Middleware) y define la shell adaptativa.
+- `(admin)/dashboard/page.tsx`: Dashboard principal con fetches en paralelo y fallback Suspense de React 19.
 
-### Servicios
-- `AnalyticsService`: Obtención de métricas y datos estadísticos.
-- `OrdersService`: Obtención de pedidos activos para el dashboard.
-- `OnboardingService`: Gestión del estado del proceso de onboarding.
+### Componentes de Interfaz (shadcn/ui + Lucide Icons)
+- `AdminSidebar`: Sidebar expandible lateral en desktop que se oculta en móvil vía Sheet (RCC).
+- `MobileBottomNav`: Sticky bottom bar optimizado con iconos táctiles grandes para móvil (RCC).
+- `DashboardMetricsCards`: Grilla de KPIs con esqueletos de carga nativos (React Suspense).
+- `SalesChart`: Gráfico de líneas interactivo implementado con **Recharts** (RCC).
+
+### Lógica de Onboarding y Navegación
+- `useOnboardingStore`: Zustand store persistido para recordar el progreso local del wizard si el usuario cierra la pestaña.
+- `OnboardingStepper`: Flujo declarativo controlado que avanza con validaciones locales Zod por cada fase.
+
 
 ## 5. Criterios de Aceptación
 - CA-001: El panel admin es completamente usable en un smartphone de 360px.

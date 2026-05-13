@@ -40,18 +40,22 @@ export interface Order {
 }
 ```
 
-## 4. Especificaciones Técnicas (Angular 19)
+## 4. Especificaciones Técnicas (Next.js 15)
 
-### Componentes Clave
-- `OrdersKanbanComponent`: Vista de gestión en tiempo real.
-- `KanbanColumnComponent`: Columna por estado con scroll independiente.
-- `OrderCardComponent`: Resumen visual del pedido en el kanban.
-- `OrderDetailModalComponent`: Modal con información detallada.
+### Arquitectura de Rutas (`app/`)
+- `(admin)/dashboard/orders/page.tsx`: Tablero Kanban en tiempo real (RCC).
+- `(admin)/dashboard/orders/[id]/page.tsx`: Detalle completo de la orden con historial interactivo.
 
-### Servicios
-- `OrdersService`: Gestión de pedidos mediante REST y WebSocket.
-- `WebSocketService`: Abstracción de Socket.io para tiempo real.
-- `OrderNotificationService`: Gestión de notificaciones sonoras y visuales.
+### Componentes de Interfaz (RCC)
+- `OrderKanbanBoard`: Tablero contenedor de estados gestionado mediante flex layout.
+- `OrderCard`: Card compacta optimizada con badges de urgencia temporal.
+- `OrderDetailModal`: Modal dinámico de shadcn/ui (`Dialog`) para previsualizaciones rápidas.
+
+### Gestión de Tiempo Real e Integración
+- `useSocketIO()`: Custom Hook que inicializa y provee la conexión al Gateway de NestJS, escuchando el evento `order.created` en el room del tenant.
+- `useOrderSoundNotification()`: Hook que gestiona el objeto HTML5 Audio y el estado del título del documento (alert flash) ante la llegada de nuevos pedidos sin leer.
+- `useUpdateOrderStatus()`: Mutación optimista de TanStack Query para reflejar el movimiento Kanban inmediatamente antes de recibir confirmación del servidor.
+
 
 ## 5. Criterios de Aceptación
 - CA-001: Al llegar un pedido nuevo, aparece la notificación sonora y visual en menos de 2s.

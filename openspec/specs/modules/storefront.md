@@ -35,21 +35,29 @@ export interface CartItem {
 }
 ```
 
-## 4. Especificaciones Técnicas (Angular 19)
+## 4. Especificaciones Técnicas (Next.js 15)
 
-### Componentes Clave
-- `StoreHomeComponent`: Página principal de la tienda.
-- `ProductDetailComponent`: Bottom-sheet deslizable en móvil.
-- `CartDrawerComponent`: Drawer lateral en desktop, bottom-sheet en móvil.
-- `CheckoutPageComponent`: Stepper de 2 pasos para completar el pedido.
+### Arquitectura de Rutas (`app/`)
+- `(store)/[slug]/page.tsx`: Página principal (Home) del tenant con inyección de tema dinámica (RSC).
+- `(store)/[slug]/checkout/page.tsx`: Formulario de checkout multietapa en cliente (RCC).
+- `(store)/[slug]/order-success/page.tsx`: Pantalla de éxito post-whatsapp.
 
-### Servicios
-- `StoreService`: Datos del tenant y configuración de la tienda.
-- `CartService`: Gestión reactiva del carrito con Signals.
-- `WhatsappDispatchService`: Generación del mensaje para WhatsApp.
+### Componentes de Interfaz (RCC/RSC)
+- `ProductCard`: Card del producto en Home (RSC para máxima velocidad SEO).
+- `ProductDetailDrawer`: Implementado con **Vaul (Drawer)** para simular un Bottom Sheet nativo en móvil (RCC).
+- `CartDrawer`: Drawer/Slide-over lateral persistido, con scrollable viewport y animación bump en badge (RCC).
+- `CheckoutForm`: Formulario controlado con **React Hook Form + Zod** (RCC).
+
+### Gestión de Estado (Zustand Store)
+- `useCartStore`: Manejo interactivo del carrito (addItem, removeItem, updateQty, clearCart).
+- Persistencia activa automática en LocalStorage configurada a través del middleware de Zustand `persist`.
+
+### Servicios y Despacho
+- `whatsapp-dispatch.ts`: Utility puro en cliente para construir la plantilla estructurada de texto y redirigir vía `window.open('https://wa.me/...')`.
 
 ## 5. Criterios de Aceptación
 - CA-001: El cliente puede completar el flujo completo en un smartphone 360px sin errores.
-- CA-002: El mensaje de WhatsApp contiene todos los ítems y totales exactos.
-- CA-003: El carrito persiste en localStorage al cerrar el navegador.
-- CA-004: El tiempo de carga inicial (LCP) es menor a 2.5s en 4G.
+- CA-002: El mensaje de WhatsApp contiene todos los ítems, precios y totales exactos.
+- CA-003: El carrito persiste en localStorage usando Zustand y sobrevive al refresh del navegador.
+- CA-004: El tiempo de carga inicial (LCP) es menor a 2.5s en 4G gracias a que los productos principales vienen pre-renderizados del servidor (RSC).
+

@@ -4,40 +4,39 @@
 
 PickyApp adopta una arquitectura **Monolito Modular** diseñada para ser escalable, mantenible y robusta. Esta decisión arquitectónica permite desarrollo rápido del MVP manteniendo la posibilidad de evolucionar a microservicios en el futuro.
 
-- **Frontend**: Angular 19 (Standalone Components, Signals)
+- **Frontend**: Next.js 15.x (App Router, TypeScript)
 - **Backend**: NestJS 10+ (TypeScript, Modular)
-- **Base de Datos**: PostgreSQL 15+ con TypeORM
-- **Comunicación**: REST API + WebSocket (Socket.io)
-- **Patrón**: Multi-tenant con aislamiento por tenant_id
+- **Base de Datos**: PostgreSQL 16 con TypeORM
+- **Comunicación**: REST API + WebSocket Directo (Socket.io-client)
+- **Patrón Multi-tenant**: Row-Level Security (RLS) simulado con aislamiento estricto por `tenant_id`
 
 ### Diagrama de Alto Nivel
 
 ```mermaid
 flowchart TB
     subgraph Client["Cliente (Browser)"]
-        StoreFront["Tienda Pública<br/>(Angular 19)"]
-        AdminPanel["Panel Admin<br/>(Angular 19)"]
+        StoreFront["Tienda Pública<br/>(Next.js RSC + Client)"]
+        AdminPanel["Panel Admin<br/>(Next.js RSC + Client)"]
     end
 
     subgraph Backend["Backend Monolito Modular (NestJS)"]
-        Gateway["API Gateway<br/>(Controllers)"]
+        Gateway["REST Controllers<br/>(NestJS)"]
         AuthMod["Auth Module"]
         CatalogMod["Catalog Module"]
         OrdersMod["Orders Module"]
         TenantMod["Tenants Module"]
         UploadMod["Upload Module"]
-        WSGateway["WebSocket Gateway"]
+        WSGateway["Socket.io Gateway"]
     end
 
     subgraph Data["Capa de Datos"]
         PG[("PostgreSQL<br/>Multi-tenant")]
-        Redis[("Redis<br/>Cache + Sessions")]
-        Storage["Cloudinary/S3<br/>Imágenes"]
+        Storage["Cloudinary / S3<br/>Imágenes"]
     end
 
-    StoreFront -->|REST| Gateway
-    AdminPanel -->|REST| Gateway
-    AdminPanel -->|WebSocket| WSGateway
+    StoreFront -->|REST API| Gateway
+    AdminPanel -->|REST API| Gateway
+    AdminPanel -->|WebSocket Directo| WSGateway
     
     Gateway --> AuthMod
     Gateway --> CatalogMod
@@ -51,8 +50,6 @@ flowchart TB
     CatalogMod --> PG
     OrdersMod --> PG
     TenantMod --> PG
-    
-    AuthMod --> Redis
     UploadMod --> Storage
 ```
 
@@ -63,84 +60,84 @@ flowchart TB
 La aplicación sigue una arquitectura en capas con separación clara de responsabilidades:
 
 #### 1. Capa de Presentación (Controllers/Gateways)
-- **Responsabilidad**: Manejo de requests HTTP y WebSocket
-- **Componentes**: Controllers, DTOs, Guards, Interceptors
-- **Validación**: class-validator en DTOs
-- **Autenticación**: JWT Guards
-- **Ejemplo**: `CategoriesController`, `OrdersGateway`
+- **Responsabilidad**: Manejo de requests HTTP y conexiones WebSocket.
+- **Componentes**: Controllers, DTOs, Guards, Interceptors.
+- **Validación**: `class-validator` + `ValidationPipe` global en DTOs.
+- **Autenticación**: Guards basados en la cookie HttpOnly generada en el login.
+- **Ejemplo**: `CategoriesController`, `OrdersGateway`.
 
 #### 2. Capa de Aplicación (Services)
-- **Responsabilidad**: Orquestación de lógica de negocio
-- **Componentes**: Services, Use Cases
-- **Transacciones**: Manejo de operaciones atómicas
-- **Ejemplo**: `CatalogService`, `OrdersService`
+- **Responsabilidad**: Orquestación de lógica de negocio y casos de uso.
+- **Componentes**: Services, utilidades de negocio.
+- **Transacciones**: Uso de QueryRunner de TypeORM para operaciones críticas complejas.
+- **Ejemplo**: `CatalogService`, `OrdersService`.
 
 #### 3. Capa de Dominio (Entities/Models)
-- **Responsabilidad**: Reglas de negocio y modelos de datos
-- **Componentes**: TypeORM Entities, Interfaces
-- **Validación**: Constraints de base de datos
-- **Ejemplo**: `Product`, `Order`, `Category`
+- **Responsabilidad**: Definición de las entidades de base de datos y reglas fundamentales.
+- **Componentes**: TypeORM Entities con decorators.
+- **Validación**: Constraints a nivel de BD (Primary Keys, Indexes, Foreign Keys).
+- **Ejemplo**: `Product`, `Order`, `Category`.
 
 #### 4. Capa de Infraestructura (Repositories/Adapters)
-- **Responsabilidad**: Acceso a datos e integraciones externas
-- **Componentes**: TypeORM Repositories, External APIs
-- **Ejemplo**: `ProductRepository`, `CloudinaryAdapter`
+- **Responsabilidad**: Persistencia de datos e interacción con servicios externos (Cloudinary).
+- **Componentes**: TypeORM Repositories heredados, Custom Adapters.
+- **Ejemplo**: `InjectRepository(Product)`, `CloudinaryService`.
 
 ### 2.2 Módulos Principales
 
 ```
 src/
 ├── modules/
-│   ├── auth/                    # Autenticación y autorización
+│   ├── auth/                    # Autenticación (JWT, Cookie management)
 │   │   ├── auth.module.ts
 │   │   ├── auth.controller.ts
 │   │   ├── auth.service.ts
-│   │   ├── strategies/          # JWT, Local strategies
+│   │   ├── strategies/          # JWT strategy
 │   │   └── dto/                 # Login, Register DTOs
 │   │
-│   ├── tenants/                 # Gestión de comercios
+│   ├── tenants/                 # Administración de comercios
 │   │   ├── tenants.module.ts
 │   │   ├── tenants.controller.ts
 │   │   ├── tenants.service.ts
 │   │   └── entities/            # Tenant, StoreSettings
 │   │
-│   ├── catalog/                 # Catálogo (categorías + productos)
+│   ├── catalog/                 # Catálogo (Categorías + Productos)
 │   │   ├── catalog.module.ts
 │   │   ├── categories.controller.ts
 │   │   ├── products.controller.ts
 │   │   ├── catalog.service.ts
 │   │   └── entities/            # Category, Product, OptionGroup
 │   │
-│   ├── orders/                  # Gestión de pedidos
+│   ├── orders/                  # Flujo de pedidos y WebSocket
 │   │   ├── orders.module.ts
 │   │   ├── orders.controller.ts
 │   │   ├── orders.service.ts
-│   │   ├── orders.gateway.ts    # WebSocket
+│   │   ├── orders.gateway.ts    # Socket.io Gateway
 │   │   └── entities/            # Order, OrderItem
 │   │
-│   └── upload/                  # Subida de imágenes
+│   └── upload/                  # Subida y firma para imágenes
 │       ├── upload.module.ts
 │       ├── upload.controller.ts
 │       └── upload.service.ts
 │
-├── common/                      # Código compartido
-│   ├── decorators/              # @TenantId, @CurrentUser
-│   ├── guards/                  # JwtAuthGuard, TenantGuard
-│   ├── interceptors/            # TenantContextInterceptor
-│   ├── filters/                 # HttpExceptionFilter
-│   └── pipes/                   # ValidationPipe
+├── common/                      # Utilidades globales
+│   ├── decorators/              # @CurrentUser, @TenantId
+│   ├── guards/                  # JwtAuthGuard, RolesGuard
+│   ├── interceptors/            # TenantInterceptor (Inyección de tenant_id)
+│   ├── filters/                 # GlobalExceptionFilter
+│   └── pipes/                   # Global ValidationPipe
 │
-└── config/                      # Configuración
+└── config/                      # Esquemas de variables de entorno
     ├── database.config.ts
     ├── jwt.config.ts
     └── app.config.ts
 ```
 
-### 2.3 Patrón Multi-Tenant
+### 2.3 Patrón Multi-Tenant (Tenant-Isolation)
 
-**Estrategia**: Row-Level Multi-tenancy con tenant_id
+**Estrategia**: Row-Level Isolation estricto con indexado compuesto `tenant_id`.
 
-Cada entidad incluye la columna `tenant_id` que identifica al comercio propietario:
+Cada entidad sensible al multi-tenant incluye la columna `tenant_id` con índice para garantizar eficiencia en las queries:
 
 ```typescript
 @Entity('products')
@@ -148,267 +145,133 @@ export class Product {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'tenant_id' })
+  @Column({ name: 'tenant_id', type: 'uuid' })
   @Index()
   tenantId: string;
 
-  // ... otros campos
+  // ... atributos del producto
 }
 ```
 
-**Aislamiento automático** mediante `TenantContextInterceptor`:
+**Inyección Dinámica**: `TenantInterceptor` intercepta la llamada, extrae el context del request y asegura que todas las queries filtren u operen bajo el `tenant_id` correspondiente al JWT del usuario autenticado o al subdominio/tienda visitada.
 
-```typescript
-// El interceptor extrae tenantId del JWT y lo inyecta en el contexto
-// Todos los repositorios filtran automáticamente por tenantId
-const products = await this.productRepository.find({
-  where: { tenantId: currentUser.tenantId }
-});
-```
+---
 
-## 3. Frontend (Angular 19)
+## 3. Frontend (Next.js 15 App Router)
 
-### 3.1 Arquitectura
+### 3.1 Estructura de Arquitectura
 
-La estructura del proyecto se organiza por **Features** (Feature-Sliced Design adaptado):
+Se adopta una arquitectura **Feature-Sliced Design (FSD) adaptada a Next.js 15 App Router**, priorizando la separación por grupos de rutas y la diferenciación clara entre componentes de Servidor (RSC) y de Cliente (RCC):
 
 ```
-src/app/
-├── core/                        # Servicios singleton
-│   ├── auth/                    # AuthService, Guards, Interceptors
-│   ├── services/                # ApiService, StoreService, WebSocketService
-│   └── models/                  # Interfaces TypeScript globales
+src/
+├── app/                             # File-system Router de Next.js 15
+│   ├── layout.tsx                   # Root layout (HTML, body, fonts)
+│   ├── globals.css                  # Configuración Tailwind CSS v4
+│   ├── (store)/                     # Grupo de rutas: Tienda Pública
+│   │   └── [slug]/
+│   │       ├── layout.tsx           # SSR anti-FOUC y carga de tema dinámico
+│   │       ├── page.tsx             # Home de la Tienda
+│   │       ├── product/[id]/        # Ficha de producto
+│   │       └── checkout/            # Proceso de compra
+│   ├── (admin)/                     # Grupo de rutas: Panel Administrativo
+│   │   └── admin/
+│   │       ├── layout.tsx           # Layout del panel lateral (Desktop/Mobile)
+│   │       ├── dashboard/           # Métricas del día
+│   │       ├── catalog/             # Gestión de categorías y productos
+│   │       └── orders/              # Tablero Kanban en tiempo real
+│   └── auth/                        # Rutas de Login/Registro/Password Reset
 │
-├── shared/                      # Componentes reutilizables
-│   ├── components/              # Button, Card, Modal, Toast, etc.
-│   ├── pipes/                   # CurrencyFormat, TimeAgo
-│   └── directives/              # LazyImage, Ripple
+├── components/                      # Capa de componentes visuales
+│   ├── ui/                          # Componentes base de shadcn/ui (Radix)
+│   ├── shared/                      # Custom components agnósticos (Buttons, Modals)
+│   ├── store/                       # Componentes específicos del Storefront (Cart, Search)
+│   └── admin/                       # Componentes del panel (MetricCards, KanbanColumn)
 │
-├── features/                    # Módulos de negocio
-│   ├── store-front/             # Tienda pública
-│   │   ├── pages/               # Home, Category, ProductDetail, Cart, Checkout
-│   │   ├── components/          # ProductCard, CategoryGrid, CartDrawer
-│   │   └── services/            # CartService, CheckoutService
-│   │
-│   ├── admin/                   # Panel administrador
-│   │   ├── layout/              # AdminLayout, Sidebar, Topbar
-│   │   ├── pages/               # Dashboard, Catalog, Orders, Settings
-│   │   └── components/          # OrderCard, MetricCard, KanbanColumn
-│   │
-│   └── auth/                    # Autenticación
-│       ├── login/
-│       └── register/
-│
-├── app.routes.ts                # Configuración de rutas
-└── app.config.ts                # Configuración de la app
+├── lib/                             # Capa lógica core
+│   ├── api/                         # Cliente Axios e integración de endpoints
+│   ├── hooks/                       # Custom hooks globales (useWindowSize, etc.)
+│   ├── stores/                      # Estado global del cliente con Zustand
+│   ├── utils/                       # Utilidades generales (cn, formatting)
+│   └── providers/                   # Contexts: React Query Client, ThemeProvider
 ```
 
 ### 3.2 Gestión de Estado
 
-**Estrategia**: Angular Signals + Injectable Services
+Se utiliza una estrategia dual altamente desacoplada:
 
-No se usa NgRx Store para mantener simplicidad en el MVP. El estado se gestiona con:
+1. **Estado del Servidor (Server State)**: **TanStack Query (React Query v5)**.
+   - Utilizado para todo lo que provenga de una petición HTTP (listado de productos, categorías, pedidos).
+   - Maneja cacheo, revalidación automática ante eventos de WebSocket, optimistic updates e invalidación reactiva.
 
-1. **Signals para estado reactivo**:
-```typescript
-export class CartService {
-  private _items = signal<CartItem[]>([]);
-  readonly items = this._items.asReadonly();
-  readonly total = computed(() => 
-    this._items().reduce((sum, i) => sum + i.price * i.qty, 0)
+2. **Estado del Cliente (Client UI State)**: **Zustand v5**.
+   - Se utiliza para estado 100% local que no requiere persistir en BD inmediatamente o que cruza pantallas (ej. el Carrito de compras del usuario, el Drawer colapsable de navegación).
+   - Cuenta con middleware persistencia en LocalStorage para retener el carrito.
+
+### 3.3 Paradigma de Componentes (RSC & RCC)
+
+- **React Server Components (RSC) por defecto**: Todas las páginas y layouts cargan la data pesada (ej. metadatos del comercio para prevenir FOUC) directamente desde el servidor, mejorando SEO y TTI.
+- **React Client Components (RCC) dinámicos**: Se marcan explícitamente con `"use client"` solo aquellos componentes que requieren hooks de React (`useState`, `useEffect`), APIs del browser, o librerías interactivas (Zustand, Vaul).
+
+---
+
+## 4. Patrones de Diseño Claves
+
+### 4.1 Data Fetching y SSR Anti-FOUC (Frontend)
+El tema dinámico (colores de marca) se resuelve en el `layout.tsx` del grupo `[slug]` en el servidor, inyectando variables CSS antes de enviar el HTML inicial al cliente para evitar parpadeos visuales:
+
+```tsx
+// app/(store)/[slug]/layout.tsx
+export default async function StoreLayout({ params, children }: LayoutProps) {
+  const tenantTheme = await getTenantTheme(params.slug); // Fetch directo de API/BD en Server Side
+  
+  return (
+    <div style={{ '--color-primary': tenantTheme.primaryColor } as React.CSSProperties}>
+      {children}
+    </div>
   );
 }
 ```
 
-2. **Services con Signals para estado global**:
-- `AuthService`: Usuario autenticado, tokens
-- `CartService`: Items del carrito, total
-- `StoreService`: Datos del tenant activo
-- `OrdersService`: Pedidos + WebSocket
+### 4.2 React Hook Form + Zod (Formularios)
+Validación estructurada e inferencia de tipos para robustez en validaciones complejas (ej. creación de variantes de producto):
 
-3. **LocalStorage para persistencia**:
-- Carrito del cliente
-- Preferencias de UI
-- Borradores de formularios
-
-### 3.3 Patrones de Componentes
-
-**Todos los componentes son Standalone**:
-
-```typescript
-@Component({
-  selector: 'app-product-card',
-  standalone: true,
-  imports: [CommonModule, RouterLink, CurrencyFormatPipe],
-  templateUrl: './product-card.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ProductCardComponent {
-  @Input({ required: true }) product!: Product;
-  @Output() addToCart = new EventEmitter<Product>();
-}
+```tsx
+const productSchema = z.object({
+  name: z.string().min(3, "Mínimo 3 letras"),
+  price: z.number().positive("Debe ser un precio real"),
+});
+// React Hook Form utiliza el resolver para tipar y validar automáticamente
 ```
 
-**Control Flow moderno** (@if, @for):
+### 4.3 Conexión WebSocket Directa
+El frontend se conecta al WebSocket Gateway de NestJS directamente desde un Client Component (usando React Query para mutar el cache local cuando entra un pedido nuevo):
 
-```typescript
-@for (product of products(); track product.id) {
-  <app-product-card [product]="product" />
-} @empty {
-  <app-empty-state message="No hay productos" />
-}
+```tsx
+// Un hook en lib/hooks/useOrdersWebSocket.ts escucha el evento
+socket.on('order:new', (newOrder) => {
+  queryClient.invalidateQueries({ queryKey: ['orders'] });
+  playOrderSound();
+});
 ```
 
-## 4. Patrones Clave
+---
 
-### 4.1 Repository Pattern (Backend)
-Abstracción del acceso a datos mediante TypeORM repositories:
+## 5. Decisiones Arquitectónicas Consolidadas
 
-```typescript
-@Injectable()
-export class CatalogService {
-  constructor(
-    @InjectRepository(Product)
-    private productRepository: Repository<Product>
-  ) {}
+### 5.1 Next.js 15 vs Next.js 14
+**Decisión**: Next.js 15.
+**Justificación**: Ofrece caching por defecto más intuitivo, compatibilidad nativa con las APIs estables de React 19, y soporte mejorado para bundlers modernos como Turbopack en desarrollo.
 
-  async findAll(tenantId: string): Promise<Product[]> {
-    return this.productRepository.find({
-      where: { tenantId, isActive: true },
-      order: { order: 'ASC' }
-    });
-  }
-}
-```
+### 5.2 Tailwind CSS v4 vs SCSS
+**Decisión**: Tailwind CSS v4.
+**Justificación**: El nuevo motor "LightningCSS" provee compilación en tiempo real extremadamente veloz, variables CSS nativas más potentes y elimina por completo el boilerplate del diseño modular.
 
-### 4.2 DTO Pattern (Backend)
-Validación y transformación de datos de entrada:
+### 5.3 Zustand vs Redux/Context
+**Decisión**: Zustand.
+**Justificación**: Es sustancialmente más ligero, no requiere wrappers a nivel del App Router (previniendo renderizados de cliente innecesarios en RSC) y su sintaxis reduce el boilerplate drásticamente.
 
-```typescript
-export class CreateProductDto {
-  @IsString()
-  @IsNotEmpty()
-  name: string;
+### 5.4 Vaul para Mobile-First
+**Decisión**: Vaul Drawer.
+**Justificación**: Garantiza una sensación nativa (físicas de drag y cierre al deslizar hacia abajo) en mobile, algo crítico para superar la UX de competidores heredados. En desktop, se adapta visualmente a Dialog clásico vía shadcn/ui.
 
-  @IsNumber()
-  @Min(0)
-  price: number;
-
-  @IsUUID()
-  categoryId: string;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => OptionGroupDto)
-  optionGroups: OptionGroupDto[];
-}
-```
-
-### 4.3 Guard Pattern (Frontend + Backend)
-Protección de rutas y endpoints:
-
-```typescript
-// Frontend
-export const authGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-  
-  if (authService.isAuthenticated()) {
-    return true;
-  }
-  return router.createUrlTree(['/auth/login']);
-};
-
-// Backend
-@UseGuards(JwtAuthGuard, TenantGuard)
-@Get('products')
-async getProducts(@TenantId() tenantId: string) {
-  return this.catalogService.findAll(tenantId);
-}
-```
-
-### 4.4 Interceptor Pattern (Frontend)
-Manejo centralizado de requests:
-
-```typescript
-export class AuthInterceptor implements HttpInterceptor {
-  intercept(req: HttpRequest<any>, next: HttpHandler) {
-    const token = this.authService.getAccessToken();
-    if (token) {
-      req = req.clone({
-        setHeaders: { Authorization: `Bearer ${token}` }
-      });
-    }
-    return next.handle(req);
-  }
-}
-```
-
-### 4.5 WebSocket Pattern
-Comunicación en tiempo real para pedidos:
-
-```typescript
-// Backend Gateway
-@WebSocketGateway()
-export class OrdersGateway {
-  @WebSocketServer()
-  server: Server;
-
-  notifyNewOrder(tenantId: string, order: Order) {
-    this.server.to(`tenant:${tenantId}`).emit('order:new', order);
-  }
-}
-
-// Frontend Service
-export class OrdersService {
-  constructor(private socket: Socket) {
-    this.socket.on('order:new', (order) => {
-      this.playNotificationSound();
-      this.showToast('Nuevo pedido recibido');
-    });
-  }
-}
-```
-
-## 5. Decisiones Arquitectónicas Clave
-
-### 5.1 Monolito Modular vs Microservicios
-**Decisión**: Monolito modular para MVP
-**Razón**: 
-- Desarrollo más rápido
-- Menor complejidad operacional
-- Transacciones más simples
-- Preparado para evolucionar a microservicios (módulos independientes)
-
-### 5.2 REST + WebSocket vs GraphQL
-**Decisión**: REST para CRUD + WebSocket para tiempo real
-**Razón**:
-- REST es más simple y conocido
-- WebSocket solo donde se necesita (pedidos en tiempo real)
-- GraphQL agrega complejidad innecesaria para el MVP
-
-### 5.3 Multi-tenant Row-Level vs Schema-Level
-**Decisión**: Row-level con tenant_id
-**Razón**:
-- Más simple de implementar
-- Menor overhead operacional
-- Suficiente para el volumen esperado del MVP
-- Migraciones más simples
-
-### 5.4 Signals vs NgRx Store
-**Decisión**: Angular Signals + Services
-**Razón**:
-- API nativa de Angular 19
-- Menos boilerplate
-- Suficiente para la complejidad del MVP
-- Mejor performance
-
-## 6. Escalabilidad Futura
-
-El diseño actual permite evolucionar a:
-
-1. **Microservicios**: Los módulos de NestJS son independientes y pueden extraerse
-2. **Schema-level multi-tenancy**: Si el volumen lo requiere
-3. **CDN para assets**: Cloudinary ya provee esto
-4. **Cache distribuido**: Redis ya está en la arquitectura
-5. **Load balancing**: Docker permite escalar horizontalmente

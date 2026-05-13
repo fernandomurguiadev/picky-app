@@ -365,10 +365,14 @@ http {
             access_log off;
         }
 
-        # Frontend (Angular)
+        # Frontend (Next.js Proxy o Static Export)
         location / {
-            root /usr/share/nginx/html;
-            try_files $uri $uri/ /index.html;
+            proxy_pass http://frontend:3000; // O apuntar al build estático
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
         }
     }
 }

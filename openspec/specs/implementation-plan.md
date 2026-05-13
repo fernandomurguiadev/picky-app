@@ -5,10 +5,10 @@ Este documento desglosa la estrategia de ejecución secuencial para el desarroll
 ## 🟢 Fase 0: Cimientos Técnicos (Setup)
 **Objetivo:** Establecer la infraestructura base del proyecto.
 
-- [ ] **F0.1**: Inicializar repositorio Monorepo (Nx o Turborepo) o estructura base NestJS + Angular.
+- [ ] **F0.1**: Inicializar repositorio Monorepo físico con estructura limpia `api/` (NestJS) y `app/` (Next.js 15 App Router).
 - [ ] **F0.2**: Configurar Docker Compose (PostgreSQL, Backend, Frontend opcional).
-- [ ] **F0.3**: Configurar Estilos Globales (SCSS, Variables CSS, Breakpoints).
-- [ ] **F0.4**: Implementar componentes UI base (Button, Card, Input, Modal).
+- [ ] **F0.3**: Configurar Estilos Globales (Tailwind CSS v4, `globals.css`).
+- [ ] **F0.4**: Implementar componentes UI base (shadcn/ui + Shared Buttons, Modals).
 
 ---
 

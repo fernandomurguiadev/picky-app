@@ -48,16 +48,23 @@ export interface Product {
 }
 ```
 
-## 4. Especificaciones Técnicas (Angular 19)
+## 4. Especificaciones Técnicas (Next.js 15)
 
-### Componentes Clave
-- `CategoriesListComponent`: Gestión visual de categorías.
-- `ProductFormComponent`: Formulario reactivo completo para productos.
-- `OptionGroupEditorComponent`: Editor dinámico de variantes.
+### Arquitectura de Rutas (`app/`)
+- `(admin)/dashboard/categories/page.tsx`: Listado visual interactivo de categorías con dnd-kit (RCC).
+- `(admin)/dashboard/products/page.tsx`: Datatable avanzado de shadcn/ui con server filtering (RSC/RCC).
+- `(admin)/dashboard/products/new/page.tsx`: Formulario de creación con React Hook Form + Zod.
 
-### Servicios
-- `CatalogService`: CRUD de categorías y productos.
-- `UploadService`: Gestión de subida de imágenes a Cloudinary/S3.
+### Componentes de Interfaz (shadcn/ui)
+- `CategoryGrid`: Reordenamiento mediante arrastre usando **dnd-kit** (RCC).
+- `ProductForm`: Formulario persistido localmente ante pérdida de conexión usando Zod y control de inputs del UI kit (RCC).
+- `VariantEditor`: Editor de fields dinámicos (`useFieldArray` de React Hook Form).
+
+### Data Fetching y Mutaciones (TanStack Query)
+- `useCategories()`: Hook para query con refetch automático en mutaciones.
+- `useUpsertProduct()`: Hook de mutación que invalida `['products']` al completar el guardado de manera exitosa.
+- `UploadWidget`: Integración cliente/servidor para upload directo firmado a S3/Cloudinary.
+
 
 ## 5. Criterios de Aceptación
 - CA-001: El administrador puede crear una categoría con imagen.
