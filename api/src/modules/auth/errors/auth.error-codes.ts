@@ -1,0 +1,4 @@
+export const AuthErrorCodes = {
+  SLUG_ALREADY_IN_USE: 'AUTH.SLUG_ALREADY_IN_USE',
+  INVALID_RESET_TOKEN: 'AUTH.INVALID_RESET_TOKEN',
+} as const;

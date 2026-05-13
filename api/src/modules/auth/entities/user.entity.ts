@@ -27,13 +27,13 @@ export class User {
   @Column({ type: 'varchar', length: 255 })
   email!: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, select: false })
   passwordHash!: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.ADMIN })
   role!: UserRole;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, select: false })
   refreshToken!: string | null;
 
   @Column({ type: 'varchar', length: 255, nullable: true })

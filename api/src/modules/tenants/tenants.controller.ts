@@ -40,12 +40,11 @@ export class TenantsController {
   @Patch('me/status')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  async toggleStatus(
+  toggleStatus(
     @TenantId() tenantId: string,
     @Body() dto: ToggleStoreStatusDto,
   ) {
-    const result = await this.tenantsService.toggleStoreStatus(tenantId, dto.isManualOpen);
-    return { data: result };
+    return this.tenantsService.toggleStoreStatus(tenantId, dto.isManualOpen);
   }
 
   // ─── Rutas públicas ──────────────────────────────────────────────────────

@@ -14,7 +14,7 @@ import type { Order } from './entities/order.entity.js';
 import type { StatusHistoryEntry } from './entities/order.entity.js';
 
 @WebSocketGateway({
-  cors: { origin: '*' }, // Se valida por tenant en handleConnection
+  cors: { origin: process.env['FRONTEND_URL'] ?? false },
   namespace: '/',
 })
 export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {

@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -18,6 +17,8 @@ import type { RegisterDto } from './dto/register.dto.js';
 import type { LoginDto } from './dto/login.dto.js';
 import type { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import type { ResetPasswordDto } from './dto/reset-password.dto.js';
+import { AuthErrors } from './errors/auth.errors.js';
+import { toBusinessException } from '../../common/errors/business.exception.js';
 
 @Injectable()
 export class AuthService {
@@ -36,7 +37,7 @@ export class AuthService {
   async register(dto: RegisterDto): Promise<{ access_token: string }> {
     const existingTenant = await this.tenantRepo.findOne({ where: { slug: dto.slug } });
     if (existingTenant) {
-      throw new BadRequestException('El slug ya está en uso.');
+      throw toBusinessException(AuthErrors.slugInUse(dto.slug));
     }
 
     const bcryptRounds = this.configService.get<number>('BCRYPT_ROUNDS') ?? 12;
@@ -82,7 +83,16 @@ export class AuthService {
   async login(dto: LoginDto, response: Response): Promise<{ access_token: string }> {
     const user = await this.userRepo.findOne({
       where: { email: dto.email.toLowerCase() },
-      relations: ['tenant'],
+      relations: { tenant: true },
+      select: {
+        id: true,
+        tenantId: true,
+        email: true,
+        passwordHash: true,
+        role: true,
+        isActive: true,
+        tenant: { isActive: true },
+      },
     });
 
     const isValid = user ? await bcrypt.compare(dto.password, user.passwordHash) : false;
@@ -96,8 +106,9 @@ export class AuthService {
     }
 
     const refreshToken = crypto.randomUUID();
-    user.refreshToken = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    await this.userRepo.save(user);
+    await this.userRepo.update(user.id, {
+      refreshToken: crypto.createHash('sha256').update(refreshToken).digest('hex'),
+    });
 
     const isProduction = this.configService.get('NODE_ENV') === 'production';
     response.cookie('refresh-token', refreshToken, {
@@ -123,8 +134,9 @@ export class AuthService {
 
     // Rotar refresh token
     const newRaw = crypto.randomUUID();
-    matchedUser.refreshToken = crypto.createHash('sha256').update(newRaw).digest('hex');
-    await this.userRepo.save(matchedUser);
+    await this.userRepo.update(matchedUser.id, {
+      refreshToken: crypto.createHash('sha256').update(newRaw).digest('hex'),
+    });
 
     const isProduction = this.configService.get('NODE_ENV') === 'production';
     response.cookie('refresh-token', newRaw, {
@@ -152,9 +164,10 @@ export class AuthService {
     }
 
     const rawToken = crypto.randomBytes(32).toString('hex');
-    user.resetPasswordToken = crypto.createHash('sha256').update(rawToken).digest('hex');
-    user.resetPasswordExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
-    await this.userRepo.save(user);
+    await this.userRepo.update(user.id, {
+      resetPasswordToken: crypto.createHash('sha256').update(rawToken).digest('hex'),
+      resetPasswordExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    });
 
     // TODO: enviar email con link de reset usando rawToken
     // await this.emailService.sendResetPassword(user.email, rawToken);
@@ -172,14 +185,15 @@ export class AuthService {
     });
 
     if (!matchedUser) {
-      throw new BadRequestException('Token de reset inválido o expirado.');
+      throw toBusinessException(AuthErrors.invalidResetToken());
     }
 
     const bcryptRounds = this.configService.get<number>('BCRYPT_ROUNDS') ?? 12;
-    matchedUser.passwordHash = await bcrypt.hash(dto.newPassword, bcryptRounds);
-    matchedUser.resetPasswordToken = null;
-    matchedUser.resetPasswordExpiresAt = null;
-    await this.userRepo.save(matchedUser);
+    await this.userRepo.update(matchedUser.id, {
+      passwordHash: await bcrypt.hash(dto.newPassword, bcryptRounds),
+      resetPasswordToken: null,
+      resetPasswordExpiresAt: null,
+    });
 
     return { message: 'Contraseña actualizada.' };
   }

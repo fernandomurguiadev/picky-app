@@ -159,12 +159,13 @@ export class CatalogService {
   }
 
   async searchProducts(slug: string, q: string): Promise<Product[]> {
+    const safeQ = q.slice(0, 100);
     const tenant = await this.resolveTenantBySlug(slug);
     return this.productRepo
       .createQueryBuilder('p')
       .where('p.tenantId = :tenantId', { tenantId: tenant.id })
       .andWhere('p.isActive = true')
-      .andWhere('(p.name ILIKE :q OR p.description ILIKE :q)', { q: `%${q}%` })
+      .andWhere('(p.name ILIKE :q OR p.description ILIKE :q)', { q: `%${safeQ}%` })
       .leftJoinAndSelect('p.optionGroups', 'og')
       .leftJoinAndSelect('og.items', 'oi')
       .orderBy('p.name', 'ASC')
