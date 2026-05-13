@@ -18,6 +18,11 @@ export const envSchema = z.object({
   JWT_PUBLIC_KEY: z.string().min(1),
   JWT_ACCESS_EXPIRATION: z.string().default('15m'),
   JWT_REFRESH_EXPIRATION: z.string().default('7d'),
+
+  // Cloudinary (requeridas para el módulo de upload)
+  CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
+  CLOUDINARY_API_KEY: z.string().min(1).optional(),
+  CLOUDINARY_API_SECRET: z.string().min(1).optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
