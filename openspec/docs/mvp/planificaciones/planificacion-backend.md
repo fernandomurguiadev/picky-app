@@ -1,7 +1,7 @@
 # Planificación Backend — NestJS API
 ## Plataforma E-Commerce de Proximidad · MVP
 
-> **Stack:** NestJS 10 · TypeORM · PostgreSQL 16 · Socket.io · JWT (RS256)
+> **Stack:** NestJS 11 · TypeORM · PostgreSQL 16 · Socket.io · JWT (RS256)
 > **Directorio de trabajo:** `api/`
 > **Referencia técnica:** [03-backend-api.md](./03-backend-api.md)
 > **Convenciones:** ver [arquitectura.md](../specs/architecture.md) y [conventions.md](../specs/api/conventions.md)
@@ -12,16 +12,16 @@
 
 | Item | Estado |
 |------|--------|
-| Proyecto NestJS inicializado | ✅ Scaffolded (esqueleto base) |
-| Módulos de dominio | ❌ Por implementar |
-| Base de datos / migraciones | ❌ Por implementar |
-| Docker configurado | ❌ Por implementar |
+| Proyecto NestJS inicializado | ✅ Completado |
+| Módulos de dominio | ✅ Completado (FASE 0–8) |
+| Base de datos / migraciones | ⚠️ Entidades creadas — pendiente ejecutar `migration:generate` |
+| Docker configurado | ✅ Completado |
 
 ---
 
 ## Fases de implementación
 
-### FASE 0 — Setup e infraestructura base
+### ✅ FASE 0 — Setup e infraestructura base
 
 **Objetivo:** Proyecto levantado con Docker, TypeScript strict y configuración de entorno.
 
@@ -37,7 +37,7 @@
 
 ---
 
-### FASE 1 — Autenticación y entidades base
+### ✅ FASE 1 — Autenticación y entidades base
 
 **Objetivo:** Auth completo (registro, login, JWT, refresh) + todas las entidades TypeORM con sus migraciones.
 
@@ -53,7 +53,7 @@
 | B1.6 | Crear entidades `OptionGroup` y `OptionItem` con FK a `product_id` | `src/modules/catalog/entities/option-group.entity.ts` | Migración genera tablas con FK correctas |
 | B1.7 | Crear entidad `Order` con `tenant_id`, `status` enum, `deliveryMethod`, `paymentMethod`, campos de totales en centavos | `src/modules/orders/entities/order.entity.ts` | Migración genera tabla `orders` |
 | B1.8 | Crear entidad `OrderItem` con FK a `order_id`, `productId`, `selectedOptions` JSONB, `unitPrice` integer | `src/modules/orders/entities/order-item.entity.ts` | Migración genera tabla `order_items` |
-| B1.9 | **Generar y verificar todas las migraciones** | — | `npm run migration:generate -- --name=InitialSchema` · Ejecuta sin errores |
+| B1.9 | **Generar y verificar todas las migraciones** | — | `npm run migration:generate -- --name=InitialSchema` · Ejecuta sin errores | ⚠️ Pendiente ejecutar |
 
 > ⚠️ **No crear migraciones manualmente.** Avisar al desarrollador para ejecutar `npm run migration:generate -- --name=<Nombre>`.
 
@@ -72,7 +72,7 @@
 
 ---
 
-### FASE 2 — Módulo Catálogo
+### ✅ FASE 2 — Módulo Catálogo
 
 **Objetivo:** CRUD completo de categorías y productos con opciones. Multi-tenant con RLS via `tenant_id`.
 
@@ -95,7 +95,7 @@
 
 ---
 
-### FASE 3 — Módulo Tenants / Configuración de Tienda
+### ✅ FASE 3 — Módulo Tenants / Configuración de Tienda
 
 **Objetivo:** Endpoints de configuración de tienda (info, horarios, entrega, pagos, tema) + endpoint crítico del middleware.
 
@@ -107,10 +107,11 @@
 | B3.4 | `GET /stores/me/settings` — toda la configuración del comercio autenticado | `tenants.controller.ts` | Requiere JWT. Retorna `StoreSettings` completo |
 | B3.5 | `PATCH /stores/me` — actualizar configuración (cualquier sección: info, horarios, entrega, pagos, tema) | `tenants.service.ts` | Actualización parcial con `DeepPartial`. Valida `DaySchedule` schema. |
 | B3.6 | Validar schema `DaySchedule` en el DTO con class-validator custom | `update-store-settings.dto.ts` | Turnos sin overlap. Hours en formato HH:mm. |
+| B3.7 | `PATCH /stores/me/status` — override manual de apertura/cierre (`isManualOpen: true/false/null`) | `tenants.controller.ts`, `toggle-store-status.dto.ts` | `null` vuelve al horario automático. Protegido con `JwtAuthGuard`. |
 
 ---
 
-### FASE 4 — Módulo Upload
+### ✅ FASE 4 — Módulo Upload
 
 **Objetivo:** Upload de imágenes a Cloudinary/S3 con validación de tipo y tamaño.
 
@@ -122,7 +123,7 @@
 
 ---
 
-### FASE 5 — Módulo Órdenes (REST)
+### ✅ FASE 5 — Módulo Órdenes (REST)
 
 **Objetivo:** Creación de pedidos desde tienda pública + gestión desde admin.
 
@@ -138,7 +139,7 @@
 
 ---
 
-### FASE 6 — WebSocket Gateway
+### ✅ FASE 6 — WebSocket Gateway
 
 **Objetivo:** Gateway de Socket.io para pedidos en tiempo real. Cliente Next.js se conecta DIRECTAMENTE a NestJS.
 
@@ -153,7 +154,7 @@
 
 ---
 
-### FASE 7 — Analytics
+### ✅ FASE 7 — Analytics
 
 **Objetivo:** Métricas para el dashboard del admin.
 
@@ -164,18 +165,19 @@
 
 ---
 
-### FASE 8 — QA y Hardening
+### ⚠️ FASE 8 — QA y Hardening
 
 **Objetivo:** Revisión de seguridad, performance y calidad antes de demo.
 
-| # | Tarea | Criterio de done |
-|---|-------|-----------------|
-| B8.1 | Audit de seguridad: verificar que ningún endpoint filtra datos de otros tenants | Prueba manual con 2 tenants distintos: ninguno puede leer datos del otro |
-| B8.2 | Verificar que todos los montos monetarios son `integer` (centavos) | Búsqueda en código: ningún campo `price` usa `float`/`decimal` |
-| B8.3 | Rate limiting en endpoints de auth | `POST /auth/login` → 10 req/min por IP. 429 si supera. |
-| B8.4 | Ejecutar `npm run typecheck` sin errores | 0 errores TypeScript |
-| B8.5 | Revisar que `synchronize: false` en toda la config TypeORM | Búsqueda en código: `synchronize: false` en todos los configs |
-| B8.6 | Test de carga WebSocket: 10 clientes concurrentes en el mismo tenant | Todos reciben el evento `order:new` en < 100ms |
+| # | Tarea | Criterio de done | Estado |
+|---|-------|-----------------|--------|
+| B8.1 | Audit de seguridad: verificar que ningún endpoint filtra datos de otros tenants | Prueba manual con 2 tenants distintos: ninguno puede leer datos del otro | ⚠️ Pendiente prueba manual |
+| B8.2 | Verificar que todos los montos monetarios son `integer` (centavos) | Búsqueda en código: ningún campo `price` usa `float`/`decimal` | ✅ Implementado |
+| B8.3 | Rate limiting en endpoints de auth | `POST /auth/login` → 10 req/min por IP. 429 si supera. | ❌ No implementado |
+| B8.4 | Ejecutar `npm run typecheck` sin errores | 0 errores TypeScript | ✅ Sin errores |
+| B8.5 | Revisar que `synchronize: false` en toda la config TypeORM | Búsqueda en código: `synchronize: false` en todos los configs | ✅ Verificado |
+| B8.6 | Test de carga WebSocket: 10 clientes concurrentes en el mismo tenant | Todos reciben el evento `order:new` en < 100ms | ⚠️ Pendiente prueba |
+| B8.7 | Code review de seguridad: `select:false` en `passwordHash`/`refreshToken`, CORS WS desde `FRONTEND_URL`, `auth.errors.ts` tipado, `searchProducts` con límite DoS | Commit `47fa4d7` · `npm run typecheck` sin errores | ✅ Completado |
 
 ---
 
@@ -191,16 +193,18 @@ F0 → F1-A → F1-B → F2 → F3 → F5 → F6 → F7 → F8
 
 ## Checklist de seguridad pre-entrega
 
-- [ ] JWT: algoritmo RS256, no HS256
-- [ ] Refresh token: httpOnly cookie, `SameSite=Strict`, `Secure=true`
-- [ ] `tenant_id` como primer campo en todos los índices compuestos multi-tenant
-- [ ] Toda entidad multi-tenant valida ownership antes de operar
-- [ ] Passwords hasheados con bcrypt cost >= 12
-- [ ] Upload: validar tipo MIME server-side (no confiar en extensión del archivo)
+- [x] JWT: algoritmo RS256, no HS256
+- [x] Refresh token: httpOnly cookie, `SameSite=Strict`, `Secure=true`
+- [x] `tenant_id` como primer campo en todos los índices compuestos multi-tenant
+- [x] Toda entidad multi-tenant valida ownership antes de operar
+- [x] Passwords hasheados con bcrypt cost >= 12
+- [x] Upload: validar tipo MIME server-side (no confiar en extensión del archivo)
 - [ ] Rate limiting en endpoints de auth
-- [ ] `synchronize: false` en TypeORM
-- [ ] Variables sensibles en variables de entorno, nunca hardcodeadas
-- [ ] Ningún `throw new Error()` suelto — usar `BusinessException`
+- [x] `synchronize: false` en TypeORM
+- [x] Variables sensibles en variables de entorno, nunca hardcodeadas
+- [x] Ningún `throw new Error()` suelto — usar `BusinessException`
+- [x] CORS WebSocket restringido a `FRONTEND_URL` (no `*`)
+- [x] Campos sensibles (`passwordHash`, `refreshToken`) con `select: false` en entidad `User`
 
 ---
 
