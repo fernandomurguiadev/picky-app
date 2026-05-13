@@ -1,0 +1,23 @@
+name: api-fase-6-websocket
+project_id: api
+version: "1.0.0"
+status: active
+created_at: "2026-05-13"
+scope:
+  - api/src/modules/orders/orders.gateway.ts
+  - api/src/modules/orders/orders.module.ts
+  - api/src/modules/orders/orders.service.ts
+description: >
+  WebSocket Gateway con Socket.io para pedidos en tiempo real.
+  Clientes Next.js se conectan con JWT en el handshake. Rooms por tenant.
+  OrdersService emite order:new y order:status-changed al room correspondiente.
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: active
+    path: tasks.md
