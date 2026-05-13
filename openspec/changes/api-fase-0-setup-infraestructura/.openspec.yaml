@@ -1,0 +1,41 @@
+name: api-fase-0-setup-infraestructura
+project_id: api
+version: "1.0.0"
+status: ready
+created_at: "2026-05-13"
+scope:
+  - api/tsconfig.json
+  - api/tsconfig.build.json
+  - api/docker-compose.yml
+  - api/src/config/database.config.ts
+  - api/src/config/env.config.ts
+  - api/.env.example
+  - api/src/common/filters/http-exception.filter.ts
+  - api/src/common/interceptors/transform.interceptor.ts
+  - api/src/common/interceptors/tenant-context.interceptor.ts
+  - api/src/common/decorators/tenant-id.decorator.ts
+  - api/src/common/decorators/current-user.decorator.ts
+  - api/src/common/guards/jwt-auth.guard.ts
+  - api/src/common/guards/roles.guard.ts
+  - api/src/common/guards/tenant.guard.ts
+  - api/src/app.module.ts
+description: >
+  Setup completo del backend NestJS para el MVP de PickyApp.
+  Cubre infraestructura base: TypeScript strict, Docker + PostgreSQL 16,
+  TypeORM configurado, gestión de variables de entorno con Zod,
+  y capa common/ con filtros, interceptors, guards y decorators.
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: done
+    path: tasks.md
+apply:
+  requires:
+    - proposal
+    - design
+    - tasks
