@@ -12,6 +12,7 @@ import type { CreateOrderAdminDto } from './dto/create-order-admin.dto.js';
 import type { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
 import type { UpdateOrderNotesDto } from './dto/update-order-notes.dto.js';
 import type { OrdersQueryDto } from './dto/orders-query.dto.js';
+import type { OrdersGateway } from './orders.gateway.js';
 
 const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   [OrderStatus.PENDING]:   [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
@@ -32,6 +33,7 @@ export class OrdersService {
     @InjectRepository(StoreSettings)
     private readonly settingsRepo: Repository<StoreSettings>,
     private readonly dataSource: DataSource,
+    private readonly ordersGateway: OrdersGateway,
   ) {}
 
   // ─── Creación pública (tienda) ────────────────────────────────────────────
@@ -111,6 +113,7 @@ export class OrdersService {
       await queryRunner.commitTransaction();
 
       order.items = items as unknown[];
+      this.ordersGateway.emitOrderNew(order.tenantId, order);
       return order;
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -182,7 +185,13 @@ export class OrdersService {
 
     order.status = dto.status;
     order.statusHistory = [...order.statusHistory, historyEntry];
-    return this.orderRepo.save(order);
+    const saved = await this.orderRepo.save(order);
+    this.ordersGateway.emitOrderStatusChanged(saved.tenantId, {
+      orderId: saved.id,
+      newStatus: saved.status,
+      statusHistory: saved.statusHistory,
+    });
+    return saved;
   }
 
   async createAdminOrder(tenantId: string, dto: CreateOrderAdminDto): Promise<Order> {

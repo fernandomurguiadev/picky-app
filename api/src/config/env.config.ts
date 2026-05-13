@@ -19,6 +19,9 @@ export const envSchema = z.object({
   JWT_ACCESS_EXPIRATION: z.string().default('15m'),
   JWT_REFRESH_EXPIRATION: z.string().default('7d'),
 
+  // Frontend URL (requerida para WebSocket CORS)
+  FRONTEND_URL: z.string().url().optional(),
+
   // Cloudinary (requeridas para el módulo de upload)
   CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
   CLOUDINARY_API_KEY: z.string().min(1).optional(),
