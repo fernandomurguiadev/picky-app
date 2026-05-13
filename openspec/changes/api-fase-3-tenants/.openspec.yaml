@@ -1,0 +1,25 @@
+name: api-fase-3-tenants
+project_id: api
+version: "1.0.0"
+status: done
+created_at: "2026-05-13"
+scope:
+  - api/src/modules/tenants/dto/day-schedule.dto.ts
+  - api/src/modules/tenants/dto/update-store-settings.dto.ts
+  - api/src/modules/tenants/tenants.service.ts
+  - api/src/modules/tenants/tenants.controller.ts
+  - api/src/modules/tenants/tenants.module.ts
+description: >
+  Módulo Tenants completo: endpoints públicos de tienda (tenant-id, datos públicos,
+  estado abierto/cerrado) y configuración autenticada (GET + PATCH).
+  Upsert de StoreSettings. Cálculo de horario con Intl.DateTimeFormat sin dependencias externas.
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: done
+    path: tasks.md
