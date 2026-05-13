@@ -345,9 +345,46 @@ chore(deps): update next to 15.1
 - [ ] Captura visual / grabación para cambios complejos de UI
 - [ ] Respetar convenciones RLS (Filtro `tenant_id` explícito en todas las consultas de dominio)
 
--   Usar etiquetas semánticas HTML
--   ARIA labels en iconos
--   Contraste mínimo 4.5:1
--   Navegación por teclado
--   Focus visible
--   Alt text en imágenes
+---
+
+## 6. Manejo de Errores y Resiliencia
+
+### 6.1 Backend (Exception Filters)
+- **No filtrar excepciones manualmente**: Usar los Exceptions Filters globales de NestJS (`@Catch`).
+- **Lanzar excepciones semánticas**: `NotFoundException`, `BadRequestException`, `UnauthorizedException`.
+- **Respuesta estandarizada**: Todas las respuestas de error deben seguir el formato:
+  ```json
+  {
+    "success": false,
+    "message": "Descripción amigable para el usuario",
+    "error": {
+      "code": "INVALID_CREDENTIALS",
+      "details": "Error detallado de validación (solo en desarrollo)"
+    }
+  }
+  ```
+
+### 6.2 Frontend (Axios Interceptors & Error Boundaries)
+- **Global Interceptors**: Axios interceptará respuestas `>= 400` para disparar Toasts globales ante caídas del servidor o fallos de red.
+- **Re-autenticación automática**: El interceptor interceptará el `401`, invocará el endpoint del BFF `/api/auth/refresh` para renovar la HttpOnly Cookie y reintentará la llamada original sin molestar al usuario.
+- **React Error Boundaries**: Cada grupo de rutas (`(store)`, `(admin)`) debe tener un archivo `error.tsx` para capturar caídas severas de componentes de forma asilada.
+
+---
+
+## 7. Variables de Entorno (Fail-Fast)
+
+Tanto en Backend como en Frontend, las variables de entorno **DEBEN validarse al inicio del proceso** para que la aplicación falle de inmediato si falta una configuración clave.
+
+- **En NestJS**: Configurar `@nestjs/config` usando un esquema Zod o Joi en `AppModule`.
+- **En Next.js**: Usar un validador ligero en el `src/env.mjs` o en el entrypoint del servidor.
+
+---
+
+## 8. Accesibilidad (A11y)
+
+Todos los desarrolladores deben cumplir con los siguientes estándares mínimos de inclusión:
+- **Semántica HTML**: Usar `<nav>`, `<main>`, `<header>`, `<footer>` y `<article>` en lugar de puros `<div>`.
+- **Aria Labels**: Obligatorio para iconos interactivos y botones sin texto visible (`aria-label`).
+- **Navegación por Teclado**: El `Tab` index debe fluir de forma natural, con `:focus-visible` altamente contrastado.
+- **Contraste**: Respetar la regla WCAG AA con un contraste mínimo de 4.5:1.
+- **Imágenes**: Todo `<img>` o `<Image>` de Next.js debe contar con un atributo `alt` descriptivo.

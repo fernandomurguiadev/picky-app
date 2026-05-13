@@ -1,10 +1,53 @@
-# ANÁLISIS FUNCIONAL & TÉCNICO MVP
+# ANÁLISIS FUNCIONAL & TÉCNICO MVP — Índice
 ## Plataforma E-Commerce de Proximidad
 **Para desarrollo por agente IA · Next.js 15 · Mobile-First · Latam**
 
 | Versión | Stack | Objetivo | Fecha |
 |---------|-------|----------|-------|
 | v2.0 | Next.js 15 + NestJS 10 | Demo-Ready MVP | May 2026 |
+
+> Este archivo es el **índice** del AF Técnico del MVP. El contenido fue descompuesto en archivos separados por origen/dominio dentro de `openspec/docs/mvp/`.
+
+---
+
+## Archivos del AF Técnico
+
+### 📌 Leer primero
+
+| Archivo | Contenido |
+|---------|-----------|
+| [mvp/00-contexto-producto.md](./mvp/00-contexto-producto.md) | **Briefing del producto:** qué es, usuarios, problema, Pedix, modelo de negocio, flujos, decisiones de arquitectura y su por qué, anti-patterns, vocabulario, variables de entorno |
+
+### Contexto y arquitectura técnica
+
+| Archivo | Contenido |
+|---------|-----------|
+| [mvp/00-contexto-y-stack.md](./mvp/00-contexto-y-stack.md) | Objetivos del MVP, módulos incluidos/excluidos, stack tecnológico completo |
+| [mvp/01-arquitectura-frontend.md](./mvp/01-arquitectura-frontend.md) | Estructura de carpetas Next.js, patrones RSC/Client, TanStack Query, Tailwind, WebSocket, Middleware, anti-FOUC |
+| [mvp/03-backend-api.md](./mvp/03-backend-api.md) | Estructura NestJS, todos los endpoints REST, WebSocket Gateway, estrategia multi-tenant |
+
+### Módulos funcionales
+
+| Archivo | Módulo | Rutas |
+|---------|--------|-------|
+| [mvp/modulos/mod-01-catalogo.md](./mvp/modulos/mod-01-catalogo.md) | MOD-01 Catálogo | `/admin/catalog/**` |
+| [mvp/modulos/mod-02-tienda-publica.md](./mvp/modulos/mod-02-tienda-publica.md) | MOD-02 Tienda Pública | `/[slug]/**` |
+| [mvp/modulos/mod-03-pedidos.md](./mvp/modulos/mod-03-pedidos.md) | MOD-03 Pedidos | `/admin/orders/**` |
+| [mvp/modulos/mod-04-configuracion.md](./mvp/modulos/mod-04-configuracion.md) | MOD-04 Configuración | `/admin/settings/**` |
+| [mvp/modulos/mod-05-panel-admin.md](./mvp/modulos/mod-05-panel-admin.md) | MOD-05 Panel Admin | `/admin/dashboard` |
+| [mvp/modulos/mod-06-autenticacion.md](./mvp/modulos/mod-06-autenticacion.md) | MOD-06 Auth | `/auth/**` |
+
+### Diseño, calidad y entrega
+
+| Archivo | Contenido |
+|---------|-----------|
+| [mvp/02-componentes-shared.md](./mvp/02-componentes-shared.md) | Todos los shared components, Pagination (nuevo), hooks y utils core |
+| [mvp/04-ux-ui-diseno.md](./mvp/04-ux-ui-diseno.md) | Principios mobile-first, animaciones, tipografía Tailwind |
+| [mvp/05-criterios-aceptacion.md](./mvp/05-criterios-aceptacion.md) | 18 criterios de aceptación + métricas de performance |
+| [mvp/06-plan-implementacion.md](./mvp/06-plan-implementacion.md) | 25 tareas en 8 fases ordenadas por dependencias |
+| [mvp/07-gaps-resueltos.md](./mvp/07-gaps-resueltos.md) | Tabla de gaps identificados en v1 y cómo fueron resueltos en v2 |
+
+---
 
 > ⚠️ **INSTRUCCIÓN PARA EL AGENTE DE DESARROLLO:**
 > Este documento es el contrato técnico completo del MVP. Cada módulo, vista, componente y funcionalidad debe implementarse exactamente como se especifica. Las secciones de arquitectura técnica son de cumplimiento obligatorio. No omitir ningún criterio de aceptación. Mobile-first es un requerimiento no negociable.

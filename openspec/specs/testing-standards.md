@@ -187,9 +187,13 @@ describe('Products API (e2e)', () => {
 {
   "scripts": {
     "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:e2e": "jest --config ./test/jest-e2e.## 3. Frontend (Next.js 15 + React 19)
+    "test:e2e": "jest --config ./test/jest-e2e.json"
+  }
+}
+
+---
+
+## 3. Frontend (Next.js 15 + React 19)
 
 ### 3.1 Tests Unitarios y de Componentes
 

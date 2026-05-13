@@ -39,10 +39,10 @@ Implementar la resolución de la ruta de archivado siguiendo este orden estricto
      - Duplicar `proposal.md` en cada destino para mantener el contexto macro.
      - Generar un `.openspec.yaml` específico para cada shard con su `project_id` correspondiente.
 
-2. **Resolución de Ruta (3 Niveles)**:
-   - **Nivel 1 (Configuración Explícita)**: Consultar el campo `archive_path` dentro del bloque del proyecto en `config.yaml`. Si existe, usarlo como destino.
-   - **Nivel 2 (Inferencia de Carpeta)**: Si no hay `archive_path`, pero existe un `path` para el proyecto, verificar si existe una subcarpeta `openspec/changes/archive` dentro de ese `path`. Si existe, usarla.
-   - **Nivel 3 (Consulta al Usuario)**: Si ninguno de los anteriores resuelve una ruta clara, **PREGUNTAR obligatoriamente** al usuario: "¿Dónde querés archivar este cambio?".
+2. **Resolución de Ruta (Modelo Centralizado)**:
+   - **Destino Único**: El destino final DEBE ser siempre dentro del directorio central `openspec/`.
+   - **Ruta por Scope**: Consultar `archive_path` del proyecto en `openspec/config.yaml` (ej. `openspec/changes/archive/api/`). 
+   - **Prohibición**: Nunca archivar documentos físicamente dentro de los directorios de código fuente (`/api/` o `/app/`). Todo el historial de especificaciones se mantiene centralizado en la raíz del monorepo para preservar el contexto global.
 
 ---
 
