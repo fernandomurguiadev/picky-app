@@ -19,5 +19,5 @@ artifacts:
     status: done
     path: design.md
   tasks:
-    status: active
+    status: done
     path: tasks.md

@@ -1,0 +1,27 @@
+name: api-fase-8-store-toggle
+project_id: api
+version: "1.0.0"
+status: active
+created_at: "2026-05-13"
+scope:
+  - api/src/modules/tenants/entities/store-settings.entity.ts
+  - api/src/modules/tenants/tenants.service.ts
+  - api/src/modules/tenants/tenants.controller.ts
+  - api/src/modules/tenants/dto/toggle-store-status.dto.ts
+  - api/src/migrations/
+description: >
+  Toggle manual de apertura/cierre de tienda. Agrega columna `isManualOpen`
+  (boolean nullable) a store_settings. null = seguir horario configurado,
+  true = forzar apertura, false = forzar cierre. Nuevo endpoint PATCH
+  /stores/me/status. Endpoint público GET /stores/:slug/status considera
+  override antes de calcular por horario.
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: active
+    path: tasks.md

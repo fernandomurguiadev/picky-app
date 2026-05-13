@@ -1,0 +1,26 @@
+name: api-fase-7-metrics
+project_id: api
+version: "1.0.0"
+status: active
+created_at: "2026-05-13"
+scope:
+  - api/src/modules/dashboard/dashboard.service.ts
+  - api/src/modules/dashboard/dashboard.controller.ts
+  - api/src/modules/dashboard/dashboard.module.ts
+  - api/src/modules/dashboard/dto/dashboard-metrics.dto.ts
+  - api/src/app.module.ts
+description: >
+  Módulo Dashboard con endpoint GET /admin/dashboard.
+  Retorna métricas del día del tenant autenticado: pedidos totales,
+  facturación, ticket promedio, pedidos pendientes, pedidos por hora (0-23)
+  y top 5 productos más pedidos.
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: active
+    path: tasks.md
