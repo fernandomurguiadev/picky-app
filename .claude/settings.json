@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node .ai/scripts/packet-manager.js *)",
+      "Bash(node .ai/scripts/bridge.js *)"
+    ]
+  }
+}

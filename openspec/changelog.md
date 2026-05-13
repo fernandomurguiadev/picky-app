@@ -1,4 +1,4 @@
-# Changelog - PickyApp
+﻿# Changelog - PickyApp
 
 Este documento es la bitácora inmutable de todos los cambios arquitectónicos y de especificación realizados en el proyecto. Es gestionado por el **Change Tracker Agent Agent**.
 
@@ -22,9 +22,9 @@ Este documento es la bitácora inmutable de todos los cambios arquitectónicos y
 
 ### 2026-03-09 03:00
 
-- **Tarea**: [KAN-28] Permisos por Rol y Casino
+- **Tarea**: [KAN-28] Permisos por Rol y Tenant
 - **Tipo de Cambio**: Sincronización y Planificación
-- **Descripción**: Obtención de la tarea KAN-28 desde Jira Cloud y generación del Master Plan técnico para el sistema de RBAC y aislamiento de casinos.
+- **Descripción**: Obtención de la tarea KAN-28 desde Jira Cloud y generación del Master Plan técnico para el sistema de RBAC y aislamiento de tenants.
 - **Motivo**: Establecer las bases de seguridad multi-tenant para prevenir la escalada de privilegios horizontal y vertical.
 - **Impacto**: Se crean archivos en `openspec/jira/` y `openspec/plans/`.
 - **Autor/Agente**: Gemini (actuando como Jira Agent & Tech Agent).

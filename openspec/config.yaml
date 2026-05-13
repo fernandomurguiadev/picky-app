@@ -1,27 +1,47 @@
 schema: spec-driven
 
 # Contexto global del proyecto PickyApp
-# Proporciona a la IA la base técnica y funcional para la creación de artefactos.
 context: |
-  Tech Stack:
-    - Frontend: Angular 19 (Standalone Components, Signals, Control Flow nativo).
-    - Backend: NestJS 10+ (TypeScript, Modular architecture).
-    - Database: PostgreSQL con TypeORM (Multi-tenant por tenant_id).
-    - Real-time: Socket.io para gestión de pedidos.
-    - Styles: SCSS + Angular Material 3 (Mobile-first absoluto, viewport 360px).
-    - Infrastructure: Docker + docker-compose.
-  
-  Convenciones y Estándares:
-    - Metodología: OpenSpec / SDD (Spec-Driven Development).
-    - Código: TypeScript estricto, Clean Code, Arquitectura por capas.
-    - API: RESTful JSON, envoltorio de respuesta estándar (Envelope).
-    - UX: Feedback inmediato (<100ms), Skeleton loaders obligatorios.
-    - Agentes: Coordinación vía Agente Orquestador y seguimiento por Change Tracker Agent.
+  Monorepo: PickyApp
+  Root: /
 
-# Reglas específicas por tipo de artefacto (opcional)
+  ── Proyecto: api (Backend - NestJS + PostgreSQL) ──
+  Path: api/src/
+  Stack: NestJS 10+, TypeScript, PostgreSQL, TypeORM, Socket.io
+  Conventions:
+    - Arquitectura modular y desacoplada (Clean / Domain-driven).
+    - Multi-tenant por tenant_id (RLS a nivel lógico/DB).
+    - DTOs con class-validator y @ApiProperty para documentación Swagger.
+    - WebSockets se conectan DIRECTOS al puerto del servidor NestJS.
+    - Montos monetarios siempre en centavos enteros o BigInt.
+    - Migraciones TypeORM estrictas (nunca synchronize en prod).
+
+  ── Proyecto: app (Frontend - Next.js 15) ──
+  Path: app/src/
+  Stack: Next.js 15 (App Router), TypeScript, Zustand, TanStack Query, Tailwind CSS v4, shadcn/ui
+  Conventions:
+    - Feature-Sliced Design adaptado a Next.js App Router.
+    - React Server Components (RSC) por defecto, Client Components solo para interactividad.
+    - Mobile-first absoluto y obligatorio (viewport base 360px sin scroll horizontal).
+    - UX Premium: feedback visual <100ms, Skeleton loaders obligatorios.
+    - Drag gesture nativo en móvil vía Vaul (Bottom Sheets / Drawers).
+    - React Hook Form + Zod para validaciones estructuradas.
+    - BFF (Backend-for-Frontend) pattern: no guardar tokens en localStorage.
+
+  ── Convenciones de Naming para Cambios ──────────────────
+  Prefix "api-"    → el cambio afecta ÚNICAMENTE al Backend.
+  Prefix "app-"    → el cambio afecta ÚNICAMENTE al Frontend.
+  Prefix "shared-" → cambio transversal (afecta a ambos proyectos).
+
+  ── Archivo por Scope ─────────────────────────────────
+  Cambios de api → openspec/changes/archive/api/
+  Cambios de app → openspec/changes/archive/app/
+  Transversales  → openspec/changes/archive/shared/
+
+# Reglas específicas por tipo de artefacto
 rules:
   proposal:
-    - Siempre incluir una sección de "Impacto en Multi-tenancy".
+    - Siempre incluir una sección de "Impacto en Multi-tenancy" (tenant_id).
     - Definir claramente si el cambio afecta la Tienda Pública o el Panel Admin.
   specs:
     - Los specs de módulos funcionales deben incluir una tabla de funcionalidades con prioridad.
@@ -31,5 +51,6 @@ rules:
     - Para UI, especificar comportamiento en viewport de 360px (mobile-first).
     - Para API, definir el endpoint, método, DTOs de entrada y respuesta.
   tasks:
-    - Dividir las tareas en fases de implementación según el Roadmap (F0 a F8).
+    - Dividir las tareas en fases de implementación lógicas.
     - Cada tarea debe ser atómica y permitir verificación independiente.
+

@@ -1,0 +1,17 @@
+﻿{
+  "project": "PickyApp",
+  "agentsRoot": ".ai/agents",
+  "skillsRoot": ".ai/skills",
+  "protocolsRoot": ".ai/protocols",
+  "scriptsRoot": ".ai/scripts",
+  "workflowStore": ".trae/workflow-store.sqlite",
+  "defaultAgent": "router-agent",
+  "scopes": {
+    "api": "backend-agent",
+    "app": "frontend-agent"
+  },
+  "riskTriggers": {
+    "security": ["jwt", "auth", "crypto", "token", "password"],
+    "database": ["migration", "entity", "sql", "redis", "typeorm"]
+  }
+}

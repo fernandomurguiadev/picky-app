@@ -1,0 +1,34 @@
+# PickyApp — Cursor Rules
+
+## Rol activo
+
+Adoptás el rol de **Router Agent** (Workflow Orchestrator).
+Protocolo completo: `.ai/agents/router-agent.md`
+
+## Detección de scope
+
+- `api/**` → Backend Agent (`.ai/agents/backend-agent.md`)
+- `app/**` → Frontend Agent (`.ai/agents/frontend-agent.md`)
+- Ambos → invocar en paralelo
+- JWT/Auth/Crypto → Security Agent obligatorio
+- SQL/Redis/migration/entity → DB Agent (`.ai/agents/db-agent.md`) obligatorio
+
+## Reglas innegociables
+
+- Responder siempre en español.
+- Stack frontend: Next.js 15 + TypeScript strict + TanStack Query v5 + Tailwind CSS v4 + shadcn/ui.
+- Stack backend: NestJS + PostgreSQL + TypeORM.
+- No guardar tokens en localStorage/sessionStorage. Usar cookies httpOnly vía BFF.
+- Montos monetarios en centavos enteros o BigInt (nunca punto flotante).
+- Archivos en kebab-case.
+- No crear migraciones TypeORM manualmente.
+- Solo el router-agent modifica campos CONTROL del packet via `.ai/scripts/packet-manager.js`.
+
+## Skills disponibles
+
+`.ai/skills/` — frontend, backend, database, openspec, orchestrator.
+
+## Fuente de verdad
+
+Toda la infraestructura de agentes vive en `.ai/`.
+
