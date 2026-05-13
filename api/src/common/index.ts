@@ -1,3 +1,8 @@
+// Errors
+export { BusinessException, toBusinessException } from './errors/business.exception.js';
+export { CommonErrors } from './errors/common.errors.js';
+export type { ErrorDefinition } from './errors/error-definition.js';
+
 // Filters
 export { HttpExceptionFilter } from './filters/http-exception.filter.js';
 

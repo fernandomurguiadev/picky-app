@@ -1,0 +1,38 @@
+name: api-fase-2-catalogo
+project_id: api
+version: "1.0.0"
+status: done
+created_at: "2026-05-13"
+scope:
+  - api/src/common/errors/error-definition.ts
+  - api/src/common/errors/business.exception.ts
+  - api/src/common/errors/common.errors.ts
+  - api/src/common/index.ts
+  - api/src/modules/catalog/errors/catalog.error-codes.ts
+  - api/src/modules/catalog/errors/catalog.errors.ts
+  - api/src/modules/catalog/dto/create-category.dto.ts
+  - api/src/modules/catalog/dto/update-category.dto.ts
+  - api/src/modules/catalog/dto/reorder-categories.dto.ts
+  - api/src/modules/catalog/dto/create-product.dto.ts
+  - api/src/modules/catalog/dto/update-product.dto.ts
+  - api/src/modules/catalog/dto/pagination-query.dto.ts
+  - api/src/modules/catalog/catalog.service.ts
+  - api/src/modules/catalog/categories.controller.ts
+  - api/src/modules/catalog/products.controller.ts
+  - api/src/modules/catalog/catalog.module.ts
+  - api/src/app.module.ts
+description: >
+  CRUD completo del módulo Catálogo: categorías y productos con opciones anidadas.
+  Incluye infraestructura de errores tipados (BusinessException, CommonErrors),
+  rutas públicas por slug del tenant y rutas admin con JWT.
+  No requiere nueva migración — entidades ya existían desde FASE 1.
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: done
+    path: tasks.md

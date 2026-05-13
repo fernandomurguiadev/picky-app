@@ -12,6 +12,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor.js';
 import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { CatalogModule } from './modules/catalog/catalog.module.js';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
     }),
     TenantsModule,
     AuthModule,
+    CatalogModule,
   ],
   controllers: [AppController],
   providers: [
