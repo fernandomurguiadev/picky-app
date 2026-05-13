@@ -6,6 +6,7 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
@@ -44,7 +45,7 @@ export class AuthController {
   ) {
     const token = req.cookies?.['refresh-token'] as string | undefined;
     if (!token) {
-      return { message: 'Sin refresh token.' };
+      throw new UnauthorizedException('Sin refresh token.');
     }
     return this.authService.refresh(token, res);
   }

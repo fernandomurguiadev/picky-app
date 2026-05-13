@@ -92,7 +92,7 @@ export class CatalogService {
     if (category.tenantId !== tenantId) throw toBusinessException(CatalogErrors.categoryForbidden(id));
 
     const activeCount = await this.productRepo.count({
-      where: { categoryId: id, isActive: true },
+      where: { categoryId: id },
     });
     if (activeCount > 0) {
       throw toBusinessException(CatalogErrors.categoryHasActiveProducts(id, activeCount));

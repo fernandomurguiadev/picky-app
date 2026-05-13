@@ -38,9 +38,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
             : Array.isArray(resp['message'])
               ? (resp['message'] as string[]).join(', ')
               : message;
+        code = typeof resp['code'] === 'string' ? resp['code'] : this.resolveCode(statusCode);
+      } else {
+        code = this.resolveCode(statusCode);
       }
-
-      code = this.resolveCode(statusCode);
     } else {
       // Error no controlado — loguear internamente sin exponer detalles al cliente
       this.logger.error(

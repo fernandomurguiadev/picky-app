@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, MoreThan } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -96,8 +96,7 @@ export class AuthService {
     }
 
     const refreshToken = crypto.randomUUID();
-    const bcryptRounds = this.configService.get<number>('BCRYPT_ROUNDS') ?? 12;
-    user.refreshToken = await bcrypt.hash(refreshToken, bcryptRounds);
+    user.refreshToken = crypto.createHash('sha256').update(refreshToken).digest('hex');
     await this.userRepo.save(user);
 
     const isProduction = this.configService.get('NODE_ENV') === 'production';
@@ -112,18 +111,11 @@ export class AuthService {
   }
 
   async refresh(rawToken: string, response: Response): Promise<{ access_token: string }> {
-    const users = await this.userRepo.find({
-      where: { isActive: true },
-      select: ['id', 'email', 'tenantId', 'role', 'refreshToken'],
+    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const matchedUser = await this.userRepo.findOne({
+      where: { refreshToken: tokenHash, isActive: true },
+      select: ['id', 'tenantId', 'role', 'refreshToken'],
     });
-
-    let matchedUser: User | null = null;
-    for (const u of users) {
-      if (u.refreshToken && await bcrypt.compare(rawToken, u.refreshToken)) {
-        matchedUser = u;
-        break;
-      }
-    }
 
     if (!matchedUser) {
       throw new UnauthorizedException('Refresh token inválido.');
@@ -131,8 +123,7 @@ export class AuthService {
 
     // Rotar refresh token
     const newRaw = crypto.randomUUID();
-    const bcryptRounds = this.configService.get<number>('BCRYPT_ROUNDS') ?? 12;
-    matchedUser.refreshToken = await bcrypt.hash(newRaw, bcryptRounds);
+    matchedUser.refreshToken = crypto.createHash('sha256').update(newRaw).digest('hex');
     await this.userRepo.save(matchedUser);
 
     const isProduction = this.configService.get('NODE_ENV') === 'production';
@@ -161,8 +152,7 @@ export class AuthService {
     }
 
     const rawToken = crypto.randomBytes(32).toString('hex');
-    const bcryptRounds = this.configService.get<number>('BCRYPT_ROUNDS') ?? 12;
-    user.resetPasswordToken = await bcrypt.hash(rawToken, bcryptRounds);
+    user.resetPasswordToken = crypto.createHash('sha256').update(rawToken).digest('hex');
     user.resetPasswordExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
     await this.userRepo.save(user);
 
@@ -173,19 +163,13 @@ export class AuthService {
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
-    const users = await this.userRepo
-      .createQueryBuilder('u')
-      .where('u.resetPasswordToken IS NOT NULL')
-      .andWhere('u.resetPasswordExpiresAt > :now', { now: new Date() })
-      .getMany();
-
-    let matchedUser: User | null = null;
-    for (const u of users) {
-      if (u.resetPasswordToken && await bcrypt.compare(dto.token, u.resetPasswordToken)) {
-        matchedUser = u;
-        break;
-      }
-    }
+    const tokenHash = crypto.createHash('sha256').update(dto.token).digest('hex');
+    const matchedUser = await this.userRepo.findOne({
+      where: {
+        resetPasswordToken: tokenHash,
+        resetPasswordExpiresAt: MoreThan(new Date()),
+      },
+    });
 
     if (!matchedUser) {
       throw new BadRequestException('Token de reset inválido o expirado.');
@@ -202,7 +186,7 @@ export class AuthService {
 
   private signAccessToken(user: User, tenantId: string): string {
     return this.jwtService.sign(
-      { sub: user.id, email: user.email, tenantId, role: user.role },
+      { sub: user.id, tenantId, role: user.role },
       { algorithm: 'RS256', expiresIn: this.configService.get('jwt.accessExpiration') ?? '15m' },
     );
   }
