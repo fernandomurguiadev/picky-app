@@ -1,0 +1,27 @@
+name: api-fase-4-upload
+project_id: api
+version: "1.0.0"
+status: active
+created_at: "2026-05-13"
+scope:
+  - api/src/modules/upload/upload.controller.ts
+  - api/src/modules/upload/upload.service.ts
+  - api/src/modules/upload/upload.module.ts
+  - api/src/modules/upload/dto/upload-response.dto.ts
+  - api/src/modules/upload/providers/cloudinary.provider.ts
+  - api/src/config/env.config.ts
+  - api/src/app.module.ts
+description: >
+  Módulo Upload: subida de imágenes autenticada hacia Cloudinary (default) o S3.
+  Validación server-side de tipo MIME y tamaño. Aislación por tenant con carpetas
+  dedicadas. No se confía en Content-Type del cliente — se inspecciona el buffer.
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: active
+    path: tasks.md

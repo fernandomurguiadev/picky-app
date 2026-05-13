@@ -1,0 +1,33 @@
+name: api-fase-5-ordenes
+project_id: api
+version: "1.0.0"
+status: active
+created_at: "2026-05-13"
+scope:
+  - api/src/modules/orders/dto/create-order.dto.ts
+  - api/src/modules/orders/dto/update-order-status.dto.ts
+  - api/src/modules/orders/dto/create-order-admin.dto.ts
+  - api/src/modules/orders/dto/orders-query.dto.ts
+  - api/src/modules/orders/dto/update-order-notes.dto.ts
+  - api/src/modules/orders/errors/orders.error-codes.ts
+  - api/src/modules/orders/errors/orders.errors.ts
+  - api/src/modules/orders/orders.service.ts
+  - api/src/modules/orders/orders.controller.ts
+  - api/src/modules/orders/orders.module.ts
+  - api/src/app.module.ts
+description: >
+  Módulo Órdenes REST: creación de pedidos desde tienda pública (sin auth),
+  gestión admin (listado, detalle, cambio de estado, notas). Validación de
+  monto mínimo y métodos habilitados según StoreSettings del tenant.
+  Genera orderNumber legible (ORD-YYYYMMDD-XXXX). Emite eventos WebSocket
+  al crear y actualizar (conectado en FASE 6).
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: active
+    path: tasks.md

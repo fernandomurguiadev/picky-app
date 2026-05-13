@@ -14,6 +14,7 @@ import { TenantContextInterceptor } from './common/interceptors/tenant-context.i
 import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CatalogModule } from './modules/catalog/catalog.module.js';
+import { OrdersModule } from './modules/orders/orders.module.js';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CatalogModule } from './modules/catalog/catalog.module.js';
     TenantsModule,
     AuthModule,
     CatalogModule,
+    OrdersModule,
   ],
   controllers: [AppController],
   providers: [
