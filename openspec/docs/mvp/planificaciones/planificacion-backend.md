@@ -14,7 +14,7 @@
 |------|--------|
 | Proyecto NestJS inicializado | ✅ Completado |
 | Módulos de dominio | ✅ Completado (FASE 0–8) |
-| Base de datos / migraciones | ⚠️ Entidades creadas — pendiente ejecutar `migration:generate` |
+| Base de datos / migraciones | ✅ Migración `InitialSchema` ejecutada |
 | Docker configurado | ✅ Completado |
 
 ---
@@ -53,7 +53,7 @@
 | B1.6 | Crear entidades `OptionGroup` y `OptionItem` con FK a `product_id` | `src/modules/catalog/entities/option-group.entity.ts` | Migración genera tablas con FK correctas |
 | B1.7 | Crear entidad `Order` con `tenant_id`, `status` enum, `deliveryMethod`, `paymentMethod`, campos de totales en centavos | `src/modules/orders/entities/order.entity.ts` | Migración genera tabla `orders` |
 | B1.8 | Crear entidad `OrderItem` con FK a `order_id`, `productId`, `selectedOptions` JSONB, `unitPrice` integer | `src/modules/orders/entities/order-item.entity.ts` | Migración genera tabla `order_items` |
-| B1.9 | **Generar y verificar todas las migraciones** | — | `npm run migration:generate -- --name=InitialSchema` · Ejecuta sin errores | ⚠️ Pendiente ejecutar |
+| B1.9 | **Generar y verificar todas las migraciones** | — | `npm run migration:generate -- --name=InitialSchema` · Ejecuta sin errores | ✅ Migración `InitialSchema` ejecutada |
 
 > ⚠️ **No crear migraciones manualmente.** Avisar al desarrollador para ejecutar `npm run migration:generate -- --name=<Nombre>`.
 
