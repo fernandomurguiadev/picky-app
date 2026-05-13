@@ -12,16 +12,16 @@
 
 | Item | Estado |
 |------|--------|
-| Proyecto Next.js 15 inicializado | ✅ Scaffolded (esqueleto base) |
-| Tailwind v4 + shadcn/ui | ❌ Por configurar |
-| Módulos de aplicación | ❌ Por implementar |
-| Middleware de rutas | ❌ Por implementar |
+| Proyecto Next.js 15 inicializado | ✅ Completado |
+| Tailwind v4 + shadcn/ui | ✅ Completado (Radix Nova preset) |
+| Módulos de aplicación | ✅ FASE 0 y FASE 1 implementadas |
+| Middleware de rutas | ✅ Completado |
 
 ---
 
 ## Fases de implementación
 
-### FASE 0 — Setup base e infraestructura UI
+### ✅ FASE 0 — Setup base e infraestructura UI
 
 **Objetivo:** Proyecto configurado con todas las dependencias, design system funcional y componentes shared listos para usar.
 
@@ -29,45 +29,45 @@
 
 | # | Tarea | Archivos clave | Criterio de done |
 |---|-------|---------------|-----------------|
-| FE0.1 | Configurar `tsconfig.json` con `strict: true`, paths aliases (`@/`) | `tsconfig.json` | `npm run typecheck` sin errores |
-| FE0.2 | Instalar y configurar Tailwind CSS v4 con `globals.css` y CSS variables del design system | `app/globals.css`, `tailwind.config.ts` | Variables `--color-primary`, `--radius` etc. funcionan |
-| FE0.3 | Instalar y configurar shadcn/ui (todos los componentes necesarios: Button, Dialog, Sheet, Drawer, Badge, etc.) | `components/ui/` | `npx shadcn@latest add` sin errores |
-| FE0.4 | Instalar dependencias: `vaul`, `sonner`, `@tanstack/react-query`, `zustand`, `axios`, `react-hook-form`, `zod`, `@hookform/resolvers`, `socket.io-client`, `@dnd-kit/core`, `@dnd-kit/sortable`, `browser-image-compression` | `package.json` | Todas instaladas. `npm run build` sin errores de módulos faltantes. |
-| FE0.5 | Configurar `TanStack Query` provider en root layout con `QueryClient` y `ReactQueryDevtools` (solo dev) | `app/layout.tsx`, `lib/query-client.ts` | `useQuery` funciona en cualquier page |
-| FE0.6 | Configurar instancia Axios con base URL, interceptors de auth (adjunta Bearer token) y retry en 401 | `lib/api/axios.ts` | Request adjunta `Authorization: Bearer <token>` automáticamente |
-| FE0.7 | Configurar Zustand stores base: `auth.store.ts` (token en memory), `ui.store.ts`, `cart.store.ts` (con `persist` a localStorage) | `lib/stores/` | `useAuthStore` retorna `accessToken`. `useCartStore` persiste al recargar. |
+| FE0.1 | Configurar `tsconfig.json` con `strict: true`, paths aliases (`@/`) | `tsconfig.json` | `npm run typecheck` sin errores | ✅ |
+| FE0.2 | Instalar y configurar Tailwind CSS v4 con `globals.css` y CSS variables del design system | `app/globals.css`, `tailwind.config.ts` | Variables `--color-primary`, `--radius` etc. funcionan | ✅ |
+| FE0.3 | Instalar y configurar shadcn/ui (todos los componentes necesarios: Button, Dialog, Sheet, Drawer, Badge, etc.) | `components/ui/` | `npx shadcn@latest add` sin errores | ✅ |
+| FE0.4 | Instalar dependencias: `vaul`, `sonner`, `@tanstack/react-query`, `zustand`, `axios`, `react-hook-form`, `zod`, `@hookform/resolvers`, `socket.io-client`, `@dnd-kit/core`, `@dnd-kit/sortable`, `browser-image-compression` | `package.json` | Todas instaladas. `npm run build` sin errores de módulos faltantes. | ✅ |
+| FE0.5 | Configurar `TanStack Query` provider en root layout con `QueryClient` y `ReactQueryDevtools` (solo dev) | `app/layout.tsx`, `lib/query-client.ts` | `useQuery` funciona en cualquier page | ✅ |
+| FE0.6 | Configurar instancia Axios con base URL, interceptors de auth (adjunta Bearer token) y retry en 401 | `lib/api/axios.ts` | Request adjunta `Authorization: Bearer <token>` automáticamente | ✅ |
+| FE0.7 | Configurar Zustand stores base: `auth.store.ts` (token en memory), `ui.store.ts`, `cart.store.ts` (con `persist` a localStorage) | `lib/stores/` | `useAuthStore` retorna `accessToken`. `useCartStore` persiste al recargar. | ✅ |
 
 #### F0-B: Componentes shared
 
 | # | Tarea | Archivos clave | Criterio de done |
 |---|-------|---------------|-----------------|
-| FE0.8 | `Button` — variantes: primary, secondary, ghost, destructive, loading state | `components/shared/button/` | Variantes visuales correctas. Loading muestra spinner. |
-| FE0.9 | `SkeletonLoader` — skeleton genérico configurable por filas/columnas | `components/shared/skeleton-loader/` | Reemplaza contenido en estado loading |
-| FE0.10 | `EmptyState` — icono + título + descripción + acción opcional | `components/shared/empty-state/` | Usado en listas vacías |
-| FE0.11 | `Toast` — wrapper de `sonner` con variantes success/error/info | `components/shared/toast/` | `toast.success('texto')` muestra notificación |
-| FE0.12 | `ImageUploader` — drag&drop + click, preview inmediato, compresión client-side, progress | `components/shared/image-uploader/` | Sube imagen y retorna URL. Muestra preview antes del upload. |
-| FE0.13 | `QuantitySelector` — `-` / número / `+`, mínimo configurable, animación en cambio | `components/shared/quantity-selector/` | No permite valor < mínimo |
-| FE0.14 | `ConfirmModal` — Dialog de confirmación genérico con acción destructiva | `components/shared/confirm-modal/` | Llama `onConfirm` solo si el usuario confirma |
-| FE0.15 | `SearchBar` — input con icono lupa, debounce 300ms, clear button | `components/shared/search-bar/` | `onChange` no dispara en cada keystroke |
-| FE0.16 | `Pagination` — componente server-side pagination: prev/next + número de página | `components/shared/pagination/` | Genera links con `?page=N`. No necesita JS. |
-| FE0.17 | `Badge` — variante por status: pending, confirmed, preparing, ready, delivered, cancelled | `components/shared/badge/` | Cada status tiene color distinto |
+| FE0.8 | `Button` — variantes: primary, secondary, ghost, destructive, loading state | `components/shared/button/` | Variantes visuales correctas. Loading muestra spinner. | ✅ shadcn |
+| FE0.9 | `SkeletonLoader` — skeleton genérico configurable por filas/columnas | `components/shared/skeleton-loader/` | Reemplaza contenido en estado loading | ✅ |
+| FE0.10 | `EmptyState` — icono + título + descripción + acción opcional | `components/shared/empty-state/` | Usado en listas vacías | ✅ |
+| FE0.11 | `Toast` — wrapper de `sonner` con variantes success/error/info | `components/shared/toast/` | `toast.success('texto')` muestra notificación | ✅ |
+| FE0.12 | `ImageUploader` — drag&drop + click, preview inmediato, compresión client-side, progress | `components/shared/image-uploader/` | Sube imagen y retorna URL. Muestra preview antes del upload. | ✅ |
+| FE0.13 | `QuantitySelector` — `-` / número / `+`, mínimo configurable, animación en cambio | `components/shared/quantity-selector/` | No permite valor < mínimo | ✅ |
+| FE0.14 | `ConfirmModal` — Dialog de confirmación genérico con acción destructiva | `components/shared/confirm-modal/` | Llama `onConfirm` solo si el usuario confirma | ✅ |
+| FE0.15 | `SearchBar` — input con icono lupa, debounce 300ms, clear button | `components/shared/search-bar/` | `onChange` no dispara en cada keystroke | ✅ |
+| FE0.16 | `Pagination` — componente server-side pagination: prev/next + número de página | `components/shared/pagination/` | Genera links con `?page=N`. No necesita JS. | ✅ |
+| FE0.17 | `Badge` — variante por status: pending, confirmed, preparing, ready, delivered, cancelled | `components/shared/badge/` | Cada status tiene color distinto | ✅ |
 
 ---
 
-### FASE 1 — Módulo de Autenticación
+### ✅ FASE 1 — Módulo de Autenticación
 
 **Objetivo:** Login, registro, protección de rutas admin via middleware, refresh token automático.
 
-| # | Tarea | Archivos clave | Criterio de done |
-|---|-------|---------------|-----------------|
-| FE1.1 | Página `/auth/login`: formulario RHF+Zod, errores inline, redirect a `returnUrl` o `/admin/dashboard` | `app/auth/login/page.tsx` | Login exitoso redirige. Error 401 muestra mensaje inline. |
-| FE1.2 | Página `/auth/register`: formulario con email, password (indicador fortaleza), nombre negocio, teléfono | `app/auth/register/page.tsx` | Registro crea tenant + user. Redirige a dashboard. |
-| FE1.3 | `middleware.ts`: proteger todas las rutas `/admin/*`, redirect a `/auth/login?returnUrl=...` si sin token | `middleware.ts` | `/admin/dashboard` sin cookie → redirect a login |
-| FE1.4 | `middleware.ts`: resolver `slug → tenantId` via `GET /stores/:slug/tenant-id` para rutas `[slug]` | `middleware.ts` | Slug inválido → redirect a 404 |
-| FE1.5 | Interceptor Axios 401: llama `POST /auth/refresh`, actualiza token en Zustand, reintenta request original | `lib/api/axios.ts` | Request fallida por token expirado se reintenta automáticamente |
-| FE1.6 | Función logout: limpia Zustand, llama `POST /auth/logout`, redirige a `/auth/login` | `lib/stores/auth.store.ts` | Token limpiado de memoria. Cookie limpiada por el backend. |
-| FE1.7 | Página `/auth/forgot-password` y `/auth/reset-password` | `app/auth/` | Flujo completo de recuperación de contraseña |
-| FE1.8 | Manejar evento `session-expired` del WebSocket: redirect a login con toast de aviso | `lib/hooks/use-websocket.ts` | Si el servidor emite `session-expired`, se redirige a login |
+| # | Tarea | Archivos clave | Criterio de done | Estado |
+|---|-------|---------------|-----------------|--------|
+| FE1.1 | Página `/auth/login`: formulario RHF+Zod, errores inline, redirect a `returnUrl` o `/admin/dashboard` | `app/auth/login/page.tsx` | Login exitoso redirige. Error 401 muestra mensaje inline. | ✅ |
+| FE1.2 | Página `/auth/register`: formulario con email, password (indicador fortaleza), nombre negocio, teléfono | `app/auth/register/page.tsx` | Registro crea tenant + user. Redirige a dashboard. | ✅ |
+| FE1.3 | `middleware.ts`: proteger todas las rutas `/admin/*`, redirect a `/auth/login?returnUrl=...` si sin token | `middleware.ts` | `/admin/dashboard` sin cookie → redirect a login | ✅ |
+| FE1.4 | `middleware.ts`: resolver `slug → tenantId` via `GET /stores/:slug/tenant-id` para rutas `[slug]` | `middleware.ts` | Slug inválido → redirect a 404 | ✅ |
+| FE1.5 | Interceptor Axios 401: llama `POST /auth/refresh`, actualiza token en Zustand, reintenta request original | `lib/api/axios.ts` | Request fallida por token expirado se reintenta automáticamente | ✅ |
+| FE1.6 | Función logout: limpia Zustand, llama `POST /auth/logout`, redirige a `/auth/login` | `lib/stores/auth.store.ts` | Token limpiado de memoria. Cookie limpiada por el backend. | ✅ |
+| FE1.7 | Página `/auth/forgot-password` y `/auth/reset-password` | `app/auth/` | Flujo completo de recuperación de contraseña | ✅ |
+| FE1.8 | Manejar evento `session-expired` del WebSocket: redirect a login con toast de aviso | `lib/hooks/use-websocket.ts` | Si el servidor emite `session-expired`, se redirige a login | ✅ |
 
 ---
 
