@@ -80,8 +80,8 @@ export default function SettingsInfoPage() {
   const storeSlug = settings?.tenant?.slug ?? "";
   const storeName = settings?.tenant?.name ?? "Cargando...";
   const publicStoreUrl = typeof window !== "undefined" 
-    ? `${window.location.origin.replace(":3001", ":3000").replace(":3002", ":3000")}/s/${storeSlug}`
-    : `/s/${storeSlug}`;
+    ? `${window.location.origin}/${storeSlug}`
+    : `/${storeSlug}`;
 
   return (
     <div className="space-y-6">
@@ -110,7 +110,7 @@ export default function SettingsInfoPage() {
             <div className="relative flex items-center">
               <Link2 className="absolute left-3 w-4 h-4 text-muted-foreground/60" />
               <Input
-                value={storeSlug ? `/s/${storeSlug}` : ""}
+                value={storeSlug ? `/${storeSlug}` : ""}
                 disabled
                 className="pl-9 bg-background border-border/60 text-foreground/80 select-all font-mono text-sm disabled:opacity-100"
               />

@@ -31,27 +31,20 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
   const store: StorePublicData = storeJson.data;
   const { isOpen } = statusJson.data;
 
-  // CSS variables del tema inyectadas antes del primer paint → sin FOUC
-  // dangerouslySetInnerHTML permitido aquí: contenido es CSS generado en servidor
-  // desde datos de BD del tenant, nunca proviene de input de usuario.
-  const themeVars = `
-    :root {
-      --color-primary: ${store.theme?.primaryColor ?? "#f97316"};
-      --store-primary: ${store.theme?.primaryColor ?? "#f97316"};
-      --store-accent: ${store.theme?.accentColor ?? "#fb923c"};
-    }
-  `.trim();
-
   return (
-    <>
-      <style dangerouslySetInnerHTML={{ __html: themeVars }} />
-      <div className="min-h-screen flex flex-col">
-        <StoreHeader store={store} isOpen={isOpen} />
-        <main className="flex-1">{children}</main>
-        <footer className="border-t py-6 text-center text-xs text-muted-foreground">
-          Powered by PickyApp
-        </footer>
-      </div>
-    </>
+    <div 
+      className="min-h-screen flex flex-col"
+      style={{
+        "--color-primary": store.theme?.primaryColor ?? "#f97316",
+        "--store-primary": store.theme?.primaryColor ?? "#f97316",
+        "--store-accent": store.theme?.accentColor ?? "#fb923c",
+      } as React.CSSProperties}
+    >
+      <StoreHeader store={store} isOpen={isOpen} />
+      <main className="flex-1">{children}</main>
+      <footer className="border-t py-6 text-center text-xs text-muted-foreground">
+        Powered by PickyApp
+      </footer>
+    </div>
   );
 }

@@ -5,7 +5,7 @@ import { useStoreSettings, useToggleStoreStatus } from "@/lib/hooks/admin/use-st
 import type { StoreSettings, DaySchedule, Shift } from "@/lib/types/store-settings";
 import { MetricCard } from "@/components/admin/metric-card";
 import { StoreStatusBadge } from "@/components/store/store-status-badge";
-import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/utils";
 import { 
@@ -226,9 +226,19 @@ export default function DashboardPage() {
     },
   ];
 
-  const handleToggleStatus = (checked: boolean) => {
-    toggleStatusMutation.mutate(checked);
+  const handleSelectStatusChange = (val: string) => {
+    if (val === "auto") {
+      toggleStatusMutation.mutate(null);
+    } else if (val === "open") {
+      toggleStatusMutation.mutate(true);
+    } else if (val === "closed") {
+      toggleStatusMutation.mutate(false);
+    }
   };
+
+  let selectValue = "auto";
+  if (settings?.isManualOpen === true) selectValue = "open";
+  if (settings?.isManualOpen === false) selectValue = "closed";
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-3 duration-500">
@@ -271,13 +281,22 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-accent/30 p-2 px-3 rounded-xl border border-border/30">
-          <span className="text-xs font-bold text-muted-foreground">Override Manual</span>
-          <Switch
-            checked={isForcedOpen}
+        <div className="flex items-center gap-2.5 bg-accent/30 p-1 pr-1.5 pl-3 rounded-xl border border-border/30 min-w-[175px]">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground shrink-0">Modo</span>
+          <Select 
+            value={selectValue} 
             disabled={toggleStatusMutation.isPending}
-            onCheckedChange={handleToggleStatus}
-          />
+            onValueChange={handleSelectStatusChange}
+          >
+            <SelectTrigger className="h-8 border-none bg-transparent hover:bg-accent/50 text-xs font-bold text-foreground focus:ring-0 focus:ring-offset-0 px-2 transition-colors rounded-lg gap-2 shadow-none w-full justify-between flex">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end" className="rounded-xl shadow-md border-border/60">
+              <SelectItem value="auto" className="text-xs font-semibold py-2 cursor-pointer">🔄 Automático (Horarios)</SelectItem>
+              <SelectItem value="open" className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 py-2 cursor-pointer">🟢 Abierto manual</SelectItem>
+              <SelectItem value="closed" className="text-xs font-semibold text-rose-600 dark:text-rose-400 py-2 cursor-pointer">🔴 Cerrado manual</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
