@@ -52,7 +52,7 @@ function ValidShifts(validationOptions?: ValidationOptions) {
           const obj = args.object as DayScheduleDto;
           const shifts = value as ShiftDto[] | undefined;
 
-          if (!obj.isOpen) return !shifts || shifts.length === 0;
+          if (!obj.isOpen) return true; // Si está cerrado, la configuración es totalmente válida (el servicio ignora los shifts)
           if (!Array.isArray(shifts)) return true; // other validators handle array check
 
           for (const shift of shifts) {

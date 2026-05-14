@@ -35,6 +35,7 @@ export interface StoreSettings {
   isManualOpen: boolean | null;
   createdAt: string;
   updatedAt: string;
+  tenant?: Tenant;
 }
 
 export interface Tenant {

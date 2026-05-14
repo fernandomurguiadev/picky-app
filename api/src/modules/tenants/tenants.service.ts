@@ -145,7 +145,10 @@ export class TenantsService {
 
   /** B3.4 — Configuración completa del tenant autenticado */
   async getMySettings(tenantId: string): Promise<StoreSettings | null> {
-    return this.settingsRepo.findOne({ where: { tenantId } });
+    return this.settingsRepo.findOne({ 
+      where: { tenantId },
+      relations: ['tenant'],
+    });
   }
 
   /** B3.5 — Upsert de StoreSettings (crea si no existe) */

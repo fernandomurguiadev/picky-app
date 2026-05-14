@@ -5,6 +5,7 @@ import { Upload, X, ImageIcon } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/shared/toast";
+import { apiBff } from "@/lib/api/axios";
 
 interface ImageUploaderProps {
   value?: string;
@@ -64,20 +65,16 @@ export function ImageUploader({
         const formData = new FormData();
         formData.append("file", compressed, file.name);
 
-        const res = await fetch("/api/backend/api/v1/upload/image", {
-          method: "POST",
-          body: formData,
-          credentials: "include",
+        const res = await apiBff.post<{ data: { url: string } }>("/upload/image", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         });
 
-        if (!res.ok) {
-          throw new Error("Error al subir imagen");
-        }
-
-        const data = (await res.json()) as { data: { url: string } };
-        onChange(data.data.url);
+        onChange(res.data.data.url);
         toast.success("Imagen subida correctamente");
-      } catch {
+      } catch (error) {
+        console.error("Error al subir imagen:", error);
         toast.error("No se pudo subir la imagen");
         setPreview(value ?? null);
       } finally {
