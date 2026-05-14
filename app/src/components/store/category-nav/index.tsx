@@ -18,7 +18,7 @@ export function CategoryNav({ categories, slug }: CategoryNavProps) {
   return (
     <nav className="sticky top-14 z-30 border-b bg-background">
       <div className="mx-auto max-w-4xl">
-        <div className="flex gap-1 overflow-x-auto px-4 py-2 scrollbar-none">
+        <div className="flex flex-nowrap md:flex-wrap gap-x-1.5 gap-y-2 overflow-x-auto md:overflow-visible px-4 py-2 scrollbar-none">
           <Link
             href={`/${slug}`}
             className={cn(
