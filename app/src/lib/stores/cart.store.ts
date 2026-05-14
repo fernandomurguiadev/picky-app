@@ -81,7 +81,7 @@ export const useCartStore = create<CartState>()(
         }));
       },
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], tenantId: null }),
 
       setTenantId: (id) => set({ tenantId: id }),
 

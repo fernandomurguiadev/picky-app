@@ -17,6 +17,8 @@ export interface StorePublicData {
   address: string | null;
   theme: StoreTheme;
   deliveryEnabled: boolean;
+  deliveryCost?: number; // centavos — puede ser null en la API
+  deliveryMinOrder?: number; // centavos
   takeawayEnabled: boolean;
   inStoreEnabled: boolean;
   cashEnabled: boolean;

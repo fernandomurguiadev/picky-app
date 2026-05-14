@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { StoreStatusBadge } from "@/components/store/store-status-badge";
+import { CartDrawer } from "@/components/store/cart-drawer";
+import { CartBadge } from "@/components/store/cart-badge";
 import type { StorePublicData } from "@/lib/types/store";
 
 interface StoreHeaderProps {
@@ -33,7 +35,9 @@ export function StoreHeader({ store, isOpen }: StoreHeaderProps) {
 
         <div className="flex items-center gap-3">
           <StoreStatusBadge isOpen={isOpen} />
-          {/* CartBadge se agrega en FASE 6 */}
+          <CartDrawer>
+            <CartBadge />
+          </CartDrawer>
         </div>
       </div>
     </header>

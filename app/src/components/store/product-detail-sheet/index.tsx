@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { QuantitySelector } from "@/components/shared/quantity-selector";
 import { toast } from "@/components/shared/toast";
 import { VariantSelector } from "@/components/store/variant-selector";
+import { ConfirmModal } from "@/components/shared/confirm-modal";
 import { formatCurrency } from "@/lib/utils";
 import { useCartStore } from "@/lib/stores/cart.store";
 import type { Product } from "@/lib/types/catalog";
@@ -34,11 +35,15 @@ export function ProductDetailSheet({
 }: ProductDetailSheetProps) {
   const addItem = useCartStore((state) => state.addItem);
   const setTenantId = useCartStore((state) => state.setTenantId);
+  const clearCart = useCartStore((state) => state.clearCart);
+  const cartTenantId = useCartStore((state) => state.tenantId);
+  const hasCartItems = useCartStore((state) => state.items.length > 0);
 
   const [selectedOptions, setSelectedOptions] = useState<SelectedOption[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [isValid, setIsValid] = useState(true);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const resetState = () => {
     setSelectedOptions([]);
@@ -68,12 +73,7 @@ export function ProductDetailSheet({
     return (product.price + optionsTotal) * quantity;
   }, [product.price, quantity, selectedOptions]);
 
-  const handleAddToCart = () => {
-    if (!isValid) {
-      toast.error("Completá las opciones obligatorias antes de agregar.");
-      return;
-    }
-
+  const executeAddToCart = () => {
     const cartItemId = `${product.id}:${selectedOptions
       .map((option) => option.itemId)
       .sort()
@@ -98,6 +98,26 @@ export function ProductDetailSheet({
 
     toast.success(`${product.name} agregado al carrito`);
     handleClose();
+  };
+
+  const handleAddToCart = () => {
+    if (!isValid) {
+      toast.error("Completá las opciones obligatorias antes de agregar.");
+      return;
+    }
+
+    if (hasCartItems && cartTenantId && cartTenantId !== product.tenantId) {
+      setShowConfirmModal(true);
+      return;
+    }
+
+    executeAddToCart();
+  };
+
+  const handleConfirmClearCart = () => {
+    clearCart();
+    executeAddToCart();
+    setShowConfirmModal(false);
   };
 
   const content = (
@@ -156,31 +176,41 @@ export function ProductDetailSheet({
     </div>
   );
 
-  if (isDesktop) {
-    return (
-      <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
-        <DialogContent className="max-w-3xl gap-0 overflow-hidden p-0">
-          <DialogHeader className="sr-only">
-            <DialogTitle>{product.name}</DialogTitle>
-            <DialogDescription>
-              Detalle del producto de la tienda {slug}
-            </DialogDescription>
-          </DialogHeader>
-          {content}
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
-    <Drawer.Root open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
-      <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-        <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 flex max-h-[92vh] flex-col rounded-t-[28px] bg-background outline-none">
-          <div className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-muted-foreground/30" />
-          {content}
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+    <>
+      {isDesktop ? (
+        <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
+          <DialogContent className="max-w-3xl gap-0 overflow-hidden p-0">
+            <DialogHeader className="sr-only">
+              <DialogTitle>{product.name}</DialogTitle>
+              <DialogDescription>
+                Detalle del producto de la tienda {slug}
+              </DialogDescription>
+            </DialogHeader>
+            {content}
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer.Root open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
+          <Drawer.Portal>
+            <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
+            <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 flex max-h-[92vh] flex-col rounded-t-[28px] bg-background outline-none">
+              <div className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-muted-foreground/30" />
+              {content}
+            </Drawer.Content>
+          </Drawer.Portal>
+        </Drawer.Root>
+      )}
+
+      <ConfirmModal
+        open={showConfirmModal}
+        onOpenChange={setShowConfirmModal}
+        title="¿Vaciar el carrito?"
+        description="Tenés productos cargados de otro comercio. Al agregar este producto se borrará lo anterior. ¿Deseás continuar?"
+        confirmLabel="Vaciar y agregar"
+        variant="destructive"
+        onConfirm={handleConfirmClearCart}
+      />
+    </>
   );
 }
