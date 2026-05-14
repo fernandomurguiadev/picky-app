@@ -32,7 +32,7 @@ export function useCreateProduct() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (dto: unknown) =>
-      apiBff.post<Product>("/admin/products", dto).then((r) => r.data),
+      apiBff.post<{ data: Product }>("/admin/products", dto).then((r) => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: productKeys.lists() }),
   });
 }
@@ -41,7 +41,7 @@ export function useUpdateProduct() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...dto }: { id: string } & Record<string, unknown>) =>
-      apiBff.put<Product>(`/admin/products/${id}`, dto).then((r) => r.data),
+      apiBff.put<{ data: Product }>(`/admin/products/${id}`, dto).then((r) => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: productKeys.lists() }),
   });
 }
@@ -50,7 +50,7 @@ export function useToggleProductStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-      apiBff.patch(`/admin/products/${id}/status`, { isActive }).then((r) => r.data),
+      apiBff.patch<{ data: Product }>(`/admin/products/${id}/status`, { isActive }).then((r) => r.data.data),
     // Optimistic update
     onMutate: async ({ id, isActive }) => {
       await qc.cancelQueries({ queryKey: productKeys.lists() });

@@ -14,8 +14,8 @@ export const categoryKeys = {
 // ── Fetchers ─────────────────────────────────────────────────────────────────
 
 async function fetchCategories(): Promise<Category[]> {
-  const { data } = await apiBff.get<Category[]>("/admin/categories");
-  return data;
+  const { data } = await apiBff.get<{ data: Category[] }>("/admin/categories");
+  return data.data;
 }
 
 // ── Hooks ────────────────────────────────────────────────────────────────────
@@ -31,7 +31,7 @@ export function useCreateCategory() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (dto: { name: string; imageUrl?: string | null; isActive?: boolean }) =>
-      apiBff.post<Category>("/admin/categories", dto).then((r) => r.data),
+      apiBff.post<{ data: Category }>("/admin/categories", dto).then((r) => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: categoryKeys.list() }),
   });
 }
@@ -43,7 +43,7 @@ export function useUpdateCategory() {
       id,
       ...dto
     }: { id: string; name?: string; imageUrl?: string | null; isActive?: boolean }) =>
-      apiBff.put<Category>(`/admin/categories/${id}`, dto).then((r) => r.data),
+      apiBff.put<{ data: Category }>(`/admin/categories/${id}`, dto).then((r) => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: categoryKeys.list() }),
   });
 }

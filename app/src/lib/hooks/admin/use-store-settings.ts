@@ -13,8 +13,8 @@ export function useStoreSettings() {
   return useQuery({
     queryKey: settingsKeys.detail(),
     queryFn: async () => {
-      const { data } = await apiBff.get<StoreSettings>("/stores/me/settings");
-      return data;
+      const { data } = await apiBff.get<{ data: StoreSettings }>("/stores/me/settings");
+      return data.data;
     },
   });
 }
@@ -23,7 +23,7 @@ export function useUpdateStoreSettings() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (dto: Partial<StoreSettings>) =>
-      apiBff.patch<StoreSettings>("/stores/me", dto).then((r) => r.data),
+      apiBff.patch<{ data: StoreSettings }>("/stores/me", dto).then((r) => r.data.data),
     onSuccess: (data) => {
       qc.setQueryData(settingsKeys.detail(), data);
     },
@@ -34,7 +34,7 @@ export function useToggleStoreStatus() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (isManualOpen: boolean | null) =>
-      apiBff.patch<StoreSettings>("/stores/me/status", { isManualOpen }).then((r) => r.data),
+      apiBff.patch<{ data: StoreSettings }>("/stores/me/status", { isManualOpen }).then((r) => r.data.data),
     onSuccess: (data) => {
       qc.setQueryData(settingsKeys.detail(), data);
     },
