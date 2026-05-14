@@ -9,7 +9,13 @@ async function handler(
   const { path } = await params;
   const backendPath = path.join("/");
   const url = new URL(req.url);
-  const backendUrl = `${BACKEND_URL}/api/v1/${backendPath}${url.search}`;
+
+  // Evitar duplicación de api/v1 en el ruteo del BFF
+  const normalizedPath = backendPath.startsWith("api/v1")
+    ? backendPath.replace(/^api\/v1\/?/, "")
+    : backendPath;
+
+  const backendUrl = `${BACKEND_URL}/api/v1/${normalizedPath}${url.search}`;
 
   const refreshToken = req.cookies.get("refresh-token")?.value;
   const authHeader = req.headers.get("authorization");
