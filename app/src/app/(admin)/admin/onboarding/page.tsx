@@ -204,7 +204,7 @@ export default function OnboardingPage() {
                 {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : s.icon}
               </div>
               <span className={cn(
-                "text-[10px] font-bold tracking-wider uppercase transition-colors duration-300",
+                "text-[10px] font-bold tracking-wider uppercase transition-colors duration-300 hidden sm:inline-block",
                 isActive ? "text-primary" : "text-muted-foreground/60"
               )}>
                 {s.label}
@@ -219,7 +219,7 @@ export default function OnboardingPage() {
         
         {/* STEP 1: Profile Info */}
         {currentStep === 1 && (
-          <form onSubmit={handleStep1Submit} className="space-y-6 animate-in fade-in duration-300">
+          <form noValidate onSubmit={handleStep1Submit} className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-1">
               <h3 className="font-bold text-lg tracking-tight">Identidad Visual</h3>
               <p className="text-xs text-muted-foreground">Subí el logo y contanos de qué se trata tu local.</p>
@@ -254,7 +254,7 @@ export default function OnboardingPage() {
 
         {/* STEP 2: First Category */}
         {currentStep === 2 && (
-          <form onSubmit={handleStep2Submit} className="space-y-6 animate-in fade-in duration-300">
+          <form noValidate onSubmit={handleStep2Submit} className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-1">
               <h3 className="font-bold text-lg tracking-tight">Tu primer Categoría</h3>
               <p className="text-xs text-muted-foreground">Sirve para agrupar tus productos. Ej: Hamburguesas, Bebidas.</p>
@@ -288,7 +288,7 @@ export default function OnboardingPage() {
 
         {/* STEP 3: First Product */}
         {currentStep === 3 && (
-          <form onSubmit={handleStep3Submit} className="space-y-5 animate-in fade-in duration-300">
+          <form noValidate onSubmit={handleStep3Submit} className="space-y-5 animate-in fade-in duration-300">
             <div className="space-y-1">
               <h3 className="font-bold text-lg tracking-tight">Cargá tu primer Producto</h3>
               <p className="text-xs text-muted-foreground">Comencemos con tu plato o producto estrella ⭐.</p>

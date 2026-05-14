@@ -36,7 +36,7 @@ export function AdminSidebar() {
   };
 
   return (
-    <aside className="flex flex-col w-64 min-h-screen bg-card border-r border-border">
+    <aside className="hidden md:flex flex-col w-64 min-h-screen bg-card border-r border-border shrink-0 sticky top-0 h-screen">
       {/* Logo / Brand */}
       <div className="flex items-center gap-2 px-6 py-5 border-b border-border">
         <span className="text-xl font-bold text-primary">PickyApp</span>
