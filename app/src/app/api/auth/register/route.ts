@@ -22,10 +22,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { businessName, email, password } = parsed.data;
+
+    // Generar slug válido desde el nombre del negocio (remueve acentos, caracteres especiales, y une con guiones)
+    const slug = businessName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remover acentos
+      .replace(/[^a-z0-9]+/g, "-")     // Reemplazar no-alfanuméricos por guión
+      .replace(/(^-|-$)+/g, "")        // Limpiar guiones iniciales/finales
+      || "tienda";                     // Fallback seguro
+
+    const backendPayload = {
+      email,
+      password,
+      storeName: businessName,
+      slug: slug.length < 3 ? `${slug}-store` : slug, // Forzar longitud mínima de 3
+    };
+
     const backendRes = await fetch(`${BACKEND_URL}/api/v1/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.data),
+      body: JSON.stringify(backendPayload),
     });
 
     const data = await backendRes.json();
