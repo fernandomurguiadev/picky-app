@@ -51,7 +51,7 @@ import type { Product, PaginatedResponse } from "@/lib/types/catalog";
 
 const PAGE_SIZE = 20;
 
-// ── Sortable Card Component (visual consistency with Categories) ───────────────
+// ── Sortable Card ──────────────────────────────────────────────────────────────
 
 function SortableProductCard({
   product,
@@ -107,8 +107,8 @@ function SortableProductCard({
             <Badge variant="secondary" className="text-[10px] h-5">Destacado</Badge>
           )}
         </div>
-        <p className="text-xs text-muted-foreground font-medium mt-0.5">
-          {formatCurrency(product.price)}
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {product.category?.name ?? "Sin categoría"} · {formatCurrency(product.price)}
         </p>
       </div>
 
@@ -145,7 +145,7 @@ function SortableProductCard({
   );
 }
 
-// ── Products Page Component ───────────────────────────────────────────────────
+// ── Products Page ──────────────────────────────────────────────────────────────
 
 export default function ProductsPage() {
   const queryClient = useQueryClient();
@@ -155,15 +155,11 @@ export default function ProductsPage() {
   const [filterActive, setFilterActive] = useState<boolean | undefined>(undefined);
   const [deleting, setDeleting] = useState<Product | null>(null);
 
-  // Cuando se selecciona una categoría y NO se busca texto, se activa el modo reordenamiento visual
-  // Cargamos hasta 100 productos para permitir la ordenación masiva de la categoría sin paginación
-  const isReorderModeActive = !!categoryId && !search && filterActive === undefined;
-
   const { data: categories } = useCategories();
-  
+
   const queryParams = {
-    page: isReorderModeActive ? 1 : page,
-    limit: isReorderModeActive ? 100 : PAGE_SIZE,
+    page,
+    limit: PAGE_SIZE,
     categoryId,
     search: search || undefined,
     isActive: filterActive,
@@ -188,10 +184,10 @@ export default function ProductsPage() {
 
     const oldIndex = data.data.findIndex((p) => p.id === active.id);
     const newIndex = data.data.findIndex((p) => p.id === over.id);
-    
+
     const reorderedItems = arrayMove(data.data, oldIndex, newIndex);
 
-    // Actualización optimista del cache de React Query
+    // Optimistic update
     const currentQueryKey = productKeys.list(queryParams);
     queryClient.setQueryData<PaginatedResponse<Product>>(currentQueryKey, {
       ...data,
@@ -199,12 +195,10 @@ export default function ProductsPage() {
     });
 
     try {
-      const ids = reorderedItems.map((p) => p.id);
-      await reorderMutation.mutateAsync(ids);
+      await reorderMutation.mutateAsync(reorderedItems.map((p) => p.id));
       toast.success("Orden de productos guardado");
     } catch {
       toast.error("Error al persistir el nuevo orden");
-      // React Query refetch automático en error resolverá la reversión visual
     }
   };
 
@@ -226,10 +220,7 @@ export default function ProductsPage() {
         <div>
           <h1 className="text-2xl font-bold">Productos</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {isReorderModeActive 
-              ? "Arrastrá las tarjetas para definir su posición visual en la categoría." 
-              : `${data?.meta.total ?? 0} productos en total.`
-            }
+            {data?.meta.total ?? 0} productos · arrastrá para reordenar.
           </p>
         </div>
         <Button asChild>
@@ -275,9 +266,7 @@ export default function ProductsPage() {
         <Select
           value={filterActive === undefined ? "all" : filterActive ? "active" : "inactive"}
           onValueChange={(v) => {
-            setFilterActive(
-              v === "all" ? undefined : v === "active" ? true : false
-            );
+            setFilterActive(v === "all" ? undefined : v === "active" ? true : false);
             setPage(1);
           }}
         >
@@ -292,7 +281,7 @@ export default function ProductsPage() {
         </Select>
       </div>
 
-      {/* Content / List / Table Loader */}
+      {/* List */}
       {isLoading && <SkeletonLoader rows={6} columns={1} />}
 
       {!isLoading && data?.data.length === 0 && (
@@ -304,113 +293,29 @@ export default function ProductsPage() {
         />
       )}
 
-      {/* MODO REORDENACIÓN VISUAL (Visual Consistency con Categorías) */}
-      {!isLoading && data && data.data.length > 0 && isReorderModeActive && (
-        <div className="space-y-3 animate-in fade-in-50 duration-200">
-          {data.data.length <= 1 ? (
-            <div className="text-center py-8 border rounded-xl border-dashed bg-muted/10 text-muted-foreground text-sm">
-              Agregá más productos a esta categoría para habilitar el ordenamiento visual.
-            </div>
-          ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext items={data.data.map((p) => p.id)} strategy={verticalListSortingStrategy}>
-                <div className="space-y-2.5">
-                  {data.data.map((product) => (
-                    <SortableProductCard
-                      key={product.id}
-                      product={product}
-                      onDelete={setDeleting}
-                      toggleStatus={toggleStatus}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext>
-          )}
-        </div>
-      )}
-
-      {/* MODO TABLA TRADICIONAL (Paginación, Multicategoría o Búsquedas) */}
-      {!isLoading && data && data.data.length > 0 && !isReorderModeActive && (
-        <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 border-b border-border">
-              <tr>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Producto</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Categoría</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">Precio</th>
-                <th className="text-center px-4 py-3 font-medium text-muted-foreground">Activo</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
+      {!isLoading && data && data.data.length > 0 && (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={data.data.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2.5">
               {data.data.map((product) => (
-                <tr key={product.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {product.imageUrl ? (
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          className="h-10 w-10 rounded-lg object-cover shrink-0"
-                        />
-                      ) : (
-                        <div className="h-10 w-10 rounded-lg bg-muted shrink-0" />
-                      )}
-                      <div>
-                        <p className="font-medium">{product.name}</p>
-                        {product.isFeatured && (
-                          <Badge variant="secondary" className="text-xs">Destacado</Badge>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
-                    {product.category?.name ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium">
-                    {formatCurrency(product.price)}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <Switch
-                      checked={product.isActive}
-                      onCheckedChange={(val) =>
-                        toggleStatus.mutate({ id: product.id, isActive: val })
-                      }
-                      aria-label={`${product.isActive ? "Desactivar" : "Activar"} ${product.name}`}
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/catalog/products/${product.id}/edit`} aria-label="Editar">
-                          <Pencil className="h-4 w-4" />
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => setDeleting(product)}
-                        aria-label="Eliminar"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
+                <SortableProductCard
+                  key={product.id}
+                  product={product}
+                  onDelete={setDeleting}
+                  toggleStatus={toggleStatus}
+                />
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
-      {/* Pagination (Only show when not reordering visual list) */}
-      {data && data.meta.totalPages > 1 && !isReorderModeActive && (
+      {/* Pagination */}
+      {data && data.meta.totalPages > 1 && (
         <div className="mt-6">
           <Pagination
             page={page}
