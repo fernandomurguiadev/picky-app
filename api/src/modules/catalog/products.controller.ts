@@ -19,6 +19,7 @@ import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
 import { CatalogService } from './catalog.service.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
+import { ReorderProductsDto } from './dto/reorder-products.dto.js';
 import { PaginationQueryDto, ProductsQueryDto } from './dto/pagination-query.dto.js';
 
 // ─── Public store routes ───────────────────────────────────────────────────
@@ -74,6 +75,11 @@ export class AdminProductsController {
       data,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     };
+  }
+
+  @Patch('reorder')
+  async reorder(@TenantId() tenantId: string, @Body() dto: ReorderProductsDto) {
+    await this.catalogService.reorderProducts(tenantId, dto);
   }
 
   @Post()

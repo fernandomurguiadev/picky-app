@@ -311,6 +311,33 @@ export class CatalogService {
     await this.productRepo.remove(product);
   }
 
+  async reorderProducts(tenantId: string, dto: { ids: string[] }): Promise<void> {
+    const products = await this.productRepo.find({
+      where: { id: In(dto.ids) },
+      select: ['id', 'tenantId'],
+    });
+
+    const allBelongToTenant = products.every((p) => p.tenantId === tenantId);
+    if (!allBelongToTenant || products.length !== dto.ids.length) {
+      throw toBusinessException(CatalogErrors.reorderForbidden());
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      for (let i = 0; i < dto.ids.length; i++) {
+        await queryRunner.manager.update(Product, dto.ids[i]!, { order: i });
+      }
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
   // ─── Private helpers ──────────────────────────────────────────────────────
 
   private async saveOptionGroups(

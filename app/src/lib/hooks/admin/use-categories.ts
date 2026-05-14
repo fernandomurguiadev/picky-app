@@ -60,7 +60,7 @@ export function useReorderCategories() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (orderedIds: string[]) =>
-      apiBff.patch("/admin/categories/reorder", { orderedIds }),
+      apiBff.patch("/admin/categories/reorder", { ids: orderedIds }),
     onMutate: async (orderedIds) => {
       await qc.cancelQueries({ queryKey: categoryKeys.list() });
       const prev = qc.getQueryData<Category[]>(categoryKeys.list());

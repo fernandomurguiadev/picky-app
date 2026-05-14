@@ -82,3 +82,12 @@ export function useDeleteProduct() {
     onSuccess: () => qc.invalidateQueries({ queryKey: productKeys.lists() }),
   });
 }
+
+export function useReorderProducts() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: string[]) =>
+      apiBff.patch("/admin/products/reorder", { ids }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: productKeys.lists() }),
+  });
+}
