@@ -85,12 +85,36 @@ export class TenantsService {
   }
 
   /** B3.2 — Datos públicos del comercio para la tienda pública */
-  async getPublicStore(slug: string): Promise<{ tenant: Tenant; settings: StoreSettings | null }> {
+  async getPublicStore(slug: string) {
     const tenant = await this.tenantRepo.findOne({ where: { slug, isActive: true } });
     if (!tenant) throw toBusinessException(CommonErrors.notFound('Store', { slug }));
 
     const settings = await this.settingsRepo.findOne({ where: { tenantId: tenant.id } });
-    return { tenant, settings };
+    
+    return {
+      id: tenant.id,
+      tenantId: tenant.id,
+      name: tenant.name,
+      slug: tenant.slug,
+      description: settings?.description ?? null,
+      logoUrl: settings?.logoUrl ?? null,
+      phone: settings?.phone ?? null,
+      whatsapp: settings?.whatsapp ?? null,
+      address: settings?.address ?? null,
+      theme: {
+        primaryColor: settings?.primaryColor ?? '#000000',
+        accentColor: settings?.accentColor ?? '#ffffff',
+      },
+      deliveryEnabled: settings?.deliveryEnabled ?? false,
+      deliveryCost: settings?.deliveryCost ?? 0,
+      deliveryMinOrder: settings?.deliveryMinOrder ?? 0,
+      takeawayEnabled: settings?.takeawayEnabled ?? true,
+      inStoreEnabled: settings?.inStoreEnabled ?? false,
+      cashEnabled: settings?.cashEnabled ?? true,
+      transferEnabled: settings?.transferEnabled ?? false,
+      cardEnabled: settings?.cardEnabled ?? false,
+      transferAlias: settings?.transferAlias ?? null,
+    };
   }
 
   /** B3.3 — Estado abierto/cerrado calculado con timezone del tenant */
