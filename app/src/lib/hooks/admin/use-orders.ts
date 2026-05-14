@@ -31,10 +31,13 @@ export function useAdminOrders(params: FetchOrdersParams = {}) {
   return useQuery({
     queryKey: ordersKeys.list(JSON.stringify(queryParams)),
     queryFn: async () => {
-      const { data } = await apiBff.get<{ data: Order[]; total: number }>("/admin/orders", {
+      const { data } = await apiBff.get<{
+        data: { data: Order[]; total: number };
+      }>("/admin/orders", {
         params: queryParams,
       });
-      return data.data;
+      // El interceptor global de Nest envuelve todo en { data, meta }, resultando en data.data.data
+      return data.data.data;
     },
   });
 }
