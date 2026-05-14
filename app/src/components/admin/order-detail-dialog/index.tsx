@@ -88,7 +88,8 @@ export function OrderDetailDialog({ orderId, open, onOpenChange }: OrderDetailDi
   // Sync notas internas cuando carga el pedido
   useEffect(() => {
     if (order) {
-      setInternalNotes(order.internalNotes || "");
+      const timer = setTimeout(() => setInternalNotes(order.internalNotes || ""), 0);
+      return () => clearTimeout(timer);
     }
   }, [order]);
 
@@ -235,7 +236,7 @@ export function OrderDetailDialog({ orderId, open, onOpenChange }: OrderDetailDi
                       </div>
                       {order.notes && (
                         <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded text-amber-800 dark:text-amber-300 text-xs">
-                          <strong>Aclaraciones:</strong> "{order.notes}"
+                          <strong>Aclaraciones:</strong> &quot;{order.notes}&quot;
                         </div>
                       )}
                     </div>

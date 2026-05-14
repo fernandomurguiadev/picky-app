@@ -15,7 +15,8 @@ export function CartBadge() {
   const prevCountRef = useRef(totalItems);
 
   useEffect(() => {
-    setIsMounted(true);
+    const timer = setTimeout(() => setIsMounted(true), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {

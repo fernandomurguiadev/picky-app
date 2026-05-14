@@ -6,7 +6,9 @@ import { toast } from "@/components/shared/toast";
 // Generar un beep agradable usando Web Audio API para no cargar archivos externos
 function playNotificationSound() {
   try {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass = 
+      window.AudioContext || 
+      (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
     
     const ctx = new AudioContextClass();

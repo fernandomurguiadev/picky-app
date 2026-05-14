@@ -27,7 +27,9 @@ export function useWebSocket({ tenantId, on, enabled = true }: UseWebSocketOptio
 
   // Sincronizar handlers en una referencia mutable para evitar closures viejos (stale)
   const handlersRef = useRef(on);
-  handlersRef.current = on;
+  useEffect(() => {
+    handlersRef.current = on;
+  }, [on]);
 
   const connect = useCallback(() => {
     if (!enabled || !accessToken) return;

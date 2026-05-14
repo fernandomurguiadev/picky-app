@@ -2,6 +2,7 @@
 
 import { useDashboardMetrics } from "@/lib/hooks/admin/use-dashboard";
 import { useStoreSettings, useToggleStoreStatus } from "@/lib/hooks/admin/use-store-settings";
+import type { StoreSettings, DaySchedule, Shift } from "@/lib/types/store-settings";
 import { MetricCard } from "@/components/admin/metric-card";
 import { StoreStatusBadge } from "@/components/store/store-status-badge";
 import { Switch } from "@/components/ui/switch";
@@ -22,7 +23,7 @@ import { useProducts } from "@/lib/hooks/admin/use-products";
 import { useEffect } from "react";
 
 // --- Helper de Estado Dinámico ---
-function isStoreCurrentlyOpen(settings: any) {
+function isStoreCurrentlyOpen(settings: StoreSettings | undefined | null) {
   if (!settings) return false;
   if (settings.isManualOpen === true) return true;
   if (settings.isManualOpen === false) return false;
@@ -46,10 +47,10 @@ function isStoreCurrentlyOpen(settings: any) {
       timeZone: tz,
     }).format(now);
 
-    const todaySchedule = settings.schedule.find((s: any) => s.day === day);
+    const todaySchedule = settings.schedule.find((s: DaySchedule) => s.day === day);
     if (!todaySchedule || !todaySchedule.isOpen || !todaySchedule.shifts) return false;
 
-    return todaySchedule.shifts.some((shift: any) => {
+    return todaySchedule.shifts.some((shift: Shift) => {
       return timeStr >= shift.open && timeStr <= shift.close;
     });
   } catch {

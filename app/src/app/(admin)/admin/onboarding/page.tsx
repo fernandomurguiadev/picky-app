@@ -137,7 +137,7 @@ export default function OnboardingPage() {
         }));
         
         await updateSettingsMutation.mutateAsync({
-          schedule: finalSchedule as any,
+          schedule: finalSchedule as unknown as Parameters<typeof updateSettingsMutation.mutateAsync>[0]["schedule"],
         });
         toast.success("Horarios guardados");
       }

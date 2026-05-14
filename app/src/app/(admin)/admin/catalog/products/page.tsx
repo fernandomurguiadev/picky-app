@@ -60,7 +60,9 @@ function SortableProductCard({
 }: {
   product: Product;
   onDelete: (p: Product) => void;
-  toggleStatus: any;
+  toggleStatus: {
+    mutate: (variables: { id: string; isActive: boolean }) => void;
+  };
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: product.id });

@@ -30,7 +30,7 @@ export function MetricCard({ label, value, subtext, icon, className, trend }: Me
         </span>
         <div className="rounded-xl bg-accent/50 p-2.5 text-muted-foreground transition-all duration-300 group-hover:bg-primary/10 group-hover:text-primary">
           {React.isValidElement(icon)
-            ? React.cloneElement(icon as React.ReactElement<any>, { className: "h-5 w-5" })
+            ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: "h-5 w-5" })
             : icon}
         </div>
       </div>

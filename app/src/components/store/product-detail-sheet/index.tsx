@@ -195,6 +195,10 @@ export function ProductDetailSheet({
           <Drawer.Portal>
             <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
             <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 flex max-h-[92vh] flex-col rounded-t-[28px] bg-background outline-none">
+              <Drawer.Title className="sr-only">{product.name}</Drawer.Title>
+              <Drawer.Description className="sr-only">
+                Detalle del producto {product.name} de la tienda {slug}
+              </Drawer.Description>
               <div className="mx-auto mt-3 h-1.5 w-12 rounded-full bg-muted-foreground/30" />
               {content}
             </Drawer.Content>
