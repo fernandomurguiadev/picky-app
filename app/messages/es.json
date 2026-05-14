@@ -163,5 +163,36 @@
       "delete": "Eliminar categoría",
       "deleteConfirm": "¿Estás seguro que querés eliminar esta categoría?"
     }
+  },
+  "landing": {
+    "hero": {
+      "badge": "Nueva Era Digital",
+      "title": "Creá tu tienda digital en segundos",
+      "subtitle": "La plataforma más ágil y premium para vender online, recibir pedidos por WhatsApp y gestionar todo en tiempo real.",
+      "ctaPrimary": "Empezar Gratis",
+      "ctaSecondary": "Acceso Comercio"
+    },
+    "features": {
+      "title": "¿Por qué elegir PickyApp?",
+      "subtitle": "Llevá tu negocio al siguiente nivel con herramientas pensadas para vender más.",
+      "mobile": {
+        "title": "Diseño Mobile-First",
+        "desc": "Tus clientes navegan tu catálogo y compran directo desde el celular sin dar vueltas. Fluidez total."
+      },
+      "whatsapp": {
+        "title": "Pedidos por WhatsApp",
+        "desc": "Recibí órdenes estructuradas y limpias listas para procesar, sin chats engorrosos ni confusiones."
+      },
+      "realtime": {
+        "title": "Panel en Tiempo Real",
+        "desc": "Mirá el flujo de tus pedidos segundo a segundo desde un Kanban interactivo ultra-veloz."
+      }
+    },
+    "footer": {
+      "copy": "© 2026 PickyApp. Todos los derechos reservados.",
+      "terms": "Términos",
+      "privacy": "Privacidad"
+    }
   }
 }
+

@@ -114,32 +114,32 @@
 
 ---
 
-### FASE 4 — Tienda Pública: Infraestructura
+### ✅ FASE 4 — Tienda Pública: Infraestructura
 
 **Objetivo:** Layout de tienda con SSR de tema (anti-FOUC), middleware de slug, rutas públicas.
 
 | # | Tarea | Archivos clave | Criterio de done |
 |---|-------|---------------|-----------------|
-| FE4.1 | `app/(store)/[slug]/layout.tsx`: fetch SSR de `StoreSettings`, inyectar CSS variables en `<style>` inline | `app/(store)/[slug]/layout.tsx` | **Sin flash** al cargar la tienda. Color correcto desde el primer render. |
-| FE4.2 | Middleware resuelve `slug → tenantId`: carga al edge desde `GET /stores/:slug/tenant-id`, pasa como header a las pages | `middleware.ts` | `x-tenant-id` disponible en server components |
-| FE4.3 | 404 page si el slug no existe | `app/(store)/[slug]/not-found.tsx` | Slug inválido → página 404 amigable |
-| FE4.4 | `GET /stores/:slug/status` en layout para mostrar badge "Abierto/Cerrado" | `app/(store)/[slug]/layout.tsx` | Badge de estado visible en header de la tienda |
+| FE4.1 | `app/(store)/[slug]/layout.tsx`: fetch SSR de `StoreSettings`, inyectar CSS variables en `<style>` inline | `app/(store)/[slug]/layout.tsx` | **Sin flash** al cargar la tienda. Color correcto desde el primer render. | ✅ |
+| FE4.2 | Middleware resuelve `slug → tenantId`: carga al edge desde `GET /stores/:slug/tenant-id`, pasa como header a las pages | `middleware.ts` | `x-tenant-id` disponible en server components | ✅ |
+| FE4.3 | 404 page si el slug no existe | `app/(store)/[slug]/not-found.tsx` | Slug inválido → página 404 amigable | ✅ |
+| FE4.4 | `GET /stores/:slug/status` en layout para mostrar badge "Abierto/Cerrado" | `app/(store)/[slug]/layout.tsx` | Badge de estado visible en header de la tienda | ✅ |
 
 ---
 
-### FASE 5 — Tienda Pública: Catálogo y Producto
+### ✅ FASE 5 — Tienda Pública: Catálogo y Producto
 
 **Objetivo:** Home de la tienda, grilla de productos, detalle con vaul (móvil) y variantes.
 
 | # | Tarea | Archivos clave | Criterio de done |
 |---|-------|---------------|-----------------|
-| FE5.1 | Home de tienda (RSC): sección de categorías + productos destacados | `app/(store)/[slug]/page.tsx` | Renderiza en servidor. Sin `useEffect`. LCP < 2.5s. |
-| FE5.2 | Página `/[slug]/category/[id]`: grilla de productos por categoría, `ProductCard` | `app/(store)/[slug]/category/[id]/page.tsx` | Grilla 2 columnas en móvil, 3-4 en desktop |
-| FE5.3 | `ProductCard`: imagen (next/image), nombre, precio, botón agregar | `components/store/product-card/` | Imagen con `loading="lazy"`. Precio formateado. |
-| FE5.4 | `ProductDetailSheet` con vaul (móvil): drag gesture, imagen grande, variantes, `QuantitySelector` | `components/store/product-detail-sheet/` | Drawer con drag gesture funciona en touch. |
-| FE5.5 | `ProductDetailSheet` desktop: mismo contenido en un `Dialog` de shadcn | `components/store/product-detail-sheet/` | Detecta viewport y usa Dialog en desktop. |
-| FE5.6 | `VariantSelector`: grupos radio/checkbox, validación de grupos requeridos antes de agregar al carrito | `components/store/variant-selector/` | No puede agregar sin seleccionar grupo `isRequired` |
-| FE5.7 | Buscador en tienda pública: `SearchBar` client component + resultados RSC | `app/(store)/[slug]/search/page.tsx` | Buscar retorna productos relevantes |
+| FE5.1 | Home de tienda (RSC): sección de categorías + productos destacados | `app/(store)/[slug]/page.tsx` | Renderiza en servidor. Sin `useEffect`. LCP < 2.5s. | ✅ |
+| FE5.2 | Página `/[slug]/category/[id]`: grilla de productos por categoría, `ProductCard` | `app/(store)/[slug]/category/[id]/page.tsx` | Grilla 2 columnas en móvil, 3-4 en desktop | ✅ |
+| FE5.3 | `ProductCard`: imagen (next/image), nombre, precio, botón agregar | `components/store/product-card/` | Imagen con `loading="lazy"`. Precio formateado. | ✅ |
+| FE5.4 | `ProductDetailSheet` con vaul (móvil): drag gesture, imagen grande, variantes, `QuantitySelector` | `components/store/product-detail-sheet/` | Drawer con drag gesture funciona en touch. | ✅ |
+| FE5.5 | `ProductDetailSheet` desktop: mismo contenido en un `Dialog` de shadcn | `components/store/product-detail-sheet/` | Detecta viewport y usa Dialog en desktop. | ✅ |
+| FE5.6 | `VariantSelector`: grupos radio/checkbox, validación de grupos requeridos antes de agregar al carrito | `components/store/variant-selector/` | No puede agregar sin seleccionar grupo `isRequired` | ✅ |
+| FE5.7 | Buscador en tienda pública: `SearchBar` client component + resultados RSC | `app/(store)/[slug]/search/page.tsx` | Buscar retorna productos relevantes | ✅ |
 
 ---
 
