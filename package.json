@@ -1,0 +1,17 @@
+{
+  "name": "picky-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "api",
+    "app"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev --prefix api",
+    "dev:app": "npm run dev --prefix app",
+    "dev": "concurrently -n \"backend,frontend\" -c \"bgBlue,bgGreen\" \"npm run dev:api\" \"npm run dev:app\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
