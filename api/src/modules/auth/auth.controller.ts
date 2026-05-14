@@ -15,6 +15,7 @@ import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { ResetPasswordDto } from './dto/reset-password.dto.js';
+import { SelectTenantDto } from './dto/select-tenant.dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from './strategies/jwt.strategy.js';
@@ -35,6 +36,15 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.authService.login(dto, res);
+  }
+
+  @Post('select-tenant')
+  @HttpCode(HttpStatus.OK)
+  selectTenant(
+    @Body() dto: SelectTenantDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.selectTenant(dto.selectionToken, dto.tenantId, res);
   }
 
   @Post('refresh')

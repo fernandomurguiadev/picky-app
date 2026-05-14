@@ -3,26 +3,20 @@ import {
   CreateDateColumn,
   Entity,
   Index,
-  ManyToOne,
-  JoinColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Tenant } from '../../tenants/entities/tenant.entity.js';
 
 export enum UserRole {
   ADMIN = 'admin',
   STAFF = 'staff',
 }
 
-@Index(['tenantId', 'email'], { unique: true })
+@Index(['email'], { unique: true })
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
-
-  @Column({ type: 'uuid' })
-  tenantId!: string;
 
   @Column({ type: 'varchar', length: 255 })
   email!: string;
@@ -50,8 +44,4 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt!: Date;
-
-  @ManyToOne(() => Tenant, { onDelete: 'RESTRICT' })
-  @JoinColumn({ name: 'tenantId' })
-  tenant!: Tenant;
 }

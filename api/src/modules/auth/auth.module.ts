@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { User } from './entities/user.entity.js';
+import { TenantMembership } from './entities/tenant-membership.entity.js';
 import { Tenant } from '../tenants/entities/tenant.entity.js';
 import { StoreSettings } from '../tenants/entities/store-settings.entity.js';
 import { AuthService } from './auth.service.js';
@@ -13,7 +14,7 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Tenant, StoreSettings]),
+    TypeOrmModule.forFeature([User, Tenant, StoreSettings, TenantMembership]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

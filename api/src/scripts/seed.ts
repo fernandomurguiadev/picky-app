@@ -4,6 +4,7 @@ import { AppDataSource } from '../config/data-source.js';
 import { Tenant } from '../modules/tenants/entities/tenant.entity.js';
 import { StoreSettings } from '../modules/tenants/entities/store-settings.entity.js';
 import { User, UserRole } from '../modules/auth/entities/user.entity.js';
+import { TenantMembership } from '../modules/auth/entities/tenant-membership.entity.js';
 import { Category } from '../modules/catalog/entities/category.entity.js';
 import { Product } from '../modules/catalog/entities/product.entity.js';
 
@@ -41,7 +42,8 @@ async function seed() {
       await queryRunner.query(`DELETE FROM products WHERE "tenantId" IN (${tenantIds})`);
       await queryRunner.query(`DELETE FROM categories WHERE "tenantId" IN (${tenantIds})`);
       await queryRunner.query(`DELETE FROM store_settings WHERE "tenantId" IN (${tenantIds})`);
-      await queryRunner.query(`DELETE FROM users WHERE "tenantId" IN (${tenantIds})`);
+      await queryRunner.query(`DELETE FROM tenant_memberships WHERE "tenantId" IN (${tenantIds})`);
+      await queryRunner.query(`DELETE FROM users WHERE email = '${email}'`);
       await queryRunner.query(`DELETE FROM tenants WHERE id IN (${tenantIds})`);
     }
 
@@ -76,11 +78,19 @@ async function seed() {
       })
     );
 
-    await AppDataSource.getRepository(User).save(
+    const adminUser = await AppDataSource.getRepository(User).save(
       AppDataSource.getRepository(User).create({
-        tenantId: burgerTenant.id,
         email: email,
         passwordHash: passwordHash,
+        role: UserRole.ADMIN,
+        isActive: true
+      })
+    );
+
+    await AppDataSource.getRepository(TenantMembership).save(
+      AppDataSource.getRepository(TenantMembership).create({
+        userId: adminUser.id,
+        tenantId: burgerTenant.id,
         role: UserRole.ADMIN,
         isActive: true
       })
@@ -229,12 +239,11 @@ async function seed() {
       })
     );
 
-    // Usuario Admin (Con alias de gmail para evitar colisiones de login unificado)
-    await AppDataSource.getRepository(User).save(
-      AppDataSource.getRepository(User).create({
+    // Vincular el MISMO Usuario Admin a la segunda tienda (Cerrajería)
+    await AppDataSource.getRepository(TenantMembership).save(
+      AppDataSource.getRepository(TenantMembership).create({
+        userId: adminUser.id,
         tenantId: lockTenant.id,
-        email: 'fernandoemanuelmp+cerrajeria@gmail.com',
-        passwordHash: passwordHash,
         role: UserRole.ADMIN,
         isActive: true
       })
@@ -343,17 +352,14 @@ async function seed() {
 
     console.log('\n✨ ¡BASE DE DATOS POBLADA CON ÉXITO Y TONELADAS DE EJEMPLOS!');
     console.log('-----------------------------------------------------');
-    console.log(`🔑 Contraseña Unificada:  ${rawPassword}`);
-    console.log('-----------------------------------------------------');
-    console.log('🍔 ACCESO PICKY BURGERS:');
+    console.log('🔑 CREDENCIALES UNIFICADAS MULTI-TIENDA:');
     console.log(`   📧 Email: ${email}`);
-    console.log('   👉 Admin: http://localhost:2000/auth/login');
-    console.log('   👉 Store: http://localhost:2000/picky-burgers');
+    console.log(`   🔑 Contraseña: ${rawPassword}`);
     console.log('-----------------------------------------------------');
-    console.log('🔑 ACCESO PICKY CERRAJERÍA:');
-    console.log('   📧 Email: fernandoemanuelmp+cerrajeria@gmail.com');
-    console.log('   👉 Admin: http://localhost:2000/auth/login');
-    console.log('   👉 Store: http://localhost:2000/picky-cerrajeria');
+    console.log('👉 Con esta cuenta ahora tenés acceso a AMBOS comercios:');
+    console.log('   🍔 Picky Burgers: http://localhost:2000/picky-burgers');
+    console.log('   🔑 Picky Cerrajería: http://localhost:2000/picky-cerrajeria');
+    console.log('👉 Admin Dashboard: http://localhost:2000/auth/login');
     console.log('-----------------------------------------------------');
 
     await queryRunner.release();

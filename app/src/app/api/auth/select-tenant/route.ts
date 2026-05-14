@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
+const selectTenantSchema = z.object({
+  selectionToken: z.string().min(1),
+  tenantId: z.string().uuid(),
 });
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
@@ -23,7 +23,7 @@ function parseJwt(token: string) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const parsed = loginSchema.safeParse(body);
+    const parsed = selectTenantSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const backendRes = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
+    const backendRes = await fetch(`${BACKEND_URL}/api/v1/auth/select-tenant`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(parsed.data),
@@ -46,13 +46,6 @@ export async function POST(req: NextRequest) {
     }
 
     const payload = data.data ?? data;
-
-    // If the backend requires tenant selection, forward the selection object directly
-    if (payload.requiresSelection) {
-      return NextResponse.json(payload);
-    }
-
-    // Normal single-store login
     const accessToken = payload.access_token;
     const claims = parseJwt(accessToken);
 
@@ -62,7 +55,7 @@ export async function POST(req: NextRequest) {
       role: claims?.role,
     });
 
-    // Copy Set-Cookie from backend for the refresh token
+    // Forward Set-Cookie for rotated refresh token
     const setCookie = backendRes.headers.get("set-cookie");
     if (setCookie) {
       response.headers.set("set-cookie", setCookie);

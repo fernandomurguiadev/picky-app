@@ -10,6 +10,13 @@ export const AuthErrors = {
     details: { slug },
   }),
 
+  emailInUse: (email: string): ErrorDefinition => ({
+    statusCode: HttpStatus.CONFLICT,
+    code: AuthErrorCodes.EMAIL_ALREADY_IN_USE,
+    message: `El email '${email}' ya está registrado.`,
+    details: { email },
+  }),
+
   invalidResetToken: (): ErrorDefinition => ({
     statusCode: HttpStatus.BAD_REQUEST,
     code: AuthErrorCodes.INVALID_RESET_TOKEN,
