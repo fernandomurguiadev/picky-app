@@ -25,6 +25,10 @@ export function useWebSocket({ tenantId, on, enabled = true }: UseWebSocketOptio
   const accessToken = useAuthStore((s) => s.accessToken);
   const clearAuth = useAuthStore((s) => s.clearAuth);
 
+  // Sincronizar handlers en una referencia mutable para evitar closures viejos (stale)
+  const handlersRef = useRef(on);
+  handlersRef.current = on;
+
   const connect = useCallback(() => {
     if (!enabled || !accessToken) return;
 
@@ -62,15 +66,21 @@ export function useWebSocket({ tenantId, on, enabled = true }: UseWebSocketOptio
       window.location.href = "/auth/login?reason=session_expired";
     });
 
-    // Registrar handlers personalizados
-    if (on) {
-      Object.entries(on).forEach(([event, handler]) => {
-        socket.on(event, handler);
+    // Escuchar eventos genéricos redirigiendo al handler de la Ref reactiva
+    // Esto blinda el hook contra re-registros inútiles y stale closures.
+    const registerRedirect = (event: string) => {
+      socket.on(event, (data: unknown) => {
+        handlersRef.current?.[event]?.(data);
       });
+    };
+
+    // Registramos los eventos que nos pasaron inicialmente
+    if (handlersRef.current) {
+      Object.keys(handlersRef.current).forEach(registerRedirect);
     }
 
     return socket;
-  }, [accessToken, clearAuth, enabled, on, tenantId]);
+  }, [accessToken, clearAuth, enabled, tenantId]);
 
   useEffect(() => {
     const socket = connect();
@@ -81,8 +91,7 @@ export function useWebSocket({ tenantId, on, enabled = true }: UseWebSocketOptio
         socketRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, accessToken, tenantId]);
+  }, [connect]);
 
   const emit = useCallback((event: string, data?: unknown) => {
     socketRef.current?.emit(event, data);

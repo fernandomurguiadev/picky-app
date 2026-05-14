@@ -93,21 +93,31 @@ export function OrderCard({ order, onClick, onStatusChange, isPendingMutation }:
   // --- Swipe Handlers ---
   const handleTouchStart = (e: TouchEvent) => {
     startX.current = e.touches[0].clientX;
-    setIsDragging(true);
   };
 
   const handleTouchMove = (e: TouchEvent) => {
-    if (!isDragging) return;
     const currentX = e.touches[0].clientX;
     const diff = currentX - startX.current;
     
+    // Umbral de tolerancia de 10px para no interferir con el scroll vertical
+    if (!isDragging) {
+      if (Math.abs(diff) > 10) {
+        setIsDragging(true);
+      } else {
+        return; // Aún no es un arrastre claro
+      }
+    }
+    
+    // Ajustamos la diferencia restando el umbral para un inicio suave (desde cero)
+    const adjustedDiff = diff > 0 ? diff - 10 : diff + 10;
+    
     // Limitamos el swipe
     // Si no puede cancelar o avanzar, bloqueamos esa dirección
-    if (diff > 0 && !nextStatus) return; 
-    if (diff < 0 && !canCancel) return;
+    if (adjustedDiff > 0 && !nextStatus) return; 
+    if (adjustedDiff < 0 && !canCancel) return;
     
     // Resistencia elástica pasada cierta cantidad
-    const cappedDiff = Math.max(-120, Math.min(120, diff));
+    const cappedDiff = Math.max(-120, Math.min(120, adjustedDiff));
     setDragX(cappedDiff);
   };
 

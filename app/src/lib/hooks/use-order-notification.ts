@@ -25,7 +25,13 @@ function playNotificationSound() {
     gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8); // Fade out de 800ms
 
     oscillator.start(ctx.currentTime);
-    oscillator.stop(ctx.currentTime + 0.8);
+    const duration = 0.8;
+    oscillator.stop(ctx.currentTime + duration);
+
+    // Liberación explícita post reproducción para evitar sobrepasar los límites de hardware del browser
+    setTimeout(() => {
+      ctx.close().catch(() => {});
+    }, duration * 1000 + 100);
   } catch (err) {
     console.warn("[Notification] No se pudo reproducir sonido:", err);
   }
