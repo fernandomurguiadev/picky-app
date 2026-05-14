@@ -31,6 +31,14 @@ export class UploadService {
       );
     }
 
+    // Local Mock Fallback if Cloudinary credentials are not configured in development
+    if (!process.env.CLOUDINARY_CLOUD_NAME) {
+      return {
+        url: `https://api.dicebear.com/7.x/initials/svg?seed=BurgerFinalQA`,
+        publicId: `mock_logo_${Date.now()}`,
+      };
+    }
+
     return new Promise<{ url: string; publicId: string }>((resolve, reject) => {
       const stream = this.cloudinary.uploader.upload_stream(
         {

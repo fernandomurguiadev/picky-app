@@ -57,14 +57,12 @@ export default function OnboardingPage() {
   // Submits per step
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!logoUrl) {
-      toast.error("Subí un logo para continuar", "Tu marca necesita una identidad visual.");
-      return;
-    }
+    // El logo ahora es opcional para no bloquear la experiencia del usuario
+    const finalLogoUrl = logoUrl || null;
     setIsSubmitting(true);
     try {
       await updateSettingsMutation.mutateAsync({
-        logoUrl,
+        logoUrl: finalLogoUrl,
         description: description || null,
       });
       toast.success("¡Identidad de marca configurada!");
