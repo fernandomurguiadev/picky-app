@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial, QueryRunner } from 'typeorm';
 
 import { CommonErrors } from '../../common/errors/common.errors.js';
 import { toBusinessException } from '../../common/errors/business.exception.js';
@@ -14,6 +14,10 @@ export interface StoreStatusResult {
   nextChange: string | null;
   source: 'manual' | 'schedule';
 }
+
+export type StoreSettingsResponse = Omit<StoreSettings, 'tenant'> & {
+  tenant: Pick<Tenant, 'id' | 'name' | 'slug' | 'isActive'> | null;
+};
 
 // ─── Helpers de timezone ──────────────────────────────────────────────────
 
@@ -104,6 +108,7 @@ export class TenantsService {
       theme: {
         primaryColor: settings?.primaryColor ?? '#000000',
         accentColor: settings?.accentColor ?? '#ffffff',
+        backgroundColor: settings?.backgroundColor ?? '#ffffff',
       },
       deliveryEnabled: settings?.deliveryEnabled ?? false,
       deliveryCost: settings?.deliveryCost ?? 0,
@@ -144,40 +149,73 @@ export class TenantsService {
   }
 
   /** B3.4 — Configuración completa del tenant autenticado */
-  async getMySettings(tenantId: string): Promise<StoreSettings | null> {
-    return this.settingsRepo.findOne({ 
-      where: { tenantId },
+  async getMySettings(tenantId: string, runner?: QueryRunner): Promise<StoreSettingsResponse | null> {
+    if (!tenantId) return null;
+
+    const repo = runner ? runner.manager.getRepository(StoreSettings) : this.settingsRepo;
+    const settings = await repo.findOne({
+      where: { tenantId: tenantId as any },
       relations: ['tenant'],
     });
+
+    if (!settings) return null;
+
+    // Rompemos la referencia circular para evitar el 500 en la serialización JSON
+    const { tenant, ...rest } = settings;
+    return {
+      ...rest,
+      tenant: tenant ? {
+        id: tenant.id,
+        name: tenant.name,
+        slug: tenant.slug,
+        isActive: tenant.isActive,
+      } : null,
+    } as StoreSettingsResponse;
   }
 
   /** B3.5 — Upsert de StoreSettings (crea si no existe) */
-  async updateMySettings(tenantId: string, dto: UpdateStoreSettingsDto): Promise<StoreSettings> {
-    let settings = await this.settingsRepo.findOne({ where: { tenantId } });
+  async updateMySettings(tenantId: string, dto: UpdateStoreSettingsDto, runner?: QueryRunner): Promise<StoreSettingsResponse | null> {
+    console.log(`[TenantsService] updateMySettings para tenantId: ${tenantId}`);
+    const repo = runner ? runner.manager.getRepository(StoreSettings) : this.settingsRepo;
+    
+    let settings = await repo.findOne({ 
+      where: { tenantId } as any
+    });
 
     if (!settings) {
-      settings = this.settingsRepo.create({ tenantId, ...dto } as Partial<StoreSettings> & { tenantId: string });
+      console.log(`[TenantsService] No se encontraron settings, creando nuevos para ${tenantId}`);
+      settings = repo.create({ tenantId, ...dto });
     } else {
+      console.log(`[TenantsService] Actualizando settings existentes ID: ${settings.id}`);
       Object.assign(settings, dto);
     }
 
-    return this.settingsRepo.save(settings);
+    const saved = await repo.save(settings!);
+    console.log(`[TenantsService] Settings guardados exitosamente. ID: ${saved.id}`);
+    
+    return this.getMySettings(tenantId, runner);
   }
 
   /** B8 — Override manual de apertura/cierre (null = volver al horario) */
   async toggleStoreStatus(
     tenantId: string,
     isManualOpen: boolean | null,
-  ): Promise<{ isManualOpen: boolean | null }> {
-    let settings = await this.settingsRepo.findOne({ where: { tenantId } });
+    runner?: QueryRunner,
+  ): Promise<StoreSettingsResponse | null> {
+    const repo = runner ? runner.manager.getRepository(StoreSettings) : this.settingsRepo;
+    let settings = await repo.findOne({ 
+      where: { tenantId } as any 
+    });
 
     if (!settings) {
-      settings = this.settingsRepo.create({ tenantId, isManualOpen } as Partial<StoreSettings> & { tenantId: string });
+      console.log(`[TenantsService] No se encontraron settings en toggle, creando nuevos para ${tenantId}`);
+      settings = repo.create({ tenantId, isManualOpen });
     } else {
+      console.log(`[TenantsService] Toggle status para settings existentes ID: ${settings.id}`);
       settings.isManualOpen = isManualOpen;
     }
 
-    await this.settingsRepo.save(settings);
-    return { isManualOpen };
+    await repo.save(settings!);
+    return this.getMySettings(tenantId, runner);
   }
 }

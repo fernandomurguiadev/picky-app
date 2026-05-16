@@ -12,6 +12,8 @@ import {
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
 import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
+import { RlsRunner } from '../../common/decorators/rls-runner.decorator.js';
+import type { QueryRunner } from 'typeorm';
 import { TenantsService } from './tenants.service.js';
 import { UpdateStoreSettingsDto } from './dto/update-store-settings.dto.js';
 import { ToggleStoreStatusDto } from './dto/toggle-store-status.dto.js';
@@ -24,8 +26,11 @@ export class TenantsController {
 
   @Get('me/settings')
   @UseGuards(JwtAuthGuard)
-  getMySettings(@TenantId() tenantId: string) {
-    return this.tenantsService.getMySettings(tenantId);
+  getMySettings(
+    @TenantId() tenantId: string,
+    @RlsRunner() runner: QueryRunner,
+  ) {
+    return this.tenantsService.getMySettings(tenantId, runner);
   }
 
   @Patch('me')
@@ -34,8 +39,9 @@ export class TenantsController {
   updateMySettings(
     @TenantId() tenantId: string,
     @Body() dto: UpdateStoreSettingsDto,
+    @RlsRunner() runner: QueryRunner,
   ) {
-    return this.tenantsService.updateMySettings(tenantId, dto);
+    return this.tenantsService.updateMySettings(tenantId, dto, runner);
   }
 
   @Patch('me/status')
@@ -44,8 +50,9 @@ export class TenantsController {
   toggleStatus(
     @TenantId() tenantId: string,
     @Body() dto: ToggleStoreStatusDto,
+    @RlsRunner() runner: QueryRunner,
   ) {
-    return this.tenantsService.toggleStoreStatus(tenantId, dto.isManualOpen);
+    return this.tenantsService.toggleStoreStatus(tenantId, dto.isManualOpen, runner);
   }
 
   // ─── Rutas públicas ──────────────────────────────────────────────────────
