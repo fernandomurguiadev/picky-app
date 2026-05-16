@@ -11,6 +11,7 @@ import {
 
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
+import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
 import { TenantsService } from './tenants.service.js';
 import { UpdateStoreSettingsDto } from './dto/update-store-settings.dto.js';
 import { ToggleStoreStatusDto } from './dto/toggle-store-status.dto.js';
@@ -49,16 +50,19 @@ export class TenantsController {
 
   // ─── Rutas públicas ──────────────────────────────────────────────────────
 
+  @SkipRls()
   @Get(':slug/tenant-id')
   getTenantId(@Param('slug') slug: string) {
     return this.tenantsService.getTenantId(slug);
   }
 
+  @SkipRls()
   @Get(':slug/status')
   getStoreStatus(@Param('slug') slug: string) {
     return this.tenantsService.getStoreStatus(slug);
   }
 
+  @SkipRls()
   @Get(':slug')
   getPublicStore(@Param('slug') slug: string) {
     return this.tenantsService.getPublicStore(slug);

@@ -17,6 +17,7 @@ import {
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
 import { CatalogService } from './catalog.service.js';
+import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
 import { ReorderProductsDto } from './dto/reorder-products.dto.js';
@@ -24,6 +25,7 @@ import { PaginationQueryDto, ProductsQueryDto } from './dto/pagination-query.dto
 
 // ─── Public store routes ───────────────────────────────────────────────────
 
+@SkipRls()
 @Controller('stores/:slug')
 export class StorefrontCatalogController {
   constructor(private readonly catalogService: CatalogService) {}

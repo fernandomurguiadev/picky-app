@@ -19,7 +19,9 @@ import { SelectTenantDto } from './dto/select-tenant.dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from './strategies/jwt.strategy.js';
+import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
 
+@SkipRls()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

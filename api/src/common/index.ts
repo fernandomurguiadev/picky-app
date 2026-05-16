@@ -9,6 +9,7 @@ export { HttpExceptionFilter } from './filters/http-exception.filter.js';
 // Interceptors
 export { TransformInterceptor } from './interceptors/transform.interceptor.js';
 export { TenantContextInterceptor } from './interceptors/tenant-context.interceptor.js';
+export { RlsInterceptor } from './interceptors/rls.interceptor.js';
 
 // Guards
 export { JwtAuthGuard } from './guards/jwt-auth.guard.js';
@@ -19,3 +20,6 @@ export { TenantGuard } from './guards/tenant.guard.js';
 export { TenantId } from './decorators/tenant-id.decorator.js';
 export { CurrentUser } from './decorators/current-user.decorator.js';
 export { Roles } from './decorators/roles.decorator.js';
+export { SkipRls } from './decorators/skip-rls.decorator.js';
+export { RlsRunner } from './decorators/rls-runner.decorator.js';
+

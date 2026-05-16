@@ -11,6 +11,7 @@ import { validateEnv } from './config/env.config.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor.js';
 import { TenantContextInterceptor } from './common/interceptors/tenant-context.interceptor.js';
+import { RlsInterceptor } from './common/interceptors/rls.interceptor.js';
 import { TenantsModule } from './modules/tenants/tenants.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { CatalogModule } from './modules/catalog/catalog.module.js';
@@ -43,6 +44,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module.js';
     AppService,
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
     { provide: APP_INTERCEPTOR, useClass: TenantContextInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: RlsInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
   ],
 })
