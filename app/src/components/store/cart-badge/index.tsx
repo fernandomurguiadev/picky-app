@@ -37,13 +37,13 @@ export function CartBadge() {
     <button
       type="button"
       className={cn(
-        "group relative flex h-10 w-10 items-center justify-center rounded-full bg-muted/40 text-foreground hover:bg-muted transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]",
+        "group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/10 dark:bg-black/15 text-[var(--color-primary-foreground)] hover:bg-white/20 dark:hover:bg-black/25 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-foreground)]/30 hover:scale-105 active:scale-95",
         isAnimating && "animate-bounce"
       )}
       aria-label={`Ver carrito, ${totalItems} productos`}
     >
-      <ShoppingBag className="h-5 w-5 group-hover:text-[var(--color-primary)] transition-colors" />
-      <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--color-primary)] text-[10px] font-bold text-white animate-in zoom-in-50">
+      <ShoppingBag className="h-5 w-5 transition-transform group-hover:scale-105" />
+      <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--store-accent)] text-[10px] font-extrabold text-[var(--store-accent-foreground)] shadow-xs animate-in zoom-in-50 border border-[var(--color-primary)]">
         {totalItems}
       </span>
     </button>

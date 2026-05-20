@@ -1,106 +1,37 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ShoppingCart, Eye, Check, Plus, Minus, HelpCircle } from "lucide-react";
 
 const hexRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
 
 const schema = z.object({
   primaryColor: z.string().regex(hexRegex, "Color hex inválido (ej. #FF5500)"),
   accentColor: z.string().regex(hexRegex, "Color hex inválido (ej. #FFFFFF)"),
+  backgroundColor: z.string().regex(hexRegex, "Color hex inválido"),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-// Helper rápido para calcular contraste (blanco o negro) basado en brillo hexadecimal
-function getContrastColor(hexColor: string) {
-  // Si no es hex válido, por defecto blanco
-  if (!hexRegex.test(hexColor)) return "#ffffff";
-  
-  const hex = hexColor.replace("#", "");
-  const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
-  const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
-  const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
-  
-  // Fórmula de luminiscencia estándar YIQ
-  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 128 ? "#000000" : "#ffffff";
-}
+const BG_PRESETS = [
+  { name: "Modern Light", hex: "#FFFFFF", isDark: false },
+  { name: "Minimal Cream", hex: "#FDFBF7", isDark: false },
+  { name: "Soft Gray", hex: "#F8F9FA", isDark: false },
+  { name: "Sage Green", hex: "#F2F5F1", isDark: false },
+  { name: "Dark Charcoal", hex: "#111827", isDark: true },
+  { name: "Obsidian Night", hex: "#09090B", isDark: true },
+];
 
-function StorePreview({
-  primaryColor,
-  accentColor,
-  storeName,
-}: {
-  primaryColor: string;
-  accentColor: string;
-  storeName: string;
-}) {
-  const textOnPrimary = getContrastColor(primaryColor);
-  const textOnAccent = getContrastColor(accentColor);
-
-  return (
-    <div
-      className="rounded-xl border border-border overflow-hidden shadow-sm bg-background"
-      style={{ "--store-primary": primaryColor, "--store-accent": accentColor } as React.CSSProperties}
-    >
-      {/* Header preview */}
-      <div
-        className="px-4 py-3 flex items-center justify-between transition-colors duration-200"
-        style={{ backgroundColor: primaryColor, color: textOnPrimary }}
-      >
-        <span className="font-bold text-sm">{storeName || "Tu tienda"}</span>
-        <div className="flex gap-2">
-          <div className="h-4 w-16 rounded bg-current/20" />
-          <div className="h-4 w-4 rounded-full bg-current/30" />
-        </div>
-      </div>
-
-      {/* Content preview */}
-      <div className="p-4 space-y-3">
-        <div className="flex gap-2 overflow-hidden">
-          {["Cat 1", "Cat 2", "Cat 3"].map((cat) => (
-            <div
-              key={cat}
-              className="shrink-0 text-xs px-3 py-1 rounded-full transition-colors duration-200"
-              style={{ backgroundColor: primaryColor, color: textOnPrimary }}
-            >
-              {cat}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          {[1, 2].map((i) => (
-            <div key={i} className="rounded-lg border border-border p-2 space-y-2">
-              <div className="h-16 rounded bg-muted" />
-              <div className="space-y-1">
-                <div className="h-2 w-3/4 rounded bg-muted" />
-                <div className="h-2 w-1/2 rounded bg-muted" />
-              </div>
-              {/* Botón de acción principal usa el color SECUNDARIO (Acento) */}
-              <button
-                type="button"
-                className="w-full text-xs py-1.5 rounded-lg font-medium transition-all duration-200 hover:opacity-90 active:scale-95"
-                style={{ backgroundColor: accentColor, color: textOnAccent }}
-              >
-                Agregar
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+import { getContrastColor, StorePreview } from "../store-preview";
 
 interface ThemeEditorProps {
-  value: { primaryColor: string; accentColor: string } | null;
+  value: { primaryColor: string; accentColor: string; backgroundColor?: string } | null;
   storeName: string;
   onSubmit: (values: FormValues) => Promise<void>;
   isPending?: boolean;
@@ -119,6 +50,7 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
     defaultValues: {
       primaryColor: value?.primaryColor ?? "#000000",
       accentColor: value?.accentColor ?? "#ffffff",
+      backgroundColor: value?.backgroundColor ?? "#ffffff",
     },
   });
 
@@ -128,24 +60,79 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
       reset({
         primaryColor: value.primaryColor,
         accentColor: value.accentColor,
+        backgroundColor: value.backgroundColor ?? "#ffffff",
       });
     }
   }, [value, reset]);
 
   const primaryColor = watch("primaryColor");
   const accentColor = watch("accentColor");
+  const backgroundColor = watch("backgroundColor");
 
   // Helpers seguros de validación para renderizar el input picker
   const safePrimary = hexRegex.test(primaryColor) ? primaryColor : "#000000";
   const safeAccent = hexRegex.test(accentColor) ? accentColor : "#ffffff";
+  const safeBg = hexRegex.test(backgroundColor) ? backgroundColor : "#ffffff";
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <section className="rounded-xl border border-border p-6 space-y-5 bg-card">
+          {/* Paletas de Colores Recomendadas */}
+          <div className="space-y-2 pb-4 border-b border-border/60">
+            <Label className="text-xs font-semibold block text-muted-foreground uppercase tracking-wider">Paletas Recomendadas</Label>
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              {[
+                { name: "Obsidiana", primary: "#18181B", accent: "#E4E4E7", bg: "#FFFFFF" },
+                { name: "Burdeos", primary: "#6B1D2F", accent: "#F87171", bg: "#FDFBF7" },
+                { name: "Esmeralda", primary: "#1B4332", accent: "#34D399", bg: "#F2F5F1" },
+                { name: "Terracota", primary: "#C05C3E", accent: "#FB923C", bg: "#FDFBF7" },
+                { name: "Prusia", primary: "#0F3D59", accent: "#2DD4BF", bg: "#F8F9FA" },
+                { name: "Cacao Artisan", primary: "#4A3728", accent: "#F59E0B", bg: "#FDFBF7" },
+              ].map((preset) => {
+                const isSelected = 
+                  primaryColor.toLowerCase() === preset.primary.toLowerCase() && 
+                  accentColor.toLowerCase() === preset.accent.toLowerCase() && 
+                  backgroundColor.toLowerCase() === preset.bg.toLowerCase();
+                return (
+                  <button
+                    key={preset.name}
+                    type="button"
+                    onClick={() => {
+                      setValue("primaryColor", preset.primary, { shouldDirty: true, shouldValidate: true });
+                      setValue("accentColor", preset.accent, { shouldDirty: true, shouldValidate: true });
+                      setValue("backgroundColor", preset.bg, { shouldDirty: true, shouldValidate: true });
+                    }}
+                    className={`relative px-3 py-1.5 rounded-full transition-all border text-[10px] font-bold flex items-center gap-1.5 cursor-pointer shadow-xs hover:scale-105 active:scale-95 select-none ${
+                      isSelected 
+                        ? "border-primary bg-primary/5 ring-1 ring-primary text-primary"
+                        : "border-border bg-card text-muted-foreground hover:text-foreground"
+                    }`}
+                    aria-label={preset.name}
+                  >
+                    {/* Mini indicador circular de la paleta */}
+                    <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-black/5 shrink-0" style={{ backgroundColor: preset.primary }}>
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: preset.accent }} />
+                    </span>
+                    {preset.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Color Primario */}
           <div className="space-y-1.5">
-            <Label htmlFor="t-primary" className="text-sm font-medium">Color primario</Label>
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="t-primary" className="text-sm font-medium">Color primario</Label>
+              <div className="group relative hidden md:inline-flex">
+                <HelpCircle className="w-3.5 h-3.5 text-muted-foreground/60 hover:text-muted-foreground cursor-pointer transition-colors" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2.5 bg-popover text-popover-foreground text-[10px] rounded-lg border border-border shadow-md leading-relaxed z-50 pointer-events-none select-none animate-in fade-in duration-200">
+                  Se aplica al fondo del encabezado de tu tienda, a las tarjetas de productos en el catálogo y a las categorías activas.
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-popover" />
+                </div>
+              </div>
+            </div>
             <div className="flex items-center gap-3">
               <input
                 type="color"
@@ -162,6 +149,10 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
                 aria-invalid={!!errors.primaryColor}
               />
             </div>
+            {/* Helper inline para mobile */}
+            <p className="md:hidden text-xs text-muted-foreground/80 leading-normal pt-1">
+              Se aplica al fondo del encabezado, a las tarjetas de productos y categorías activas.
+            </p>
             {errors.primaryColor && (
               <p className="text-xs text-destructive font-medium">{errors.primaryColor.message}</p>
             )}
@@ -169,7 +160,16 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
 
           {/* Color Secundario */}
           <div className="space-y-1.5">
-            <Label htmlFor="t-accent" className="text-sm font-medium">Color secundario</Label>
+            <div className="flex items-center gap-1.5">
+              <Label htmlFor="t-accent" className="text-sm font-medium">Color secundario</Label>
+              <div className="group relative hidden md:inline-flex">
+                <HelpCircle className="w-3.5 h-3.5 text-muted-foreground/60 hover:text-muted-foreground cursor-pointer transition-colors" />
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2.5 bg-popover text-popover-foreground text-[10px] rounded-lg border border-border shadow-md leading-relaxed z-50 pointer-events-none select-none animate-in fade-in duration-200">
+                  Se aplica a los botones de acción rápida como agregar al carrito y al botón de confirmación del pedido.
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-popover" />
+                </div>
+              </div>
+            </div>
             <div className="flex items-center gap-3">
               <input
                 type="color"
@@ -186,8 +186,74 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
                 aria-invalid={!!errors.accentColor}
               />
             </div>
+            {/* Helper inline para mobile */}
+            <p className="md:hidden text-xs text-muted-foreground/80 leading-normal pt-1">
+              Se aplica a los botones de agregar al carrito y confirmación del pedido.
+            </p>
             {errors.accentColor && (
               <p className="text-xs text-destructive font-medium">{errors.accentColor.message}</p>
+            )}
+          </div>
+
+          <hr className="my-6 border-border/60" />
+
+          {/* Selector de Fondo (Presets Curados) */}
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <Label className="text-sm font-semibold block">Fondo de la tienda</Label>
+                <div className="group relative hidden md:inline-flex">
+                  <HelpCircle className="w-3.5 h-3.5 text-muted-foreground/60 hover:text-muted-foreground cursor-pointer transition-colors" />
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2.5 bg-popover text-popover-foreground text-[10px] rounded-lg border border-border shadow-md leading-relaxed z-50 pointer-events-none select-none animate-in fade-in duration-200">
+                    Define la atmósfera general del catálogo. Podés elegir esquemas claros elegantes o temas oscuros muy modernos.
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-popover" />
+                  </div>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">Elegí una de nuestras atmósferas premium curadas para el catálogo.</p>
+              {/* Helper inline para mobile */}
+              <p className="md:hidden text-xs text-muted-foreground/80 leading-normal pt-1">
+                Define la atmósfera de tu catálogo (fondos claros minimalistas o temas oscuros).
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
+              {BG_PRESETS.map((preset) => {
+                const isSelected = safeBg.toLowerCase() === preset.hex.toLowerCase();
+                return (
+                  <button
+                    key={preset.hex}
+                    type="button"
+                    onClick={() => setValue("backgroundColor", preset.hex, { shouldDirty: true, shouldValidate: true })}
+                    className={`group relative flex flex-col p-2 rounded-xl border transition-all text-left h-[80px] select-none ${
+                      isSelected 
+                        ? "border-primary ring-2 ring-primary/20 bg-primary/5" 
+                        : "border-border hover:border-muted-foreground/40 hover:shadow-sm bg-card"
+                    }`}
+                    aria-pressed={isSelected}
+                  >
+                    {/* Mini preview del color con sombra sutil */}
+                    <div 
+                      className="w-full h-6 rounded-lg shadow-inner border transition-all duration-200 group-hover:scale-[1.01]" 
+                      style={{ 
+                        backgroundColor: preset.hex,
+                        borderColor: preset.isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)"
+                      }} 
+                    />
+                    <div className="mt-2 px-0.5 w-full">
+                      <span className="text-[10px] font-bold block truncate leading-none tracking-tight">{preset.name}</span>
+                      <span className="text-[8px] font-mono opacity-60 leading-none mt-1 block">{preset.hex}</span>
+                    </div>
+                    {isSelected && (
+                      <div className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <input type="hidden" {...register("backgroundColor")} />
+            {errors.backgroundColor && (
+              <p className="text-xs text-destructive font-medium">{errors.backgroundColor.message}</p>
             )}
           </div>
         </section>
@@ -208,6 +274,7 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
         <StorePreview
           primaryColor={safePrimary}
           accentColor={safeAccent}
+          backgroundColor={safeBg}
           storeName={storeName}
         />
       </div>

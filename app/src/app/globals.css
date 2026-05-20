@@ -79,6 +79,22 @@
   --font-mono: var(--font-geist-mono);
 }
 
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.09 0 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.12 0 0);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(0.95 0 0);
+  --muted: oklch(0.18 0 0);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.18 0 0);
+  --accent-foreground: oklch(0.95 0 0);
+  --border: oklch(0.22 0 0);
+  --input: oklch(0.22 0 0);
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
@@ -107,5 +123,29 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Enforce dynamic contrast color on elements with dynamic primary backgrounds */
+[class*="bg-[var(--color-primary)]"],
+[class*="bg-[var(--store-primary)]"],
+.bg-\[var\(--color-primary\)\],
+.bg-\[var\(--store-primary\)\] {
+  color: var(--color-primary-foreground) !important;
+}
+
+[class*="bg-[var(--color-primary)]"] *,
+[class*="bg-[var(--store-primary)]"] * {
+  color: inherit !important;
+}
+
+/* Enforce dynamic contrast color on elements with dynamic accent/secondary backgrounds */
+[class*="bg-[var(--store-accent)]"],
+.bg-\[var\(--store-accent\)\] {
+  color: var(--store-accent-foreground) !important;
+}
+
+[class*="bg-[var(--store-accent)]"] *,
+.bg-\[var\(--store-accent\)\] * {
+  color: inherit !important;
 }
 

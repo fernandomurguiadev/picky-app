@@ -9,17 +9,17 @@ export function StoreStatusBadge({ isOpen, className }: StoreStatusBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold shadow-xs",
         isOpen
-          ? "bg-green-100 text-green-800"
-          : "bg-gray-100 text-gray-600",
+          ? "bg-emerald-500/15 text-emerald-100 border border-emerald-500/30"
+          : "bg-[var(--store-accent)] text-[var(--store-accent-foreground)]",
         className
       )}
     >
       <span
         className={cn(
           "h-1.5 w-1.5 rounded-full",
-          isOpen ? "bg-green-500" : "bg-gray-400"
+          isOpen ? "bg-emerald-400" : "bg-[var(--store-accent-foreground)]"
         )}
       />
       {isOpen ? "Abierto" : "Cerrado"}

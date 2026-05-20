@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
@@ -52,6 +53,17 @@ export class UpdateStoreSettingsDto {
   @IsOptional()
   @Matches(/^#[0-9A-Fa-f]{6}$/, { message: 'accentColor must be a valid hex color (#RRGGBB)' })
   accentColor?: string;
+
+  @IsOptional()
+  @IsIn([
+    '#FFFFFF', '#ffffff',
+    '#FDFBF7', '#fdfbf7',
+    '#F8F9FA', '#f8f9fa',
+    '#F2F5F1', '#f2f5f1',
+    '#111827',
+    '#09090B', '#09090b'
+  ], { message: 'backgroundColor must be one of the curated elegant presets' })
+  backgroundColor?: string;
 
   // Entrega
   @IsOptional()

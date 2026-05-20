@@ -48,6 +48,9 @@ export class StoreSettings {
   @Column({ type: 'varchar', length: 7, default: '#ffffff' })
   accentColor!: string;
 
+  @Column({ type: 'varchar', length: 7, default: '#ffffff' })
+  backgroundColor!: string;
+
   // Entrega
   @Column({ type: 'boolean', default: false })
   deliveryEnabled!: boolean;

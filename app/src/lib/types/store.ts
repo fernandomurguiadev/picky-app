@@ -3,6 +3,7 @@
 export interface StoreTheme {
   primaryColor: string;
   accentColor: string;
+  backgroundColor?: string;
 }
 
 export interface StorePublicData {

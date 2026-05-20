@@ -23,7 +23,7 @@ export default async function StorePage({ params }: StorePageProps) {
       next: { revalidate: 30 },
     }),
     fetch(`${BACKEND_URL}/api/v1/stores/${slug}`, {
-      next: { revalidate: 60 },
+      cache: "no-store",
     }),
   ]);
 
@@ -45,15 +45,21 @@ export default async function StorePage({ params }: StorePageProps) {
       {/* 🚀 HERO BANNER DE BIENVENIDA DE MARCA (DINÁMICO Y PREMIUM) */}
       <section className="mx-auto max-w-4xl px-4 py-6">
         <div 
-          className="relative rounded-3xl border border-[var(--color-primary)]/10 p-6 sm:p-8 overflow-hidden shadow-[0_4px_24px_-6px_rgba(0,0,0,0.02)] transition-all duration-500 group"
-          style={{
-            background: `linear-gradient(135deg, var(--color-primary) 0%, rgba(255,255,255,0) 100%)`,
-            opacity: 1
-          }}
+          className="relative rounded-3xl border border-border/50 p-6 sm:p-8 overflow-hidden bg-card/40 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.02)] transition-all duration-500 group"
         >
-          {/* Capa de máscara para suavizar el gradiente sobre el fondo de la app y hacerlo reaccionar al color de marca */}
-          <div className="absolute inset-0 bg-gradient-to-br from-background/40 via-background/90 to-background pointer-events-none" />
-          <div className="absolute inset-0 bg-[var(--color-primary)]/[0.04] group-hover:bg-[var(--color-primary)]/[0.06] transition-colors pointer-events-none duration-500" />
+          {/* Ambient Glows: Modernos, orgánicos y ultra-premium */}
+          <div 
+            className="absolute -top-32 -left-32 w-96 h-96 rounded-full blur-[120px] pointer-events-none transition-all duration-1000 opacity-20 group-hover:scale-110 group-hover:opacity-25"
+            style={{
+              background: `var(--color-primary)`,
+            }}
+          />
+          <div 
+            className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full blur-[90px] pointer-events-none transition-all duration-1000 opacity-[0.06] group-hover:scale-105"
+            style={{
+              background: `var(--color-primary)`,
+            }}
+          />
           
           <div className="relative z-10 space-y-4">
             <div className="space-y-1.5">

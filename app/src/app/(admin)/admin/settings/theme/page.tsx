@@ -12,6 +12,7 @@ export default function SettingsThemePage() {
   const handleSubmit = async (values: {
     primaryColor: string;
     accentColor: string;
+    backgroundColor: string;
   }) => {
     try {
       await updateMutation.mutateAsync(values);
@@ -37,10 +38,11 @@ export default function SettingsThemePage() {
             ? {
                 primaryColor: settings.primaryColor,
                 accentColor: settings.accentColor,
+                backgroundColor: settings.backgroundColor,
               }
             : null
         }
-        storeName=""
+        storeName={settings?.tenant?.name || "Tu tienda"}
         onSubmit={handleSubmit}
         isPending={updateMutation.isPending}
       />

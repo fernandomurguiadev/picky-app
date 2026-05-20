@@ -44,21 +44,21 @@ export function ProductCard({ product, slug }: ProductCardProps) {
         </div>
 
         {/* Info */}
-        <div className="flex flex-1 flex-col gap-1 p-3">
-          <p className="line-clamp-2 text-sm font-medium leading-tight">
+        <div className="flex flex-1 flex-col gap-1 p-3 bg-[var(--color-primary)] text-[var(--color-primary-foreground)]">
+          <p className="line-clamp-2 text-sm font-bold leading-tight">
             {product.name}
           </p>
           {product.description && (
-            <p className="line-clamp-1 text-xs text-muted-foreground">
+            <p className="line-clamp-1 text-xs opacity-85 text-[var(--color-primary-foreground)]/85">
               {product.description}
             </p>
           )}
           <div className="mt-auto flex items-center justify-between pt-2">
-            <span className="font-semibold text-[var(--color-primary)]">
+            <span className="font-extrabold text-sm text-[var(--color-primary-foreground)]">
               {formatCurrency(product.price)}
             </span>
             <button
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-primary)] text-white transition-opacity hover:opacity-90"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--store-accent)] text-[var(--store-accent-foreground)] transition-opacity hover:opacity-90 shadow-sm"
               onClick={(e) => {
                 e.stopPropagation();
                 setSheetOpen(true);

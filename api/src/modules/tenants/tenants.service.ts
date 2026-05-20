@@ -148,15 +148,23 @@ export class TenantsService {
     };
   }
 
-  /** B3.4 — Configuración completa del tenant autenticado */
+  /** B3.4 — Configuración completa del tenant autenticado (lazy-init si no existe) */
   async getMySettings(tenantId: string, runner?: QueryRunner): Promise<StoreSettingsResponse | null> {
     if (!tenantId) return null;
 
     const repo = runner ? runner.manager.getRepository(StoreSettings) : this.settingsRepo;
-    const settings = await repo.findOne({
+    let settings = await repo.findOne({
       where: { tenantId: tenantId as any },
       relations: ['tenant'],
     });
+
+    if (!settings) {
+      settings = await repo.save(repo.create({ tenantId }));
+      settings = await repo.findOne({
+        where: { tenantId: tenantId as any },
+        relations: ['tenant'],
+      });
+    }
 
     if (!settings) return null;
 

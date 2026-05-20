@@ -40,7 +40,7 @@ export default function OrderConfirmationPage() {
       <div className="flex flex-col gap-3 w-full max-w-xs animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
         <Button
           asChild
-          className="w-full gap-2 bg-[var(--color-primary)] text-white hover:opacity-90 py-5"
+          className="w-full gap-2 bg-[var(--store-accent)] text-white hover:opacity-90 py-5"
         >
           <Link href={`/${slug}`}>
             <ShoppingBag className="h-4 w-4" />

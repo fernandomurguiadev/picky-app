@@ -23,6 +23,7 @@ export interface StoreSettings {
   timezone: string;
   primaryColor: string;
   accentColor: string;
+  backgroundColor: string;
   deliveryEnabled: boolean;
   deliveryCost: number; // centavos
   deliveryMinOrder: number; // centavos

@@ -165,7 +165,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
                 </p>
                 <Button
                   onClick={handleCheckout}
-                  className="w-full gap-2 bg-[var(--color-primary)] text-white hover:opacity-90 py-6 text-base font-semibold rounded-xl"
+                  className="w-full gap-2 bg-[var(--store-accent)] text-white hover:opacity-90 py-6 text-base font-semibold rounded-xl"
                 >
                   Iniciar pedido
                   <ArrowRight className="h-5 w-5" />

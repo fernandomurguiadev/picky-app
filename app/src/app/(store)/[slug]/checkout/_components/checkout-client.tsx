@@ -179,7 +179,7 @@ function CustomerStep({
 
       <Button
         type="submit"
-        className="w-full gap-2 bg-[var(--color-primary)] text-white hover:opacity-90 py-5"
+        className="w-full gap-2 bg-[var(--store-accent)] text-white hover:opacity-90 py-5"
       >
         Continuar
         <ChevronRight className="h-4 w-4" />
@@ -385,7 +385,7 @@ function DeliveryStep({
         <Button
           type="submit"
           disabled={isSubmitting || isBelowMinimum || paymentMethods.length === 0}
-          className="flex-1 gap-2 bg-[var(--color-primary)] text-white hover:opacity-90 py-5 disabled:opacity-50"
+          className="flex-1 gap-2 bg-[var(--store-accent)] text-white hover:opacity-90 py-5 disabled:opacity-50"
         >
           {isSubmitting ? (
             <>

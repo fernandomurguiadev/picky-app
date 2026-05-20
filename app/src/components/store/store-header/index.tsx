@@ -12,11 +12,11 @@ interface StoreHeaderProps {
 
 export function StoreHeader({ store, isOpen }: StoreHeaderProps) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 w-full border-b border-[var(--color-primary)]/10 bg-[var(--color-primary)] text-[var(--color-primary-foreground)] shadow-xs transition-colors duration-200">
       <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
-        <Link href={`/${store.slug}`} className="flex items-center gap-2.5 min-w-0">
+        <Link href={`/${store.slug}`} className="flex items-center gap-2.5 min-w-0 text-[var(--color-primary-foreground)]">
           {store.logoUrl ? (
-            <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full">
+            <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-[var(--color-primary-foreground)]/20 bg-[var(--color-primary-foreground)]">
               <Image
                 src={store.logoUrl}
                 alt={store.name}
@@ -26,7 +26,7 @@ export function StoreHeader({ store, isOpen }: StoreHeaderProps) {
               />
             </div>
           ) : (
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-white text-sm font-bold">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-foreground)] text-[var(--color-primary)] text-sm font-bold shadow-inner">
               {store.name.charAt(0).toUpperCase()}
             </div>
           )}

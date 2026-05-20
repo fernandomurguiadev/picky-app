@@ -139,15 +139,15 @@ export function ProductDetailSheet({
       </div>
 
       <div className="flex-1 space-y-5 overflow-y-auto px-4 py-4">
-        <div className="space-y-2">
+        <div className="rounded-xl bg-[var(--color-primary)] p-4 text-[var(--color-primary-foreground)] space-y-2 shadow-xs">
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-xl font-bold leading-tight">{product.name}</h2>
-            <span className="shrink-0 text-lg font-semibold text-[var(--color-primary)]">
+            <span className="shrink-0 text-lg font-semibold bg-white/15 dark:bg-black/15 px-3 py-1 rounded-lg backdrop-blur-xs">
               {formatCurrency(product.price)}
             </span>
           </div>
           {product.description && (
-            <p className="text-sm leading-relaxed text-muted-foreground">
+            <p className="text-sm leading-relaxed opacity-90 text-[var(--color-primary-foreground)]/90">
               {product.description}
             </p>
           )}
@@ -167,7 +167,7 @@ export function ProductDetailSheet({
           <Button
             onClick={handleAddToCart}
             disabled={!isValid}
-            className="min-w-44 bg-[var(--color-primary)] text-white hover:opacity-90"
+            className="min-w-44 bg-[var(--store-accent)] text-white hover:opacity-90"
           >
             Agregar {formatCurrency(total)}
           </Button>

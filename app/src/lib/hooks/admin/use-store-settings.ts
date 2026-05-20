@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiBff } from "@/lib/api/axios";
+import { useAuthStore } from "@/lib/stores/auth.store";
 import type { StoreSettings } from "@/lib/types/store-settings";
 
 export const settingsKeys = {
@@ -10,8 +11,10 @@ export const settingsKeys = {
 };
 
 export function useStoreSettings() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   return useQuery({
     queryKey: settingsKeys.detail(),
+    enabled: isAuthenticated,
     queryFn: async () => {
       const { data } = await apiBff.get<{ data: StoreSettings }>("/stores/me/settings");
       return data.data;
