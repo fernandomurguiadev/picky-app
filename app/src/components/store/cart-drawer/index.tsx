@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import { ShoppingBag, Trash2, ArrowRight, X } from "lucide-react";
@@ -48,18 +48,18 @@ export function CartDrawer({ children }: CartDrawerProps) {
   };
 
   const renderCartContent = (onClose: () => void) => (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col text-left">
       <div className="border-b px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-base font-bold text-foreground">
+          <SheetTitle className="flex items-center gap-2 text-base font-bold text-foreground font-sans">
             <ShoppingBag className="h-5 w-5 text-[var(--color-primary)]" />
-            Tu carrito
+            <span>Tu carrito</span>
             {totalItems > 0 && (
               <span className="ml-1 rounded-full bg-[var(--color-primary)]/10 px-2.5 py-0.5 text-xs font-medium text-[var(--color-primary)]">
                 {totalItems}
               </span>
             )}
-          </div>
+          </SheetTitle>
           {totalItems > 0 && (
             <Button
               variant="ghost"
@@ -178,15 +178,22 @@ export function CartDrawer({ children }: CartDrawerProps) {
     </div>
   );
 
+  const desktopTrigger = React.isValidElement(children)
+    ? React.cloneElement(children as React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>, {
+        onClick: (e: React.MouseEvent) => {
+          e.preventDefault();
+          setIsPopoverOpen(!isPopoverOpen);
+        }
+      })
+    : children;
+
   return (
     <div className="relative">
       {/* 📱 VISTA MÓVIL: Dispara el Sheet lateral */}
       <div className="md:hidden">
         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
           <SheetTrigger asChild>
-            <button type="button" className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-foreground)] rounded-full">
-              {children}
-            </button>
+            {children}
           </SheetTrigger>
           <SheetContent className="flex w-full flex-col p-0 sm:max-w-md bg-background">
             {renderCartContent(() => setIsSheetOpen(false))}
@@ -196,13 +203,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
 
       {/* 💻 VISTA ESCRITORIO: Dispara el Popover flotante premium */}
       <div className="hidden md:block">
-        <button
-          type="button"
-          onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-          className="focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-foreground)] rounded-full transition-transform hover:scale-105 active:scale-95"
-        >
-          {children}
-        </button>
+        {desktopTrigger}
 
         {isPopoverOpen && (
           <>
