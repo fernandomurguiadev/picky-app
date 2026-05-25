@@ -11,6 +11,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { QuantitySelector } from "@/components/shared/quantity-selector";
@@ -52,7 +58,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
       <div className="border-b px-6 py-4">
         <div className="flex items-center justify-between">
           {isDialog ? (
-            <SheetTitle className="flex items-center gap-2 text-base font-bold text-foreground font-sans">
+            <DrawerTitle className="flex items-center gap-2 text-base font-bold text-foreground font-sans">
               <ShoppingBag className="h-5 w-5 text-[var(--color-primary)]" />
               <span>Tu carrito</span>
               {totalItems > 0 && (
@@ -60,7 +66,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
                   {totalItems}
                 </span>
               )}
-            </SheetTitle>
+            </DrawerTitle>
           ) : (
             <div className="flex items-center gap-2 text-base font-bold text-foreground font-sans">
               <ShoppingBag className="h-5 w-5 text-[var(--color-primary)]" />
@@ -201,16 +207,18 @@ export function CartDrawer({ children }: CartDrawerProps) {
 
   return (
     <div className="relative">
-      {/* 📱 VISTA MÓVIL: Dispara el Sheet lateral */}
+      {/* 📱 VISTA MÓVIL: Dispara el Drawer inferior (Premium Feel) */}
       <div className="md:hidden">
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-          <SheetTrigger asChild>
+        <Drawer open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <DrawerTrigger asChild>
             {children}
-          </SheetTrigger>
-          <SheetContent className="flex w-full flex-col p-0 sm:max-w-md bg-background">
-            {renderCartContent(() => setIsSheetOpen(false), true)}
-          </SheetContent>
-        </Sheet>
+          </DrawerTrigger>
+          <DrawerContent className="flex w-full flex-col p-0 bg-background max-h-[85vh]">
+            <div className="flex-1 overflow-hidden">
+              {renderCartContent(() => setIsSheetOpen(false), true)}
+            </div>
+          </DrawerContent>
+        </Drawer>
       </div>
 
       {/* 💻 VISTA ESCRITORIO: Dispara el Popover flotante premium */}

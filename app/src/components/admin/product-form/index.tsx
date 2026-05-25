@@ -199,7 +199,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
           )}
         </div>
 
-        <form noValidate onSubmit={handleSubmit(onSubmit)}>
+        <form noValidate onSubmit={handleSubmit(onSubmit, (err) => console.log("Form Errors:", err))}>
           {/* Sección 1: Información básica */}
           <section className="rounded-xl border border-border p-6 mb-6 space-y-5">
             <h2 className="font-semibold text-lg">Información básica</h2>
@@ -344,6 +344,13 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
             </div>
           </div>
         </form>
+
+        {Object.keys(methods.formState.errors).length > 0 && (
+          <div className="mt-8 p-4 bg-destructive/10 rounded-lg text-destructive text-sm font-mono overflow-auto max-w-full">
+            DEBUG ERRORS:
+            <pre>{JSON.stringify(methods.formState.errors, null, 2)}</pre>
+          </div>
+        )}
       </div>
     </FormProvider>
   );
