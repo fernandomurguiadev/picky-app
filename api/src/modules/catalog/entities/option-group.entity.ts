@@ -6,8 +6,10 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  Relation,
 } from 'typeorm';
 import { Product } from './product.entity.js';
+import type { OptionItem } from './option-item.entity.js';
 
 export enum OptionGroupType {
   RADIO = 'radio',
@@ -48,5 +50,5 @@ export class OptionGroup {
   product!: Product;
 
   @OneToMany('OptionItem', 'optionGroup', { cascade: true })
-  items!: unknown[];
+  items!: Relation<OptionItem>[];
 }

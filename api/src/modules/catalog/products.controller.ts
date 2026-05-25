@@ -79,6 +79,14 @@ export class AdminProductsController {
     };
   }
 
+  @Get(':id')
+  getOne(
+    @TenantId() tenantId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.catalogService.getAdminProduct(tenantId, id);
+  }
+
   @Patch('reorder')
   async reorder(@TenantId() tenantId: string, @Body() dto: ReorderProductsDto) {
     await this.catalogService.reorderProducts(tenantId, dto);

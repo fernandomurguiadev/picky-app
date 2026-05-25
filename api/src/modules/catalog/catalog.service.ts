@@ -206,6 +206,22 @@ export class CatalogService {
     return { data, total };
   }
 
+  async getAdminProduct(tenantId: string, id: string): Promise<Product> {
+    const product = await this.productRepo
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.optionGroups', 'og')
+      .leftJoinAndSelect('og.items', 'oi')
+      .where('p.id = :id', { id })
+      .orderBy('og.order', 'ASC')
+      .addOrderBy('oi.order', 'ASC')
+      .getOne();
+
+    if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
+    if (product.tenantId !== tenantId) throw toBusinessException(CatalogErrors.productForbidden(id));
+
+    return product;
+  }
+
   async createProduct(tenantId: string, dto: CreateProductDto): Promise<Product> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
