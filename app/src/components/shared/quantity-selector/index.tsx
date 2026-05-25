@@ -42,14 +42,14 @@ export function QuantitySelector({
         type="button"
         onClick={decrement}
         disabled={disabled || value <= min}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-sm transition-colors hover:bg-muted disabled:opacity-40"
+        className="flex h-7 w-7 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted disabled:opacity-40"
         aria-label="Reducir cantidad"
       >
         <Minus className="h-3.5 w-3.5" />
       </button>
 
       <span
-        className="min-w-[1.5rem] text-center text-sm font-semibold tabular-nums"
+        className="min-w-[1.5rem] text-center text-sm font-semibold tabular-nums text-foreground"
         aria-live="polite"
         aria-atomic="true"
       >
@@ -60,7 +60,7 @@ export function QuantitySelector({
         type="button"
         onClick={increment}
         disabled={disabled || (max !== undefined && value >= max)}
-        className="flex h-7 w-7 items-center justify-center rounded-full text-sm transition-colors hover:bg-muted disabled:opacity-40"
+        className="flex h-7 w-7 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted disabled:opacity-40"
         aria-label="Aumentar cantidad"
       >
         <Plus className="h-3.5 w-3.5" />
