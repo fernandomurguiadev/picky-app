@@ -17,13 +17,13 @@ export default function EditProductPage({
   const { data: product, isLoading } = useQuery({
     queryKey: ["admin", "products", "detail", id],
     queryFn: async () => {
-      const { data } = await apiBff.get<Product>(`/admin/products/${id}`);
-      return data;
+      const { data } = await apiBff.get<{ data: Product }>(`/admin/products/${id}`);
+      return data.data;
     },
   });
 
   if (isLoading) return <SkeletonLoader rows={8} columns={1} />;
   if (!product) return <p className="text-destructive">Producto no encontrado.</p>;
 
-  return <ProductFormPage product={product} />;
+  return <ProductFormPage key={product.id} product={product} />;
 }

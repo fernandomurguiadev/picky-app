@@ -90,17 +90,11 @@ function SortableProductCard({
         <GripVertical className="h-5 w-5" />
       </button>
 
-      {product.imageUrl ? (
-        <img
-          src={product.imageUrl}
-          alt={product.name}
-          className="h-12 w-12 rounded-lg object-cover shrink-0"
-        />
-      ) : (
-        <div className="h-12 w-12 rounded-lg bg-muted shrink-0 flex items-center justify-center text-muted-foreground text-xs">
-          Sin foto
-        </div>
-      )}
+      <img
+        src={product.imageUrl || "/images/default-image.jpg"}
+        alt={product.name}
+        className="h-12 w-12 rounded-lg object-cover shrink-0"
+      />
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">

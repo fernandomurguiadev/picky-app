@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -75,55 +75,54 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
 
   const methods = useForm<ProductFormData>({
     resolver: zodResolver(schema),
-    defaultValues: (() => {
-      if (isEdit && product) {
-        return {
-          name: product.name,
-          description: product.description ?? "",
-          categoryId: product.categoryId,
-          price: fromCents(product.price),
-          imageUrl: product.imageUrl ?? null,
-          isFeatured: product.isFeatured,
-          isActive: product.isActive,
-          optionGroups: (product.optionGroups ?? []).map((og) => ({
-            id: og.id,
-            name: og.name,
-            type: og.type,
-            isRequired: og.isRequired,
-            minSelections: og.minSelections,
-            maxSelections: og.maxSelections,
-            order: og.order,
-            items: og.items.map((it) => ({
-              id: it.id,
-              name: it.name,
-              priceModifier: it.priceModifier,
-              isDefault: it.isDefault,
-              order: it.order,
-            })),
-          })),
-        };
-      }
-      // Recuperar draft si existe (solo para nuevo)
-      if (!isEdit) {
-        try {
-          const draft = localStorage.getItem(DRAFT_KEY);
-          if (draft) return JSON.parse(draft) as ProductFormData;
-        } catch {
-          // ignorar
-        }
-      }
-      return {
-        name: "",
-        description: "",
-        categoryId: "",
-        price: 0,
-        imageUrl: null,
-        isFeatured: false,
-        isActive: true,
-        optionGroups: [],
-      };
-    })(),
+    defaultValues: {
+      name: "",
+      description: "",
+      categoryId: "",
+      price: 0,
+      imageUrl: null,
+      isFeatured: false,
+      isActive: true,
+      optionGroups: [],
+    },
   });
+
+  useEffect(() => {
+    if (isEdit && product) {
+      methods.reset({
+        name: product.name,
+        description: product.description ?? "",
+        categoryId: product.categoryId,
+        price: fromCents(product.price),
+        imageUrl: product.imageUrl ?? null,
+        isFeatured: product.isFeatured,
+        isActive: product.isActive,
+        optionGroups: (product.optionGroups ?? []).map((og) => ({
+          id: og.id,
+          name: og.name,
+          type: og.type as "radio" | "checkbox",
+          isRequired: og.isRequired,
+          minSelections: og.minSelections,
+          maxSelections: og.maxSelections,
+          order: og.order,
+          items: (og.items ?? []).map((it) => ({
+            id: it.id,
+            name: it.name,
+            priceModifier: it.priceModifier,
+            isDefault: it.isDefault,
+            order: it.order,
+          })),
+        })),
+      });
+    } else if (!isEdit) {
+      try {
+        const draft = localStorage.getItem(DRAFT_KEY);
+        if (draft) methods.reset(JSON.parse(draft) as ProductFormData);
+      } catch {
+        // ignorar
+      }
+    }
+  }, [product, isEdit, methods.reset]);
 
   const {
     register,
