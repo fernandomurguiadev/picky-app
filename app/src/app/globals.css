@@ -133,19 +133,8 @@ body {
   color: var(--color-primary-foreground) !important;
 }
 
-[class*="bg-[var(--color-primary)]"] *,
-[class*="bg-[var(--store-primary)]"] * {
-  color: inherit !important;
-}
-
 /* Enforce dynamic contrast color on elements with dynamic accent/secondary backgrounds */
 [class*="bg-[var(--store-accent)]"],
 .bg-\[var\(--store-accent\)\] {
   color: var(--store-accent-foreground) !important;
 }
-
-[class*="bg-[var(--store-accent)]"] *,
-.bg-\[var\(--store-accent\)\] * {
-  color: inherit !important;
-}
-
