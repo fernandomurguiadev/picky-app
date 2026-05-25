@@ -33,6 +33,8 @@ export function ImageUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  // Guardamos las URLs que subimos en esta sesión para borrarlas de forma segura si el usuario se arrepiente
+  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
 
   // Mantener preview sincronizado con value si cambia desde el padre (ej: después de subir)
   useEffect(() => {
@@ -78,7 +80,18 @@ export function ImageUploader({
           },
         });
 
-        onChange(res.data.data.url);
+        const newUrl = res.data.data.url;
+
+        // Si ya había una imagen que nosotros subimos en esta sesión, la borramos para no dejar basura
+        if (value && uploadedUrls.includes(value)) {
+          const publicId = extractPublicId(value);
+          if (publicId) {
+            apiBff.delete(`/upload/image?publicId=${encodeURIComponent(publicId)}`).catch(console.error);
+          }
+        }
+
+        setUploadedUrls((prev) => [...prev, newUrl]);
+        onChange(newUrl);
         toast.success("Imagen subida correctamente");
       } catch (error) {
         console.error("Error al subir imagen:", error);
@@ -89,7 +102,7 @@ export function ImageUploader({
         setProgress(0);
       }
     },
-    [maxSizeMB, onChange, value]
+    [maxSizeMB, onChange, value, uploadedUrls]
   );
 
   const handleDrop = useCallback(
@@ -112,8 +125,8 @@ export function ImageUploader({
   const handleRemove = async (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    // Intentar borrar la imagen de Cloudinary si es una URL válida
-    if (preview && preview.includes("res.cloudinary.com")) {
+    // Intentar borrar la imagen de Cloudinary solo si la subimos en esta sesión
+    if (preview && uploadedUrls.includes(preview)) {
       const publicId = extractPublicId(preview);
       if (publicId) {
         try {
