@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Upload, X, ImageIcon } from "lucide-react";
 import imageCompression from "browser-image-compression";
 import { cn } from "@/lib/utils";
@@ -33,6 +33,13 @@ export function ImageUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Mantener preview sincronizado con value si cambia desde el padre (ej: después de subir)
+  useEffect(() => {
+    if (!isUploading) {
+      setPreview(value ?? null);
+    }
+  }, [value, isUploading]);
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -95,8 +102,28 @@ export function ImageUploader({
     [handleFile]
   );
 
-  const handleRemove = (e: React.MouseEvent) => {
+  const extractPublicId = (url: string) => {
+    // Extrae el publicId de una URL de Cloudinary
+    // Ej: https://res.cloudinary.com/xx/image/upload/v123/tenants/123/img.jpg -> tenants/123/img
+    const match = url.match(/\/upload\/(?:v\d+\/)?(.+?)\.[a-zA-Z0-9]+$/);
+    return match ? match[1] : null;
+  };
+
+  const handleRemove = async (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // Intentar borrar la imagen de Cloudinary si es una URL válida
+    if (preview && preview.includes("res.cloudinary.com")) {
+      const publicId = extractPublicId(preview);
+      if (publicId) {
+        try {
+          await apiBff.delete(`/upload/image?publicId=${encodeURIComponent(publicId)}`);
+        } catch (error) {
+          console.error("Error eliminando imagen huérfana de Cloudinary:", error);
+        }
+      }
+    }
+
     setPreview(null);
     onRemove?.();
     if (inputRef.current) inputRef.current.value = "";

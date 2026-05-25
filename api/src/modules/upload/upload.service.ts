@@ -85,4 +85,22 @@ export class UploadService {
     }
     return null;
   }
+
+  async deleteImage(publicId: string, tenantId: string): Promise<void> {
+    // Seguridad: Asegurar que el tenant solo pueda borrar imágenes de su propia carpeta
+    if (!publicId.startsWith(`tenants/${tenantId}/`)) {
+      throw new BadRequestException('No tienes permiso para borrar esta imagen o el formato es inválido.');
+    }
+
+    if (!process.env.CLOUDINARY_CLOUD_NAME) {
+      return; // Fallback mock
+    }
+
+    return new Promise<void>((resolve, reject) => {
+      this.cloudinary.uploader.destroy(publicId, (error) => {
+        if (error) return reject(error);
+        resolve();
+      });
+    });
+  }
 }

@@ -1,6 +1,9 @@
 import {
   Controller,
   Post,
+  Query,
+  Delete,
+  BadRequestException,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -25,5 +28,17 @@ export class UploadController {
     @TenantId() tenantId: string,
   ): Promise<{ url: string; publicId: string }> {
     return this.uploadService.uploadImage(file, tenantId);
+  }
+
+  @Delete('image')
+  async deleteImage(
+    @Query('publicId') publicId: string,
+    @TenantId() tenantId: string,
+  ): Promise<{ success: boolean }> {
+    if (!publicId) {
+      throw new BadRequestException('El parámetro publicId es requerido en la query url.');
+    }
+    await this.uploadService.deleteImage(publicId, tenantId);
+    return { success: true };
   }
 }
