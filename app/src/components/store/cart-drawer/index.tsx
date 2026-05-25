@@ -47,19 +47,31 @@ export function CartDrawer({ children }: CartDrawerProps) {
     setShowClearConfirm(false);
   };
 
-  const renderCartContent = (onClose: () => void) => (
+  const renderCartContent = (onClose: () => void, isDialog: boolean = false) => (
     <div className="flex h-full flex-col text-left">
       <div className="border-b px-6 py-4">
         <div className="flex items-center justify-between">
-          <SheetTitle className="flex items-center gap-2 text-base font-bold text-foreground font-sans">
-            <ShoppingBag className="h-5 w-5 text-[var(--color-primary)]" />
-            <span>Tu carrito</span>
-            {totalItems > 0 && (
-              <span className="ml-1 rounded-full bg-[var(--color-primary)]/10 px-2.5 py-0.5 text-xs font-medium text-[var(--color-primary)]">
-                {totalItems}
-              </span>
-            )}
-          </SheetTitle>
+          {isDialog ? (
+            <SheetTitle className="flex items-center gap-2 text-base font-bold text-foreground font-sans">
+              <ShoppingBag className="h-5 w-5 text-[var(--color-primary)]" />
+              <span>Tu carrito</span>
+              {totalItems > 0 && (
+                <span className="ml-1 rounded-full bg-[var(--color-primary)]/10 px-2.5 py-0.5 text-xs font-medium text-[var(--color-primary)]">
+                  {totalItems}
+                </span>
+              )}
+            </SheetTitle>
+          ) : (
+            <div className="flex items-center gap-2 text-base font-bold text-foreground font-sans">
+              <ShoppingBag className="h-5 w-5 text-[var(--color-primary)]" />
+              <span>Tu carrito</span>
+              {totalItems > 0 && (
+                <span className="ml-1 rounded-full bg-[var(--color-primary)]/10 px-2.5 py-0.5 text-xs font-medium text-[var(--color-primary)]">
+                  {totalItems}
+                </span>
+              )}
+            </div>
+          )}
           {totalItems > 0 && (
             <Button
               variant="ghost"
@@ -196,7 +208,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
             {children}
           </SheetTrigger>
           <SheetContent className="flex w-full flex-col p-0 sm:max-w-md bg-background">
-            {renderCartContent(() => setIsSheetOpen(false))}
+            {renderCartContent(() => setIsSheetOpen(false), true)}
           </SheetContent>
         </Sheet>
       </div>
@@ -215,7 +227,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
 
             {/* Popover del Carrito */}
             <div className="absolute right-0 top-full mt-3.5 w-96 rounded-2xl border border-border/70 bg-card/98 backdrop-blur-md p-0 shadow-[0_12px_38px_rgba(0,0,0,0.14)] z-50 animate-in fade-in slide-in-from-top-3 duration-200">
-              {renderCartContent(() => setIsPopoverOpen(false))}
+              {renderCartContent(() => setIsPopoverOpen(false), false)}
             </div>
           </>
         )}
