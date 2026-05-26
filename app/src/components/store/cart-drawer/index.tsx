@@ -54,8 +54,8 @@ export function CartDrawer({ children }: CartDrawerProps) {
   };
 
   const renderCartContent = (onClose: () => void, isDialog: boolean = false) => (
-    <div className="flex h-full flex-col text-left">
-      <div className="border-b px-6 py-4">
+    <div className="flex flex-col h-full max-h-full overflow-hidden text-left">
+      <div className="border-b px-6 py-4 shrink-0">
         <div className="flex items-center justify-between">
           {isDialog ? (
             <DrawerTitle className="flex items-center gap-2 text-base font-bold text-foreground font-sans">
@@ -101,7 +101,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
         </div>
       ) : (
         <>
-          <ScrollArea className="flex-1 px-6 max-h-[350px]">
+          <div className="flex-1 overflow-y-auto px-6 min-h-0 md:max-h-[400px]">
             <div className="divide-y divide-border py-2">
               {items.map((item) => {
                 const itemSubtotal =
@@ -168,9 +168,9 @@ export function CartDrawer({ children }: CartDrawerProps) {
                 );
               })}
             </div>
-          </ScrollArea>
+          </div>
 
-          <div className="border-t bg-muted/20 px-6 py-5 space-y-3">
+          <div className="border-t bg-muted/20 px-6 py-5 space-y-3 shrink-0">
             <div className="flex items-center justify-between text-sm font-semibold text-foreground">
               <span>Subtotal</span>
               <span className="text-base font-bold text-[var(--color-primary)]">
@@ -213,10 +213,8 @@ export function CartDrawer({ children }: CartDrawerProps) {
           <DrawerTrigger asChild>
             {children}
           </DrawerTrigger>
-          <DrawerContent className="flex w-full flex-col p-0 bg-background max-h-[85vh]">
-            <div className="flex-1 overflow-hidden">
-              {renderCartContent(() => setIsSheetOpen(false), true)}
-            </div>
+          <DrawerContent className="flex flex-col p-0 bg-background max-h-[85vh] outline-none">
+            {renderCartContent(() => setIsSheetOpen(false), true)}
           </DrawerContent>
         </Drawer>
       </div>

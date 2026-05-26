@@ -32,7 +32,7 @@ export const CartBadge = React.forwardRef<HTMLButtonElement, React.ComponentProp
     }, [totalItems, isMounted]);
 
     // Evitar hidratación desfasada (Zustand persistido en localStorage en cliente)
-    if (!isMounted || totalItems === 0) return null;
+    if (!isMounted) return null;
 
     return (
       <button
@@ -47,9 +47,11 @@ export const CartBadge = React.forwardRef<HTMLButtonElement, React.ComponentProp
         {...props}
       >
         <ShoppingBag className="h-5 w-5 transition-transform group-hover:scale-105" />
-        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--store-accent)] text-[10px] font-extrabold text-[var(--store-accent-foreground)] shadow-xs animate-in zoom-in-50 border border-[var(--color-primary)]">
-          {totalItems}
-        </span>
+        {totalItems > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--store-accent)] text-[10px] font-extrabold text-[var(--store-accent-foreground)] shadow-xs animate-in zoom-in-50 border border-[var(--color-primary)]">
+            {totalItems}
+          </span>
+        )}
       </button>
     );
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -388,16 +388,11 @@ function DeliveryStep({
           className="flex-1 gap-2 bg-[var(--store-accent)] text-white hover:opacity-90 py-5 disabled:opacity-50"
         >
           {isSubmitting ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Enviando...
-            </>
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <>
-              <CheckCircle className="h-4 w-4" />
-              Confirmar pedido
-            </>
+            <CheckCircle className="h-4 w-4" />
           )}
+          <span>{isSubmitting ? "Enviando..." : "Confirmar pedido"}</span>
         </Button>
       </div>
     </form>
@@ -425,8 +420,13 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:4000";
 
   // Guard: carrito vacío → redirigir a tienda
+  useEffect(() => {
+    if (items.length === 0) {
+      router.replace(`/${slug}`);
+    }
+  }, [items.length, router, slug]);
+
   if (items.length === 0) {
-    router.replace(`/${slug}`);
     return null;
   }
 
