@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { StoreHeader } from "@/components/store/store-header";
+import { CartDrawer } from "@/components/store/cart-drawer";
+import { FloatingCartBanner } from "@/components/store/floating-cart-banner";
 import type { StorePublicData, StoreStatus } from "@/lib/types/store";
 
 interface StoreLayoutProps {
@@ -148,6 +150,11 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
         <footer className={`border-t py-6 text-center text-xs ${isDarkBg ? "border-white/10 text-muted-foreground/70" : "border-border text-muted-foreground"}`}>
           Powered by PickyApp
         </footer>
+
+        {/* Floating Cart Banner for Mobile wrapped in the Drawer logic */}
+        <CartDrawer>
+          <FloatingCartBanner />
+        </CartDrawer>
       </div>
     </>
   );

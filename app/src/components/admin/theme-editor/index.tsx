@@ -26,6 +26,15 @@ const BG_PRESETS = [
   { name: "Sage Green", hex: "#F2F5F1", isDark: false },
   { name: "Dark Charcoal", hex: "#111827", isDark: true },
   { name: "Obsidian Night", hex: "#09090B", isDark: true },
+  { name: "Deep Forest", hex: "#064E3B", isDark: true },
+  { name: "Midnight Blue", hex: "#1E3A8A", isDark: true },
+  { name: "Wine Dark", hex: "#4C0519", isDark: true },
+  { name: "Dark Cocoa", hex: "#271C19", isDark: true },
+  { name: "Slate", hex: "#0F172A", isDark: true },
+  { name: "Midnight Purple", hex: "#2E1065", isDark: true },
+  { name: "Deep Ocean", hex: "#083344", isDark: true },
+  { name: "Blush Pink", hex: "#FFF1F2", isDark: false },
+  { name: "Mint Breeze", hex: "#F0FDF4", isDark: false },
 ];
 
 import { getContrastColor, StorePreview } from "../store-preview";
@@ -83,12 +92,21 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
             <Label className="text-xs font-semibold block text-muted-foreground uppercase tracking-wider">Paletas Recomendadas</Label>
             <div className="flex flex-wrap items-center gap-2 pt-1">
               {[
-                { name: "Obsidiana", primary: "#18181B", accent: "#E4E4E7", bg: "#FFFFFF" },
-                { name: "Burdeos", primary: "#6B1D2F", accent: "#F87171", bg: "#FDFBF7" },
-                { name: "Esmeralda", primary: "#1B4332", accent: "#34D399", bg: "#F2F5F1" },
+                { name: "Obsidiana", primary: "#FFFFFF", accent: "#A1A1AA", bg: "#09090B" },
+                { name: "Burdeos", primary: "#FCA5A5", accent: "#FECDD3", bg: "#4C0519" },
+                { name: "Esmeralda", primary: "#6EE7B7", accent: "#D1FAE5", bg: "#064E3B" },
                 { name: "Terracota", primary: "#C05C3E", accent: "#FB923C", bg: "#FDFBF7" },
-                { name: "Prusia", primary: "#0F3D59", accent: "#2DD4BF", bg: "#F8F9FA" },
-                { name: "Cacao Artisan", primary: "#4A3728", accent: "#F59E0B", bg: "#FDFBF7" },
+                { name: "Prusia", primary: "#93C5FD", accent: "#DBEAFE", bg: "#1E3A8A" },
+                { name: "Cacao Artisan", primary: "#FDE68A", accent: "#FEF3C7", bg: "#271C19" },
+                { name: "Cyber Neon", primary: "#3B82F6", accent: "#06B6D4", bg: "#09090B" },
+                { name: "Bosque Oscuro", primary: "#10B981", accent: "#34D399", bg: "#111827" },
+                { name: "Rosa Noche", primary: "#F43F5E", accent: "#FB7185", bg: "#111827" },
+                { name: "Onix Dorado", primary: "#F59E0B", accent: "#FBBF24", bg: "#09090B" },
+                { name: "Amatista", primary: "#8B5CF6", accent: "#D8B4FE", bg: "#0F172A" },
+                { name: "Galaxia", primary: "#A855F7", accent: "#D8B4FE", bg: "#2E1065" },
+                { name: "Mar Profundo", primary: "#06B6D4", accent: "#67E8F9", bg: "#083344" },
+                { name: "Rosa Pastel", primary: "#E11D48", accent: "#FDA4AF", bg: "#FFF1F2" },
+                { name: "Menta Fresca", primary: "#059669", accent: "#34D399", bg: "#F0FDF4" },
               ].map((preset) => {
                 const isSelected = 
                   primaryColor.toLowerCase() === preset.primary.toLowerCase() && 

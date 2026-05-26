@@ -517,6 +517,27 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
       </div>
 
       {/* Resumen rápido del carrito */}
+      {/* Resumen rápido del carrito */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .always-visible-scroll::-webkit-scrollbar {
+          width: 6px;
+          -webkit-appearance: none;
+        }
+        .always-visible-scroll::-webkit-scrollbar-track {
+          background: rgba(0,0,0,0.05);
+          border-radius: 10px;
+        }
+        .always-visible-scroll::-webkit-scrollbar-thumb {
+          background: rgba(0,0,0,0.2);
+          border-radius: 10px;
+        }
+        .dark .always-visible-scroll::-webkit-scrollbar-track {
+          background: rgba(255,255,255,0.05);
+        }
+        .dark .always-visible-scroll::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,0.2);
+        }
+      `}} />
       <div className="mb-6 rounded-xl border bg-muted/30 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-medium">
@@ -527,16 +548,19 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
             {formatCurrency(cartSubtotal)}
           </span>
         </div>
-        <ul className="mt-3 space-y-1">
-          {items.map((item) => (
-            <li key={item.cartItemId} className="text-xs text-muted-foreground flex justify-between">
-              <span className="line-clamp-1 flex-1 mr-2">
-                {item.name} x{item.quantity}
-              </span>
-              <span>{formatCurrency((item.unitPrice + item.selectedOptions.reduce((s, o) => s + o.extraPrice, 0)) * item.quantity)}</span>
-            </li>
-          ))}
-        </ul>
+        
+        <div className="relative mt-3">
+          <ul className="space-y-1 max-h-32 overflow-y-auto pr-2 always-visible-scroll">
+            {items.map((item) => (
+              <li key={item.cartItemId} className="text-xs text-muted-foreground flex justify-between py-0.5">
+                <span className="line-clamp-1 flex-1 mr-2">
+                  {item.name} x{item.quantity}
+                </span>
+                <span>{formatCurrency((item.unitPrice + item.selectedOptions.reduce((s, o) => s + o.extraPrice, 0)) * item.quantity)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       {/* Paso activo */}

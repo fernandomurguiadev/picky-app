@@ -60,8 +60,17 @@ export class UpdateStoreSettingsDto {
     '#FDFBF7', '#fdfbf7',
     '#F8F9FA', '#f8f9fa',
     '#F2F5F1', '#f2f5f1',
-    '#111827',
-    '#09090B', '#09090b'
+    '#111827', '#111827',
+    '#09090B', '#09090b',
+    '#064E3B', '#064e3b',
+    '#1E3A8A', '#1e3a8a',
+    '#4C0519', '#4c0519',
+    '#271C19', '#271c19',
+    '#0F172A', '#0f172a',
+    '#2E1065', '#2e1065',
+    '#083344', '#083344',
+    '#FFF1F2', '#fff1f2',
+    '#F0FDF4', '#f0fdf4'
   ], { message: 'backgroundColor must be one of the curated elegant presets' })
   backgroundColor?: string;
 

@@ -35,6 +35,19 @@ export default async function StorePage({ params }: StorePageProps) {
   const featured: Product[] = featuredJson.data ?? [];
   const store: StorePublicData | null = storeJson?.data;
 
+  // Fetch products for all categories in parallel
+  const categoryProductsPromises = categories.map((cat) =>
+    fetch(`${BACKEND_URL}/api/v1/stores/${slug}/categories/${cat.id}/products?limit=100`, {
+      next: { revalidate: 60 },
+    }).then((res) => (res.ok ? res.json() : { data: [] }))
+  );
+
+  const categoriesProductsData = await Promise.all(categoryProductsPromises);
+  const productsByCategory: Record<string, Product[]> = {};
+  categories.forEach((cat, index) => {
+    productsByCategory[cat.id] = categoriesProductsData[index]?.data ?? [];
+  });
+
   const storeName = store?.name ?? "Nuestra Tienda";
   const storeDescription = store?.description || "Explorá nuestro catálogo digital, seleccioná tus productos favoritos y confirmá tu pedido directamente por WhatsApp.";
 
@@ -43,7 +56,7 @@ export default async function StorePage({ params }: StorePageProps) {
       <CategoryNav categories={categories} slug={slug} />
 
       {/* 🚀 HERO BANNER DE BIENVENIDA DE MARCA (DINÁMICO Y PREMIUM) */}
-      <section className="mx-auto max-w-4xl px-4 py-6">
+      <section id="inicio" className="mx-auto max-w-4xl px-4 py-6 scroll-mt-[130px]">
         <div 
           className="relative rounded-3xl border border-border/50 p-6 sm:p-8 overflow-hidden bg-card/40 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.02)] transition-all duration-500 group"
         >
@@ -125,6 +138,34 @@ export default async function StorePage({ params }: StorePageProps) {
           />
         )}
       </section>
+
+      {/* 📋 LISTADO COMPLETO POR CATEGORÍAS (SCROLLSPY) */}
+      <div className="mx-auto max-w-4xl px-4 mt-8 space-y-12">
+        {categories.map((category) => {
+          const categoryProducts = productsByCategory[category.id] ?? [];
+          if (categoryProducts.length === 0) return null;
+
+          return (
+            <section
+              key={category.id}
+              id={`category-${category.id}`}
+              className="scroll-mt-[130px]" // Offset ajustado para no tapar los títulos
+            >
+              <div className="mb-4 flex items-center justify-between border-b pb-2">
+                <h2 className="text-xl font-bold tracking-tight">{category.name}</h2>
+                <span className="text-sm font-medium text-muted-foreground">
+                  {categoryProducts.length}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+                {categoryProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} slug={slug} />
+                ))}
+              </div>
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }

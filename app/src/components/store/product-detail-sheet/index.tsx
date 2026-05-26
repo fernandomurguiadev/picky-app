@@ -96,7 +96,8 @@ export function ProductDetailSheet({
       })),
     });
 
-    toast.success(`${product.name} agregado al carrito`);
+    // Removemos el toast.success anticuado. La confirmación visual ahora
+    // se da mediante el Floating Cart Banner y el cierre del sheet.
     handleClose();
   };
 

@@ -25,7 +25,7 @@ export const CartBadge = React.forwardRef<HTMLButtonElement, React.ComponentProp
 
       if (totalItems > prevCountRef.current) {
         setIsAnimating(true);
-        const timer = setTimeout(() => setIsAnimating(false), 500); // 500ms bounce duration
+        const timer = setTimeout(() => setIsAnimating(false), 300); // Sincronizado a 300ms igual que la transición CSS
         return () => clearTimeout(timer);
       }
       prevCountRef.current = totalItems;
@@ -40,7 +40,6 @@ export const CartBadge = React.forwardRef<HTMLButtonElement, React.ComponentProp
         type="button"
         className={cn(
           "group relative flex h-10 w-10 items-center justify-center rounded-full bg-white/10 dark:bg-black/15 text-[var(--color-primary-foreground)] hover:bg-white/20 dark:hover:bg-black/25 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-foreground)]/30 hover:scale-105 active:scale-95",
-          isAnimating && "animate-bounce",
           className
         )}
         aria-label={`Ver carrito, ${totalItems} productos`}
@@ -48,7 +47,14 @@ export const CartBadge = React.forwardRef<HTMLButtonElement, React.ComponentProp
       >
         <ShoppingBag className="h-5 w-5 transition-transform group-hover:scale-105" />
         {totalItems > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--store-accent)] text-[10px] font-extrabold text-[var(--store-accent-foreground)] shadow-xs animate-in zoom-in-50 border border-[var(--color-primary)]">
+          <span 
+            className={cn(
+              "absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border border-[var(--color-primary)] text-[10px] font-extrabold shadow-xs transition-all duration-300",
+              isAnimating 
+                ? "scale-[1.5] rotate-12 bg-white text-[var(--store-accent)] shadow-[0_0_15px_rgba(255,255,255,0.6)]" 
+                : "scale-100 bg-[var(--store-accent)] text-[var(--store-accent-foreground)] animate-in zoom-in-50"
+            )}
+          >
             {totalItems}
           </span>
         )}

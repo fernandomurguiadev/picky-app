@@ -19,10 +19,18 @@ export function ProductCard({ product, slug }: ProductCardProps) {
     <>
       <div
         className="group flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md"
-        onClick={() => setSheetOpen(true)}
+        onClick={(e) => {
+          e.currentTarget.blur();
+          setSheetOpen(true);
+        }}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => e.key === "Enter" && setSheetOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.currentTarget.blur();
+            setSheetOpen(true);
+          }
+        }}
         aria-label={`Ver detalle de ${product.name}`}
       >
         {/* Imagen */}

@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     root: path.resolve(process.cwd(), ".."),
   },
   images: {
+    dangerouslyAllowSVG: true,
     remotePatterns: [
       {
         protocol: "https",
