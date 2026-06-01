@@ -13,9 +13,11 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import type { QueryRunner } from 'typeorm';
 
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
+import { RlsRunner } from '../../common/decorators/rls-runner.decorator.js';
 import { CatalogService } from './catalog.service.js';
 import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
@@ -69,10 +71,14 @@ export class AdminProductsController {
   constructor(private readonly catalogService: CatalogService) {}
 
   @Get()
-  async getAll(@TenantId() tenantId: string, @Query() query: ProductsQueryDto) {
+  async getAll(
+    @TenantId() tenantId: string,
+    @Query() query: ProductsQueryDto,
+    @RlsRunner() runner: QueryRunner,
+  ) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
-    const { data, total } = await this.catalogService.getAdminProducts(tenantId, query);
+    const { data, total } = await this.catalogService.getAdminProducts(tenantId, query, runner);
     return {
       data,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
@@ -83,18 +89,27 @@ export class AdminProductsController {
   getOne(
     @TenantId() tenantId: string,
     @Param('id', ParseUUIDPipe) id: string,
+    @RlsRunner() runner: QueryRunner,
   ) {
-    return this.catalogService.getAdminProduct(tenantId, id);
+    return this.catalogService.getAdminProduct(tenantId, id, runner);
   }
 
   @Patch('reorder')
-  async reorder(@TenantId() tenantId: string, @Body() dto: ReorderProductsDto) {
-    await this.catalogService.reorderProducts(tenantId, dto);
+  async reorder(
+    @TenantId() tenantId: string,
+    @Body() dto: ReorderProductsDto,
+    @RlsRunner() runner: QueryRunner,
+  ) {
+    await this.catalogService.reorderProducts(tenantId, dto, runner);
   }
 
   @Post()
-  create(@TenantId() tenantId: string, @Body() dto: CreateProductDto) {
-    return this.catalogService.createProduct(tenantId, dto);
+  create(
+    @TenantId() tenantId: string,
+    @Body() dto: CreateProductDto,
+    @RlsRunner() runner: QueryRunner,
+  ) {
+    return this.catalogService.createProduct(tenantId, dto, runner);
   }
 
   @Put(':id')
@@ -102,8 +117,9 @@ export class AdminProductsController {
     @TenantId() tenantId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateProductDto,
+    @RlsRunner() runner: QueryRunner,
   ) {
-    return this.catalogService.updateProduct(tenantId, id, dto);
+    return this.catalogService.updateProduct(tenantId, id, dto, runner);
   }
 
   @Patch(':id/status')
@@ -111,8 +127,9 @@ export class AdminProductsController {
     @TenantId() tenantId: string,
     @Param('id', ParseUUIDPipe) id: string,
     @Body('isActive') isActive: boolean,
+    @RlsRunner() runner: QueryRunner,
   ) {
-    return this.catalogService.updateProductStatus(tenantId, id, isActive);
+    return this.catalogService.updateProductStatus(tenantId, id, isActive, runner);
   }
 
   @Delete(':id')
@@ -120,7 +137,8 @@ export class AdminProductsController {
   async remove(
     @TenantId() tenantId: string,
     @Param('id', ParseUUIDPipe) id: string,
+    @RlsRunner() runner: QueryRunner,
   ) {
-    await this.catalogService.deleteProduct(tenantId, id);
+    await this.catalogService.deleteProduct(tenantId, id, runner);
   }
 }

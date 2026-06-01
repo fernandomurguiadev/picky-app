@@ -8,6 +8,11 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api/v1');
   app.use(cookieParser());
+  
+  app.enableCors({
+    origin: true, // Permitir cualquier origen en dev (idealmente restringirlo en prod)
+    credentials: true,
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

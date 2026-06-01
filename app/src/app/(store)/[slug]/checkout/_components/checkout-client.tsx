@@ -417,7 +417,7 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
   const [customerData, setCustomerData] = useState<CustomerData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:4000";
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:1000";
 
   // Guard: carrito vacío → redirigir a tienda
   useEffect(() => {

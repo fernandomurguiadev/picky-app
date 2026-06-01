@@ -1,0 +1,65 @@
+{
+  "name": "Confirmación de Pedido - Picky App",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "confirmar-pedido",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook Picky App",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "webhookId": "confirmar-pedido-picky"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://tu-evolution-api:8080/message/sendText/TU_INSTANCIA",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "TU_API_KEY_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.body.telefono }}\",\n  \"options\": {\n    \"delay\": 1200,\n    \"presence\": \"composing\",\n    \"linkPreview\": false\n  },\n  \"textMessage\": {\n    \"text\": \"¡Hola {{ $json.body.nombreCliente }}! 👋\\n\\nTe escribimos desde *Picky* para confirmarte que tu pedido ha sido recibido y ya lo estamos preparando.\\n\\n*Detalle del pedido:*\\n{{ $json.body.detallePedido }}\\n\\n¡Gracias por elegirnos!\"\n  }\n}",
+        "options": {}
+      },
+      "id": "2",
+      "name": "Enviar WhatsApp (Evolution API)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        480,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Picky App": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp (Evolution API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

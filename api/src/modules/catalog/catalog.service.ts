@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, In, Repository, QueryRunner } from 'typeorm';
 
 import { toBusinessException } from '../../common/errors/business.exception.js';
 import { Category } from './entities/category.entity.js';
@@ -56,53 +56,61 @@ export class CatalogService {
 
   // ─── Categories (admin) ───────────────────────────────────────────────────
 
-  async getAdminCategories(tenantId: string): Promise<Category[]> {
-    return this.categoryRepo.find({
+  async getAdminCategories(tenantId: string, runner?: QueryRunner): Promise<Category[]> {
+    const repo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
+    return repo.find({
       where: { tenantId },
       order: { order: 'ASC', name: 'ASC' },
     });
   }
 
-  async createCategory(tenantId: string, dto: CreateCategoryDto): Promise<Category> {
-    const category = this.categoryRepo.create({
+  async createCategory(tenantId: string, dto: CreateCategoryDto, runner?: QueryRunner): Promise<Category> {
+    const repo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
+    const category = repo.create({
       tenantId,
       name: dto.name,
       imageUrl: dto.imageUrl ?? null,
       isActive: dto.isActive ?? true,
     });
-    return this.categoryRepo.save(category);
+    return repo.save(category);
   }
 
   async updateCategory(
     tenantId: string,
     id: string,
     dto: UpdateCategoryDto,
+    runner?: QueryRunner,
   ): Promise<Category> {
-    const category = await this.categoryRepo.findOne({ where: { id } });
+    const repo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
+    const category = await repo.findOne({ where: { id } });
     if (!category) throw toBusinessException(CatalogErrors.categoryNotFound(id));
     if (category.tenantId !== tenantId) throw toBusinessException(CatalogErrors.categoryForbidden(id));
 
     Object.assign(category, dto);
-    return this.categoryRepo.save(category);
+    return repo.save(category);
   }
 
-  async deleteCategory(tenantId: string, id: string): Promise<void> {
-    const category = await this.categoryRepo.findOne({ where: { id } });
+  async deleteCategory(tenantId: string, id: string, runner?: QueryRunner): Promise<void> {
+    const categoryRepo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
+    const productRepo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+
+    const category = await categoryRepo.findOne({ where: { id } });
     if (!category) throw toBusinessException(CatalogErrors.categoryNotFound(id));
     if (category.tenantId !== tenantId) throw toBusinessException(CatalogErrors.categoryForbidden(id));
 
-    const activeCount = await this.productRepo.count({
+    const activeCount = await productRepo.count({
       where: { categoryId: id },
     });
     if (activeCount > 0) {
       throw toBusinessException(CatalogErrors.categoryHasActiveProducts(id, activeCount));
     }
 
-    await this.categoryRepo.remove(category);
+    await categoryRepo.remove(category);
   }
 
-  async reorderCategories(tenantId: string, dto: ReorderCategoriesDto): Promise<void> {
-    const categories = await this.categoryRepo.find({
+  async reorderCategories(tenantId: string, dto: ReorderCategoriesDto, runner?: QueryRunner): Promise<void> {
+    const repo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
+    const categories = await repo.find({
       where: { id: In(dto.ids) },
       select: ['id', 'tenantId'],
     });
@@ -112,19 +120,25 @@ export class CatalogService {
       throw toBusinessException(CatalogErrors.reorderForbidden());
     }
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
+    if (runner) {
       for (let i = 0; i < dto.ids.length; i++) {
-        await queryRunner.manager.update(Category, dto.ids[i]!, { order: i });
+        await runner.manager.update(Category, dto.ids[i]!, { order: i });
       }
-      await queryRunner.commitTransaction();
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
+    } else {
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      try {
+        for (let i = 0; i < dto.ids.length; i++) {
+          await queryRunner.manager.update(Category, dto.ids[i]!, { order: i });
+        }
+        await queryRunner.commitTransaction();
+      } catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw err;
+      } finally {
+        await queryRunner.release();
+      }
     }
   }
 
@@ -178,11 +192,13 @@ export class CatalogService {
   async getAdminProducts(
     tenantId: string,
     query: ProductsQueryDto,
+    runner?: QueryRunner,
   ): Promise<{ data: Product[]; total: number }> {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
 
-    const qb = this.productRepo
+    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+    const qb = repo
       .createQueryBuilder('p')
       .where('p.tenantId = :tenantId', { tenantId })
       .leftJoinAndSelect('p.optionGroups', 'og')
@@ -206,8 +222,9 @@ export class CatalogService {
     return { data, total };
   }
 
-  async getAdminProduct(tenantId: string, id: string): Promise<Product> {
-    const product = await this.productRepo
+  async getAdminProduct(tenantId: string, id: string, runner?: QueryRunner): Promise<Product> {
+    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+    const product = await repo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.optionGroups', 'og')
       .leftJoinAndSelect('og.items', 'oi')
@@ -222,12 +239,12 @@ export class CatalogService {
     return product;
   }
 
-  async createProduct(tenantId: string, dto: CreateProductDto): Promise<Product> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-      const product = queryRunner.manager.create(Product, {
+  async createProduct(tenantId: string, dto: CreateProductDto, runner?: QueryRunner): Promise<Product> {
+    const manager = runner ? runner.manager : null;
+    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+
+    if (runner) {
+      const product = manager!.create(Product, {
         tenantId,
         categoryId: dto.categoryId,
         name: dto.name,
@@ -238,22 +255,49 @@ export class CatalogService {
         isActive: dto.isActive ?? true,
         order: dto.order ?? 0,
       });
-      const saved = await queryRunner.manager.save(product);
+      const saved = await manager!.save(product);
 
       if (dto.optionGroups?.length) {
-        await this.saveOptionGroups(queryRunner.manager, saved.id, dto.optionGroups);
+        await this.saveOptionGroups(manager!, saved.id, dto.optionGroups);
       }
 
-      await queryRunner.commitTransaction();
-      return this.productRepo.findOneOrFail({
+      return repo.findOneOrFail({
         where: { id: saved.id },
         relations: ['optionGroups', 'optionGroups.items'],
       });
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
+    } else {
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      try {
+        const product = queryRunner.manager.create(Product, {
+          tenantId,
+          categoryId: dto.categoryId,
+          name: dto.name,
+          description: dto.description ?? null,
+          price: dto.price,
+          imageUrl: dto.imageUrl ?? null,
+          isFeatured: dto.isFeatured ?? false,
+          isActive: dto.isActive ?? true,
+          order: dto.order ?? 0,
+        });
+        const saved = await queryRunner.manager.save(product);
+
+        if (dto.optionGroups?.length) {
+          await this.saveOptionGroups(queryRunner.manager, saved.id, dto.optionGroups);
+        }
+
+        await queryRunner.commitTransaction();
+        return this.productRepo.findOneOrFail({
+          where: { id: saved.id },
+          relations: ['optionGroups', 'optionGroups.items'],
+        });
+      } catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw err;
+      } finally {
+        await queryRunner.release();
+      }
     }
   }
 
@@ -261,35 +305,54 @@ export class CatalogService {
     tenantId: string,
     id: string,
     dto: UpdateProductDto,
+    runner?: QueryRunner,
   ): Promise<Product> {
-    const product = await this.productRepo.findOne({ where: { id } });
+    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+    const product = await repo.findOne({ where: { id } });
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
     if (product.tenantId !== tenantId) throw toBusinessException(CatalogErrors.productForbidden(id));
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
+    if (runner) {
       const { optionGroups, ...rest } = dto;
-      await queryRunner.manager.update(Product, id, rest);
+      await runner.manager.update(Product, id, rest);
 
       if (optionGroups !== undefined) {
-        await queryRunner.manager.delete(OptionGroup, { productId: id });
+        await runner.manager.delete(OptionGroup, { productId: id });
         if (optionGroups.length) {
-          await this.saveOptionGroups(queryRunner.manager, id, optionGroups);
+          await this.saveOptionGroups(runner.manager, id, optionGroups);
         }
       }
 
-      await queryRunner.commitTransaction();
-      return this.productRepo.findOneOrFail({
+      return repo.findOneOrFail({
         where: { id },
         relations: ['optionGroups', 'optionGroups.items'],
       });
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
+    } else {
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      try {
+        const { optionGroups, ...rest } = dto;
+        await queryRunner.manager.update(Product, id, rest);
+
+        if (optionGroups !== undefined) {
+          await queryRunner.manager.delete(OptionGroup, { productId: id });
+          if (optionGroups.length) {
+            await this.saveOptionGroups(queryRunner.manager, id, optionGroups);
+          }
+        }
+
+        await queryRunner.commitTransaction();
+        return this.productRepo.findOneOrFail({
+          where: { id },
+          relations: ['optionGroups', 'optionGroups.items'],
+        });
+      } catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw err;
+      } finally {
+        await queryRunner.release();
+      }
     }
   }
 
@@ -297,21 +360,26 @@ export class CatalogService {
     tenantId: string,
     id: string,
     isActive: boolean,
+    runner?: QueryRunner,
   ): Promise<{ id: string; isActive: boolean }> {
-    const product = await this.productRepo.findOne({ where: { id } });
+    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+    const product = await repo.findOne({ where: { id } });
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
     if (product.tenantId !== tenantId) throw toBusinessException(CatalogErrors.productForbidden(id));
 
-    await this.productRepo.update(id, { isActive });
+    await repo.update(id, { isActive });
     return { id, isActive };
   }
 
-  async deleteProduct(tenantId: string, id: string): Promise<void> {
-    const product = await this.productRepo.findOne({ where: { id } });
+  async deleteProduct(tenantId: string, id: string, runner?: QueryRunner): Promise<void> {
+    const productRepo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+    const orderRepo = runner ? runner.manager.getRepository(Order) : this.orderRepo;
+
+    const product = await productRepo.findOne({ where: { id } });
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
     if (product.tenantId !== tenantId) throw toBusinessException(CatalogErrors.productForbidden(id));
 
-    const activeOrders = await this.orderRepo
+    const activeOrders = await orderRepo
       .createQueryBuilder('o')
       .innerJoin('o.items', 'oi', 'oi.productId = :pid', { pid: id })
       .where('o.tenantId = :tenantId', { tenantId })
@@ -324,11 +392,12 @@ export class CatalogService {
       throw toBusinessException(CatalogErrors.productHasActiveOrders(id));
     }
 
-    await this.productRepo.remove(product);
+    await productRepo.remove(product);
   }
 
-  async reorderProducts(tenantId: string, dto: { ids: string[] }): Promise<void> {
-    const products = await this.productRepo.find({
+  async reorderProducts(tenantId: string, dto: { ids: string[] }, runner?: QueryRunner): Promise<void> {
+    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+    const products = await repo.find({
       where: { id: In(dto.ids) },
       select: ['id', 'tenantId'],
     });
@@ -338,19 +407,25 @@ export class CatalogService {
       throw toBusinessException(CatalogErrors.reorderForbidden());
     }
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
+    if (runner) {
       for (let i = 0; i < dto.ids.length; i++) {
-        await queryRunner.manager.update(Product, dto.ids[i]!, { order: i });
+        await runner.manager.update(Product, dto.ids[i]!, { order: i });
       }
-      await queryRunner.commitTransaction();
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      throw err;
-    } finally {
-      await queryRunner.release();
+    } else {
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      try {
+        for (let i = 0; i < dto.ids.length; i++) {
+          await queryRunner.manager.update(Product, dto.ids[i]!, { order: i });
+        }
+        await queryRunner.commitTransaction();
+      } catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw err;
+      } finally {
+        await queryRunner.release();
+      }
     }
   }
 

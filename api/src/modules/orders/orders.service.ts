@@ -114,6 +114,7 @@ export class OrdersService {
 
       order.items = items as unknown[];
       this.ordersGateway.emitOrderNew(order.tenantId, order);
+      this.notifyOrderN8n(order);
       return order;
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -251,6 +252,50 @@ export class OrdersService {
 
     if (!enabled) {
       throw toBusinessException(OrderErrors.paymentNotEnabled(method));
+    }
+  }
+
+  private notifyOrderN8n(order: Order): void {
+    const webhookUrl = process.env.N8N_WEBHOOK_URL;
+    console.log('[N8N DEBUG] URL del webhook:', webhookUrl);
+    
+    if (!webhookUrl) {
+      console.log('[N8N DEBUG] ABORTADO: No hay N8N_WEBHOOK_URL configurado en .env');
+      return;
+    }
+
+    try {
+      const itemsDetail = (order.items as OrderItem[])
+        .map(i => `${i.quantity}x ${i.productName}`)
+        .join(', ');
+
+      const payload = {
+        telefono: order.customerInfo.phone,
+        nombreCliente: order.customerInfo.name,
+        detallePedido: itemsDetail,
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        total: order.total
+      };
+
+      console.log('[N8N DEBUG] Enviando payload:', payload);
+
+      fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(async res => {
+        console.log('[N8N DEBUG] Status respuesta n8n:', res.status);
+        if (!res.ok) {
+           console.log('[N8N DEBUG] Body respuesta error:', await res.text());
+        }
+      })
+      .catch(err => {
+        console.error('[N8N DEBUG] Error fatal en fetch a n8n:', err);
+      });
+    } catch (err) {
+      console.error('[N8N DEBUG] Error al preparar webhook n8n:', err);
     }
   }
 }

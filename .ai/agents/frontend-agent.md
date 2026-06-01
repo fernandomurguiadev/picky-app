@@ -46,8 +46,7 @@ Antes de escribir código:
 
 1. **Specs relevantes**: Leer `openspec/specs/` y `openspec/changes/` si aplica.
 2. **Arquitectura**: Confirmar patrón correcto (App Router, BFF, estructura de directorios).
-3. **UI/UX standards**: Consultar `openspec/specs/ui-ux-standards.md` para componentes financieros.
-4. **DFR v9**: Para lógica financiera, revisar `openspec/docs/references/pickyapp-dfr-multitenant-v9.md`.
+3. **UI/UX standards**: Consultar `openspec/specs/ui-ux-standards.md` para componentes financieros..
 5. **Seguridad**: Verificar skill `security-patterns` antes de tocar auth, sesiones o cookies.
 
 ---
