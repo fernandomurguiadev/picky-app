@@ -17,7 +17,10 @@ export class EnableTenantRls1778955000000 implements MigrationInterface {
         // Store Settings
         await queryRunner.query(`ALTER TABLE "store_settings" ENABLE ROW LEVEL SECURITY`);
         await queryRunner.query(`ALTER TABLE "store_settings" FORCE ROW LEVEL SECURITY`);
-        await queryRunner.query(`CREATE POLICY store_settings_tenant_policy ON "store_settings" FOR ALL USING ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
+        await queryRunner.query(`CREATE POLICY store_settings_insert_policy ON "store_settings" FOR INSERT WITH CHECK (true)`);
+        await queryRunner.query(`CREATE POLICY store_settings_select_policy ON "store_settings" FOR SELECT USING ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
+        await queryRunner.query(`CREATE POLICY store_settings_update_policy ON "store_settings" FOR UPDATE USING ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
+        await queryRunner.query(`CREATE POLICY store_settings_delete_policy ON "store_settings" FOR DELETE USING ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
 
         // Orders
         await queryRunner.query(`ALTER TABLE "orders" ENABLE ROW LEVEL SECURITY`);
@@ -31,7 +34,10 @@ export class EnableTenantRls1778955000000 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "orders" DISABLE ROW LEVEL SECURITY`);
 
         // Store Settings
-        await queryRunner.query(`DROP POLICY IF EXISTS store_settings_tenant_policy ON "store_settings"`);
+        await queryRunner.query(`DROP POLICY IF EXISTS store_settings_select_policy ON "store_settings"`);
+        await queryRunner.query(`DROP POLICY IF EXISTS store_settings_update_policy ON "store_settings"`);
+        await queryRunner.query(`DROP POLICY IF EXISTS store_settings_delete_policy ON "store_settings"`);
+        await queryRunner.query(`DROP POLICY IF EXISTS store_settings_insert_policy ON "store_settings"`);
         await queryRunner.query(`ALTER TABLE "store_settings" DISABLE ROW LEVEL SECURITY`);
 
         // Categories

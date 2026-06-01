@@ -43,10 +43,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
         code = this.resolveCode(statusCode);
       }
     } else {
-      // Error no controlado — loguear internamente sin exponer detalles al cliente
+      // Error no controlado
+      code = this.resolveCode(statusCode);
+      if (exception instanceof Error) {
+        message = exception.message;
+      }
+    }
+
+    // Loguear errores de forma profesional para observabilidad interna
+    if (statusCode >= 500) {
       this.logger.error(
-        `Unhandled exception on ${request.method} ${request.url}`,
+        `[5xx Error] ${request.method} ${request.url} - Status: ${statusCode} - Code: ${code} - Message: ${message}`,
         exception instanceof Error ? exception.stack : String(exception),
+      );
+    } else {
+      this.logger.warn(
+        `[4xx Warn] ${request.method} ${request.url} - Status: ${statusCode} - Code: ${code} - Message: ${message}`,
       );
     }
 

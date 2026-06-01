@@ -12,6 +12,7 @@ export const databaseConfig = registerAs('database', (): DataSourceOptions => ({
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
   synchronize: false,
+  migrationsRun: true,
   logging: process.env['DATABASE_LOGGING'] === 'true',
   extra: {
     max: 20,

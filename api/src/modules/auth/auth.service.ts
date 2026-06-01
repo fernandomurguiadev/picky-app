@@ -63,6 +63,9 @@ export class AuthService {
       });
       await queryRunner.manager.save(tenant);
 
+      // Set current tenant ID in transaction context for RLS policies (e.g. store_settings INSERT RETURNING)
+      await queryRunner.query(`SELECT set_config('app.current_tenant_id', $1, true)`, [tenant.id]);
+
       const passwordHash = await bcrypt.hash(dto.password, bcryptRounds);
       const user = queryRunner.manager.create(User, {
         email: lowercaseEmail,
