@@ -45,11 +45,19 @@ async function handler(
 
   const responseData = await backendRes.arrayBuffer();
 
+  const responseHeaders: HeadersInit = {
+    "Content-Type": backendRes.headers.get("content-type") ?? "application/json",
+  };
+
+  // Forward Set-Cookie if the backend sets cookies (e.g. rotating/updating refresh tokens during tenant switch)
+  const setCookie = backendRes.headers.get("set-cookie");
+  if (setCookie) {
+    responseHeaders["Set-Cookie"] = setCookie;
+  }
+
   return new NextResponse(responseData, {
     status: backendRes.status,
-    headers: {
-      "Content-Type": backendRes.headers.get("content-type") ?? "application/json",
-    },
+    headers: responseHeaders,
   });
 }
 
