@@ -317,6 +317,54 @@ export class AuthService {
     return { message: 'Contraseña actualizada.' };
   }
 
+  async getMeTenants(userId: string): Promise<{ id: string; name: string; slug: string }[]> {
+    const memberships = await this.membershipRepo.find({
+      where: { userId, isActive: true },
+      relations: { tenant: true },
+    });
+
+    return memberships
+      .filter((m) => m.tenant.isActive)
+      .map((m) => ({
+        id: m.tenant.id,
+        name: m.tenant.name,
+        slug: m.tenant.slug,
+      }));
+  }
+
+  async switchTenant(
+    userId: string,
+    tenantId: string,
+    response: Response,
+  ): Promise<{ access_token: string }> {
+    // Validar membresía y status
+    const membership = await this.membershipRepo.findOne({
+      where: { userId, tenantId, isActive: true },
+      relations: { tenant: true, user: true },
+    });
+
+    if (!membership || !membership.tenant.isActive) {
+      throw new UnauthorizedException('No tenés permisos para acceder a este comercio.');
+    }
+
+    const refreshToken = crypto.randomUUID();
+    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
+    await this.userRepo.update(userId, {
+      refreshToken: `${tokenHash}:${tenantId}`,
+    });
+
+    const isProduction = this.configService.get('NODE_ENV') === 'production';
+    response.cookie('refresh-token', refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return { access_token: this.signAccessToken(membership.user, tenantId) };
+  }
+
   private signSelectionToken(
     userId: string,
     email: string,

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -16,6 +17,7 @@ import { LoginDto } from './dto/login.dto.js';
 import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
 import { ResetPasswordDto } from './dto/reset-password.dto.js';
 import { SelectTenantDto } from './dto/select-tenant.dto.js';
+import { SwitchTenantDto } from './dto/switch-tenant.dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from './strategies/jwt.strategy.js';
@@ -82,5 +84,22 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
+  }
+
+  @Get('me/tenants')
+  @UseGuards(JwtAuthGuard)
+  getMeTenants(@CurrentUser() user: AuthenticatedUser) {
+    return this.authService.getMeTenants(user.userId);
+  }
+
+  @Post('switch-tenant')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  switchTenant(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: SwitchTenantDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.switchTenant(user.userId, dto.tenantId, res);
   }
 }
