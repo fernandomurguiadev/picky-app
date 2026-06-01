@@ -262,13 +262,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Sección Toggle Abierto/Cerrado (Requerimiento FE8.3) */}
-      <div className="flex items-center justify-between p-5 rounded-2xl border border-border bg-card/50 shadow-sm backdrop-blur">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 rounded-2xl border border-border bg-card/50 shadow-sm backdrop-blur gap-4">
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex p-3 bg-accent/50 text-muted-foreground rounded-xl">
             <Store className="h-5 w-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="font-bold tracking-tight text-foreground">Estado actual de la tienda</span>
               <StoreStatusBadge isOpen={isCurrentlyOpen} />
             </div>
@@ -280,7 +280,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 bg-accent/30 p-1 pr-1.5 pl-3 rounded-xl border border-border/30 min-w-[175px]">
+        <div className="flex items-center justify-between sm:justify-start gap-2.5 bg-accent/30 p-1 pr-1.5 pl-3 rounded-xl border border-border/30 w-full sm:w-auto min-w-[175px] shrink-0">
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground shrink-0">Modo</span>
           <Select 
             value={selectValue} 
