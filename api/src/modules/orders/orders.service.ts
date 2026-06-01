@@ -71,6 +71,14 @@ export class OrdersService {
     await queryRunner.startTransaction();
 
     try {
+      // Set tenant context for RLS — needed because this endpoint is public
+      // (@SkipRls) so the RlsInterceptor never runs. The set_config call scopes
+      // the session variable to the current transaction (3rd arg = true).
+      await queryRunner.query(
+        `SELECT set_config('app.current_tenant_id', $1, true)`,
+        [dto.tenantId],
+      );
+
       const order = queryRunner.manager.create(Order, {
         tenantId: dto.tenantId,
         orderNumber,

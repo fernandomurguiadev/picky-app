@@ -28,15 +28,23 @@ export class EnableTenantRls1778955000000 implements MigrationInterface {
         await queryRunner.query(`CREATE POLICY store_settings_update_policy ON "store_settings" FOR UPDATE USING ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
         await queryRunner.query(`CREATE POLICY store_settings_delete_policy ON "store_settings" FOR DELETE USING ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
 
-        // Orders
+        // Orders — split policies like store_settings to allow public INSERT
+        // once app.current_tenant_id is set inside the transaction.
         await queryRunner.query(`ALTER TABLE "orders" ENABLE ROW LEVEL SECURITY`);
         await queryRunner.query(`ALTER TABLE "orders" FORCE ROW LEVEL SECURITY`);
-        await queryRunner.query(`CREATE POLICY orders_tenant_policy ON "orders" FOR ALL USING ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
+        await queryRunner.query(`CREATE POLICY orders_insert_policy ON "orders" FOR INSERT WITH CHECK ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
+        await queryRunner.query(`CREATE POLICY orders_select_policy ON "orders" FOR SELECT USING ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
+        await queryRunner.query(`CREATE POLICY orders_update_policy ON "orders" FOR UPDATE USING ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
+        await queryRunner.query(`CREATE POLICY orders_delete_policy ON "orders" FOR DELETE USING ("tenantId" = NULLIF(current_setting('app.current_tenant_id', true), '')::uuid)`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
         // Orders
         await queryRunner.query(`DROP POLICY IF EXISTS orders_tenant_policy ON "orders"`);
+        await queryRunner.query(`DROP POLICY IF EXISTS orders_insert_policy ON "orders"`);
+        await queryRunner.query(`DROP POLICY IF EXISTS orders_select_policy ON "orders"`);
+        await queryRunner.query(`DROP POLICY IF EXISTS orders_update_policy ON "orders"`);
+        await queryRunner.query(`DROP POLICY IF EXISTS orders_delete_policy ON "orders"`);
         await queryRunner.query(`ALTER TABLE "orders" DISABLE ROW LEVEL SECURITY`);
 
         // Store Settings
