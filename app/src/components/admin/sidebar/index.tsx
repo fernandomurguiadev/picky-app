@@ -76,7 +76,7 @@ export function AdminSidebar() {
                   </span>
                 </div>
               </SelectTrigger>
-              <SelectContent className="rounded-xl shadow-lg border-border/60 max-w-[220px]">
+              <SelectContent position="popper" sideOffset={4} className="rounded-xl shadow-lg border-border/60 max-w-[220px] animate-in slide-in-from-top-1 duration-200">
                 {tenantsList.map((t) => (
                   <SelectItem 
                     key={t.id} 
