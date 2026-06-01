@@ -1,7 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { Separator as SeparatorPrimitive } from "radix-ui"
+import { Separator as RadixSeparator } from "radix-ui"
+
+// React 19 + Radix UI consolidated: Separator lacks className in typings.
+const SeparatorPrimitive = RadixSeparator as any
 
 import { cn } from "@/lib/utils"
 
@@ -10,7 +13,10 @@ function Separator({
   orientation = "horizontal",
   decorative = true,
   ...props
-}: React.ComponentProps<typeof SeparatorPrimitive.Root>) {
+}: React.HTMLAttributes<HTMLDivElement> & {
+  orientation?: "horizontal" | "vertical"
+  decorative?: boolean
+}) {
   return (
     <SeparatorPrimitive.Root
       data-slot="separator"

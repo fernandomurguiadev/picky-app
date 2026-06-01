@@ -8,9 +8,23 @@ const SelectPrimitive = RadixSelect as any
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
+type SelectProps = {
+  value?: string
+  defaultValue?: string
+  onValueChange?: (value: string) => void
+  open?: boolean
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+  dir?: "ltr" | "rtl"
+  name?: string
+  disabled?: boolean
+  required?: boolean
+  children?: React.ReactNode
+}
+
 function Select({
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Root>) {
+}: SelectProps) {
   return <SelectPrimitive.Root data-slot="select" {...props} />
 }
 

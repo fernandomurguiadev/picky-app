@@ -1,17 +1,29 @@
 "use client"
 
 import * as React from "react"
-import { Switch as SwitchPrimitive } from "radix-ui"
+import { Switch as RadixSwitch } from "radix-ui"
+
+// React 19 + Radix UI consolidated package has broken typings — none of the
+// sub-components expose standard HTML attributes (className, id, etc.).
+// Casting the whole module to `any` bypasses this while keeping runtime intact.
+const SwitchPrimitive = RadixSwitch as any
 
 import { cn } from "@/lib/utils"
+
+type SwitchProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  checked?: boolean
+  defaultChecked?: boolean
+  required?: boolean
+  onCheckedChange?: (checked: boolean) => void
+  asChild?: boolean
+  size?: "sm" | "default"
+}
 
 function Switch({
   className,
   size = "default",
   ...props
-}: React.ComponentProps<typeof SwitchPrimitive.Root> & {
-  size?: "sm" | "default"
-}) {
+}: SwitchProps) {
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
@@ -31,3 +43,4 @@ function Switch({
 }
 
 export { Switch }
+export type { SwitchProps }

@@ -1,15 +1,26 @@
 "use client"
 
 import * as React from "react"
-import { Checkbox as CheckboxPrimitive } from "radix-ui"
+import { Checkbox as RadixCheckbox } from "radix-ui"
+
+// React 19 + Radix UI consolidated: Checkbox sub-components lack className/children in typings.
+const CheckboxPrimitive = RadixCheckbox as any
 
 import { cn } from "@/lib/utils"
 import { CheckIcon } from "lucide-react"
 
+type CheckboxProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  checked?: boolean | "indeterminate"
+  defaultChecked?: boolean
+  required?: boolean
+  onCheckedChange?: (checked: boolean | "indeterminate") => void
+  asChild?: boolean
+}
+
 function Checkbox({
   className,
   ...props
-}: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
+}: CheckboxProps) {
   return (
     <CheckboxPrimitive.Root
       data-slot="checkbox"
@@ -23,8 +34,7 @@ function Checkbox({
         data-slot="checkbox-indicator"
         className="grid place-content-center text-current transition-none [&>svg]:size-3.5"
       >
-        <CheckIcon
-        />
+        <CheckIcon />
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   )

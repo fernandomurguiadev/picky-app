@@ -1,7 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { ScrollArea as ScrollAreaPrimitive } from "radix-ui"
+import { ScrollArea as RadixScrollArea } from "radix-ui"
+
+// React 19 + Radix UI consolidated: ScrollArea sub-components lack className/children in typings.
+const ScrollAreaPrimitive = RadixScrollArea as any
 
 import { cn } from "@/lib/utils"
 
@@ -9,7 +12,7 @@ function ScrollArea({
   className,
   children,
   ...props
-}: React.ComponentProps<typeof ScrollAreaPrimitive.Root>) {
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
@@ -32,7 +35,9 @@ function ScrollBar({
   className,
   orientation = "vertical",
   ...props
-}: React.ComponentProps<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>) {
+}: React.HTMLAttributes<HTMLDivElement> & {
+  orientation?: "vertical" | "horizontal"
+}) {
   return (
     <ScrollAreaPrimitive.ScrollAreaScrollbar
       data-slot="scroll-area-scrollbar"

@@ -1,7 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { Avatar as AvatarPrimitive } from "radix-ui"
+import { Avatar as RadixAvatar } from "radix-ui"
+
+// React 19 + Radix UI consolidated: all sub-components lack className in typings.
+const AvatarPrimitive = RadixAvatar as any
 
 import { cn } from "@/lib/utils"
 
@@ -9,7 +12,7 @@ function Avatar({
   className,
   size = "default",
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root> & {
+}: React.HTMLAttributes<HTMLSpanElement> & {
   size?: "default" | "sm" | "lg"
 }) {
   return (
@@ -28,7 +31,7 @@ function Avatar({
 function AvatarImage({
   className,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
+}: React.ImgHTMLAttributes<HTMLImageElement> & { onLoadingStatusChange?: (status: string) => void }) {
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
@@ -44,7 +47,7 @@ function AvatarImage({
 function AvatarFallback({
   className,
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Fallback>) {
+}: React.HTMLAttributes<HTMLSpanElement> & { delayMs?: number }) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"

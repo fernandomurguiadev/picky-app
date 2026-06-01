@@ -1,15 +1,26 @@
 "use client"
 
 import * as React from "react"
-import { Dialog as DialogPrimitive } from "radix-ui"
+import { Dialog as RadixDialog } from "radix-ui"
+
+// React 19 + Radix UI consolidated: Dialog sub-components lack className/onOpenChange in typings.
+const DialogPrimitive = RadixDialog as any
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { XIcon } from "lucide-react"
 
+type DialogRootProps = {
+  open?: boolean
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+  modal?: boolean
+  children?: React.ReactNode
+}
+
 function Dialog({
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Root>) {
+}: DialogRootProps) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
