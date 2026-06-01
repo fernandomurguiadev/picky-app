@@ -13,7 +13,7 @@ interface StoreHeaderProps {
 export function StoreHeader({ store, isOpen }: StoreHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-primary)]/10 bg-[var(--color-primary)] text-[var(--color-primary-foreground)] shadow-xs transition-colors duration-200">
-      <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+      <div className="mx-auto flex h-14 max-w-4xl lg:max-w-7xl items-center justify-between px-4">
         <Link href={`/${store.slug}`} className="flex items-center gap-2.5 min-w-0 text-[var(--color-primary-foreground)]">
           {store.logoUrl ? (
             <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-[var(--color-primary-foreground)]/20 bg-[var(--color-primary-foreground)]">
