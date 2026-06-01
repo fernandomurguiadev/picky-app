@@ -64,6 +64,9 @@ export class Order {
   @Column({ type: 'text', nullable: true })
   internalNotes!: string | null;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  verifiedWhatsappNumber!: string | null;
+
   @Column({ type: 'jsonb', default: [] })
   statusHistory!: StatusHistoryEntry[];
 

@@ -17,6 +17,7 @@ import { CreateOrderAdminDto } from './dto/create-order-admin.dto.js';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
 import { UpdateOrderNotesDto } from './dto/update-order-notes.dto.js';
 import { OrdersQueryDto } from './dto/orders-query.dto.js';
+import { LinkWhatsappDto } from './dto/link-whatsapp.dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
 import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
@@ -32,6 +33,12 @@ export class StorefrontOrdersController {
   @HttpCode(HttpStatus.CREATED)
   createOrder(@Body() dto: CreateOrderDto) {
     return this.ordersService.createOrder(dto);
+  }
+
+  @Patch('webhook/whatsapp-link')
+  linkWhatsappNumber(@Body() dto: LinkWhatsappDto) {
+    // Nota: Aquí se podría validar un header x-api-key en un Guard.
+    return this.ordersService.linkWhatsappNumber(dto.orderNumber, dto.verifiedWhatsappNumber);
   }
 }
 

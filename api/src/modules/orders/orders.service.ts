@@ -115,13 +115,33 @@ export class OrdersService {
       order.items = items as unknown[];
       this.ordersGateway.emitOrderNew(order.tenantId, order);
       this.notifyOrderN8n(order);
-      return order;
+
+      const businessNumber = process.env.WHATSAPP_BUSINESS_NUMBER || '';
+      const message = `Hola, quiero confirmar mi pedido ${order.orderNumber}`;
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/${businessNumber}?text=${encodedMessage}`;
+
+      return {
+        ...order,
+        whatsappConfirmationMessage: message,
+        whatsappConfirmationUrl: whatsappUrl,
+      } as Order & { whatsappConfirmationMessage: string; whatsappConfirmationUrl: string };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async linkWhatsappNumber(orderNumber: string, whatsappNumber: string): Promise<Order> {
+    const order = await this.orderRepo.findOne({ where: { orderNumber } });
+    if (!order) {
+      throw toBusinessException(OrderErrors.notFound(orderNumber));
+    }
+
+    order.verifiedWhatsappNumber = whatsappNumber;
+    return this.orderRepo.save(order);
   }
 
   // ─── Admin ────────────────────────────────────────────────────────────────
