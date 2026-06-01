@@ -1,7 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { Select as SelectPrimitive } from "radix-ui"
+import { Select as RadixSelect } from "radix-ui"
+
+const SelectPrimitive = RadixSelect as any
 
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
@@ -38,6 +40,8 @@ function SelectTrigger({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
   size?: "sm" | "default"
+  children?: React.ReactNode
+  className?: string
 }) {
   return (
     <SelectPrimitive.Trigger

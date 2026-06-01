@@ -64,7 +64,8 @@ export async function POST(req: NextRequest) {
     }
 
     return response;
-  } catch {
+  } catch (error) {
+    console.error("Error in BFF /api/auth/register:", error);
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: "Error interno del servidor" } },
       { status: 500 }

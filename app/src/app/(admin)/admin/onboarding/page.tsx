@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 
 import { StorePreview } from "@/components/admin/store-preview";
+import { BrandColorSelector } from "@/components/admin/brand-color-selector";
 
 const TOTAL_STEPS = 4;
 
@@ -309,115 +310,14 @@ export default function OnboardingPage() {
                 <p>🎨 <strong>Fondo Tienda:</strong> Define la atmósfera general del catálogo.</p>
               </div>
               
-              {/* Swatches de paletas de colores curadas y elegantes */}
-              <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                {[
-                  { name: "Obsidiana", primary: "#18181B", accent: "#E4E4E7", bg: "#FFFFFF" },
-                  { name: "Burdeos", primary: "#6B1D2F", accent: "#F87171", bg: "#FDFBF7" },
-                  { name: "Esmeralda", primary: "#1B4332", accent: "#34D399", bg: "#F2F5F1" },
-                  { name: "Terracota", primary: "#C05C3E", accent: "#FB923C", bg: "#FDFBF7" },
-                  { name: "Prusia", primary: "#0F3D59", accent: "#2DD4BF", bg: "#F8F9FA" },
-                  { name: "Cacao Artisan", primary: "#4A3728", accent: "#F59E0B", bg: "#FDFBF7" },
-                ].map((preset) => {
-                  const isSelected = 
-                    primaryColor.toLowerCase() === preset.primary.toLowerCase() && 
-                    accentColor.toLowerCase() === preset.accent.toLowerCase() && 
-                    backgroundColor.toLowerCase() === preset.bg.toLowerCase();
-                  return (
-                    <button
-                      key={preset.name}
-                      type="button"
-                      onClick={() => {
-                        setPrimaryColor(preset.primary);
-                        setAccentColor(preset.accent);
-                        setBackgroundColor(preset.bg);
-                      }}
-                      className={cn(
-                        "relative px-3 py-1.5 rounded-full transition-all border text-[10px] font-bold flex items-center gap-1.5 cursor-pointer shadow-xs hover:scale-105 active:scale-95 select-none",
-                        isSelected 
-                          ? "border-primary bg-primary/5 ring-1 ring-primary text-primary"
-                          : "border-border bg-card text-muted-foreground hover:text-foreground"
-                      )}
-                      aria-label={preset.name}
-                    >
-                      {/* Mini indicador circular de la paleta */}
-                      <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-black/5 shrink-0" style={{ backgroundColor: preset.primary }}>
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: preset.accent }} />
-                      </span>
-                      {preset.name}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Grilla Triple de selectores manuales */}
-              <div className="grid grid-cols-3 gap-3 pt-1">
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1">
-                    <Label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/70">C. Primario</Label>
-                    <div className="group relative hidden md:inline-flex">
-                      <HelpCircle className="w-2.5 h-2.5 text-muted-foreground/50 hover:text-muted-foreground cursor-pointer transition-colors" />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block w-40 p-2 bg-popover text-popover-foreground text-[8px] rounded-lg border border-border shadow-md leading-relaxed z-50 pointer-events-none select-none animate-in fade-in duration-200">
-                        Color del encabezado de la tienda, categorías activas y tarjetas.
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-popover" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="relative flex items-center gap-1 bg-accent/10 border border-border/50 px-2 py-1.5 rounded-xl shadow-inner">
-                    <input
-                      type="color"
-                      value={primaryColor}
-                      onChange={(e) => setPrimaryColor(e.target.value)}
-                      className="h-5 w-5 cursor-pointer rounded-full border-0 bg-transparent p-0 overflow-hidden shrink-0"
-                    />
-                    <span className="text-[9px] font-mono font-bold uppercase tracking-wider opacity-80 truncate">{primaryColor}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1">
-                    <Label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/70">C. Secundario</Label>
-                    <div className="group relative hidden md:inline-flex">
-                      <HelpCircle className="w-2.5 h-2.5 text-muted-foreground/50 hover:text-muted-foreground cursor-pointer transition-colors" />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block w-40 p-2 bg-popover text-popover-foreground text-[8px] rounded-lg border border-border shadow-md leading-relaxed z-50 pointer-events-none select-none animate-in fade-in duration-200">
-                        Botones secundarios de agregar y el botón final del carrito.
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-popover" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="relative flex items-center gap-1 bg-accent/10 border border-border/50 px-2 py-1.5 rounded-xl shadow-inner">
-                    <input
-                      type="color"
-                      value={accentColor}
-                      onChange={(e) => setAccentColor(e.target.value)}
-                      className="h-5 w-5 cursor-pointer rounded-full border-0 bg-transparent p-0 overflow-hidden shrink-0"
-                    />
-                    <span className="text-[9px] font-mono font-bold uppercase tracking-wider opacity-80 truncate">{accentColor}</span>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1">
-                    <Label className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground/70">Fondo Tienda</Label>
-                    <div className="group relative hidden md:inline-flex">
-                      <HelpCircle className="w-2.5 h-2.5 text-muted-foreground/50 hover:text-muted-foreground cursor-pointer transition-colors" />
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block w-40 p-2 bg-popover text-popover-foreground text-[8px] rounded-lg border border-border shadow-md leading-relaxed z-50 pointer-events-none select-none animate-in fade-in duration-200">
-                        Atmósfera general del catálogo (ej. claro sofisticado o tema oscuro).
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-popover" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="relative flex items-center gap-1 bg-accent/10 border border-border/50 px-2 py-1.5 rounded-xl shadow-inner">
-                    <input
-                      type="color"
-                      value={backgroundColor}
-                      onChange={(e) => setBackgroundColor(e.target.value)}
-                      className="h-5 w-5 cursor-pointer rounded-full border-0 bg-transparent p-0 overflow-hidden shrink-0"
-                    />
-                    <span className="text-[9px] font-mono font-bold uppercase tracking-wider opacity-80 truncate">{backgroundColor}</span>
-                  </div>
-                </div>
-              </div>
+              <BrandColorSelector
+                primaryColor={primaryColor}
+                setPrimaryColor={setPrimaryColor}
+                accentColor={accentColor}
+                setAccentColor={setAccentColor}
+                backgroundColor={backgroundColor}
+                setBackgroundColor={setBackgroundColor}
+              />
             </div>
 
             <div className="space-y-2.5 pt-1 border-t border-border/30">

@@ -56,7 +56,7 @@ const deliverySchema = z
 
 type CustomerData = z.infer<typeof customerSchema>;
 type DeliveryData = z.infer<typeof deliverySchema>;
-type CheckoutStep = "customer" | "delivery";
+type CheckoutStep = "customer" | "delivery" | "success";
 
 // ─── Sub-componentes de pasos ─────────────────────────────────────────────────
 
@@ -416,17 +416,18 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
   const [step, setStep] = useState<CheckoutStep>("customer");
   const [customerData, setCustomerData] = useState<CustomerData | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState<any>(null);
 
   const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:1000";
 
   // Guard: carrito vacío → redirigir a tienda
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && step !== "success") {
       router.replace(`/${slug}`);
     }
-  }, [items.length, router, slug]);
+  }, [items.length, router, slug, step]);
 
-  if (items.length === 0) {
+  if (items.length === 0 && step !== "success") {
     return null;
   }
 
@@ -476,30 +477,54 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
 
       const json = res.ok ? await res.json() : null;
       const orderId = json?.data?.id ?? json?.data?.orderId ?? undefined;
-
-      const whatsappUrl = buildWhatsAppUrl({
-        storeName: store.name,
-        storePhone: store.whatsapp ?? store.phone ?? "",
-        items,
-        customerName: customerData.name,
-        customerPhone: customerData.phone,
-        deliveryMethod: deliveryData.deliveryMethod,
-        paymentMethod: deliveryData.paymentMethod,
-        deliveryAddress: deliveryData.deliveryAddress,
-        deliveryCost,
-        notes: customerData.notes,
-        orderId,
-      });
-
-      // Abrir WhatsApp antes de navegar para evitar bloqueos de popup
-      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
-      router.push(`/${slug}/order-confirmation`);
+      
+      // Guardar el pedido creado para mostrar en la pantalla de éxito
+      setCreatedOrder(json?.data);
+      setStep("success");
+      
+      // Limpiar el carrito (opcional pero recomendado)
+      useCartStore.getState().clearCart();
+      
     } catch {
       toast.error("Error al procesar el pedido. Intentá nuevamente.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (step === "success") {
+    return (
+      <div className="mx-auto max-w-lg px-4 py-12 text-center animate-in fade-in zoom-in-95 duration-500">
+        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-50 ring-8 ring-green-50/50 dark:bg-green-900/20 dark:ring-green-900/10">
+          <CheckCircle className="h-10 w-10 text-green-500 dark:text-green-400" />
+        </div>
+        <h1 className="mb-2 text-2xl font-bold tracking-tight">¡Pedido generado correctamente!</h1>
+        <p className="mb-6 text-muted-foreground">
+          Número de pedido: <strong className="text-foreground">{createdOrder?.orderNumber ?? "..."}</strong>
+        </p>
+
+        <div className="rounded-xl border bg-muted/30 p-6 mb-8 text-sm">
+          <p className="mb-4">
+            Para finalizar, envianos un mensaje por WhatsApp para que podamos confirmar tu pedido y asignarlo a tu número.
+          </p>
+          <Button
+            type="button"
+            className="w-full gap-2 bg-[#25D366] hover:bg-[#1DA851] text-white py-6 text-base font-semibold shadow-md"
+            onClick={() => {
+              if (createdOrder?.whatsappConfirmationUrl) {
+                window.open(createdOrder.whatsappConfirmationUrl, "_blank", "noopener,noreferrer");
+              } else {
+                toast.error("No se pudo generar el enlace de WhatsApp.");
+              }
+            }}
+          >
+            Confirmar por WhatsApp
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-lg px-4 py-8">
