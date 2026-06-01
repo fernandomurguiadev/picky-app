@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useUpdateStoreSettings } from "@/lib/hooks/admin/use-store-settings";
+import { useCategories } from "@/lib/hooks/admin/use-categories";
+import { useProducts } from "@/lib/hooks/admin/use-products";
 import { useCreateCategory } from "@/lib/hooks/admin/use-categories";
 import { useCreateProduct } from "@/lib/hooks/admin/use-products";
 import { ImageUploader } from "@/components/shared/image-uploader";
@@ -22,7 +25,8 @@ import {
   CheckCircle2,
   Sparkles,
   Plus,
-  HelpCircle
+  HelpCircle,
+  Loader2
 } from "lucide-react";
 
 import { StorePreview } from "@/components/admin/store-preview";
@@ -34,6 +38,23 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Queries para verificar si ya está configurado
+  const categoriesQuery = useCategories();
+  const productsQuery = useProducts();
+
+  const hasData = 
+    categoriesQuery.isSuccess && 
+    categoriesQuery.data.length > 0 && 
+    productsQuery.isSuccess && 
+    productsQuery.data.data.length > 0;
+
+  // Redirección defensiva si ya tiene cargado catálogo
+  useEffect(() => {
+    if (hasData) {
+      router.replace("/admin/dashboard");
+    }
+  }, [hasData, router]);
 
   // Mutations
   const updateSettingsMutation = useUpdateStoreSettings();
@@ -215,6 +236,24 @@ export default function OnboardingPage() {
     { id: 3, label: "Producto", icon: <PackagePlus className="h-4 w-4" /> },
     { id: 4, label: "Horarios", icon: <CalendarClock className="h-4 w-4" /> },
   ];
+
+  const isLoading = categoriesQuery.isLoading || productsQuery.isLoading;
+
+  if (isLoading || hasData) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center animate-in fade-in duration-300">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-foreground">
+            {hasData ? "Accediendo a tu panel..." : "Cargando configuración..."}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {hasData ? "Ya configuraste tu catálogo. Redirigiendo..." : "Verificando el estado de tu comercio..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center py-12 w-full max-w-md md:max-w-[530px] px-4 mx-auto">

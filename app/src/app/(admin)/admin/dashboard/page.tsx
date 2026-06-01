@@ -138,10 +138,9 @@ export default function DashboardPage() {
   // Redirección al Wizard de Onboarding (Requerimiento FE8.5)
   useEffect(() => {
     if (!isLoading && !isError && settings && products) {
-      const hasLogo = !!settings.logoUrl;
       const hasProducts = (products.meta?.total ?? 0) > 0;
       
-      if (!hasLogo || !hasProducts) {
+      if (!hasProducts) {
         router.replace("/admin/onboarding");
       }
     }
