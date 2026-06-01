@@ -1,0 +1,43 @@
+services:
+  api:
+    image: fernandomurguiadev/picky-api:latest
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: picky_api
+    restart: unless-stopped
+    mem_limit: 512m
+    env_file:
+      - .env
+    expose:
+      - "1000"
+    networks:
+      - app-net
+      - internal
+
+  app:
+    image: fernandomurguiadev/picky-app:latest
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: https://api.picky.orbitech.cloud
+        NEXT_PUBLIC_WS_URL: https://api.picky.orbitech.cloud
+    container_name: picky_app
+    restart: unless-stopped
+    mem_limit: 512m
+    env_file:
+      - .env
+    environment:
+      - PORT=2000
+      - BACKEND_URL=http://api:1000
+    expose:
+      - "2000"
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    external: true
+  internal:
+    external: true

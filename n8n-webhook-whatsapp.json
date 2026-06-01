@@ -1,0 +1,103 @@
+{
+  "name": "Vinculación de Pedido por WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "evolution-webhook",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "name": "Evolution Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300],
+      "webhookId": "evolution-webhook-picky"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.body.data.message.conversation || $json.body.data.message.extendedTextMessage.text }}",
+              "operation": "contains",
+              "value2": "quiero confirmar mi pedido ORD-"
+            }
+          ]
+        }
+      },
+      "name": "Filtro de Mensaje",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [350, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const msgText = $json.body.data.message.conversation || $json.body.data.message.extendedTextMessage.text || '';\nconst match = msgText.match(/(ORD-\\d{8}-\\d{4})/);\n\nif (!match) {\n  throw new Error('No se encontro el numero de orden');\n}\n\n// El remoteJid viene como '549388XXXXXXX@s.whatsapp.net'\nconst remoteJid = $json.body.data.key.remoteJid || '';\nconst cleanNumber = remoteJid.split('@')[0];\n\nreturn {\n  orderNumber: match[1],\n  whatsappNumber: cleanNumber\n};"
+      },
+      "name": "Extraer Datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [600, 280]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://tu-backend-api:1000/api/v1/orders/webhook/whatsapp-link",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "orderNumber",
+              "value": "={{ $json.orderNumber }}"
+            },
+            {
+              "name": "verifiedWhatsappNumber",
+              "value": "={{ $json.whatsappNumber }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Vincular en Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [850, 280]
+    }
+  ],
+  "connections": {
+    "Evolution Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filtro de Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtro de Mensaje": {
+      "main": [
+        [
+          {
+            "node": "Extraer Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Datos": {
+      "main": [
+        [
+          {
+            "node": "Vincular en Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
