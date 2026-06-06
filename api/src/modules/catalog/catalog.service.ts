@@ -172,19 +172,33 @@ export class CatalogService {
     });
   }
 
-  async searchProducts(slug: string, q: string): Promise<Product[]> {
+  async searchProducts(
+    slug: string,
+    q: string,
+    opts: { categoryId?: string; page?: number; limit?: number } = {},
+  ): Promise<{ data: Product[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
     const safeQ = q.slice(0, 100);
+    const page = Math.max(1, opts.page ?? 1);
+    const limit = Math.min(48, Math.max(1, opts.limit ?? 24));
     const tenant = await this.resolveTenantBySlug(slug);
-    return this.productRepo
+
+    const qb = this.productRepo
       .createQueryBuilder('p')
       .where('p.tenantId = :tenantId', { tenantId: tenant.id })
       .andWhere('p.isActive = true')
       .andWhere('(p.name ILIKE :q OR p.description ILIKE :q)', { q: `%${safeQ}%` })
       .leftJoinAndSelect('p.optionGroups', 'og')
       .leftJoinAndSelect('og.items', 'oi')
-      .orderBy('p.name', 'ASC')
-      .take(50)
-      .getMany();
+      .orderBy('p.name', 'ASC');
+
+    if (opts.categoryId) {
+      qb.andWhere('p.categoryId = :categoryId', { categoryId: opts.categoryId });
+    }
+
+    const total = await qb.getCount();
+    const data = await qb.skip((page - 1) * limit).take(limit).getMany();
+
+    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 } };
   }
 
   // ─── Products (admin) ─────────────────────────────────────────────────────
@@ -200,6 +214,7 @@ export class CatalogService {
     const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
     const qb = repo
       .createQueryBuilder('p')
+      .leftJoinAndSelect('p.category', 'c')
       .where('p.tenantId = :tenantId', { tenantId })
       .leftJoinAndSelect('p.optionGroups', 'og')
       .leftJoinAndSelect('og.items', 'oi')
@@ -226,6 +241,7 @@ export class CatalogService {
     const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
     const product = await repo
       .createQueryBuilder('p')
+      .leftJoinAndSelect('p.category', 'c')
       .leftJoinAndSelect('p.optionGroups', 'og')
       .leftJoinAndSelect('og.items', 'oi')
       .where('p.id = :id', { id })

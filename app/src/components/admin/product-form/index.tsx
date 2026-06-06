@@ -92,7 +92,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
       methods.reset({
         name: product.name,
         description: product.description ?? "",
-        categoryId: product.categoryId,
+        categoryId: product.categoryId || product.category?.id || "",
         price: fromCents(product.price),
         imageUrl: product.imageUrl ?? null,
         isFeatured: product.isFeatured,
