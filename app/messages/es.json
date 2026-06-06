@@ -193,6 +193,23 @@
       "terms": "Términos",
       "privacy": "Privacidad"
     }
+  },
+  "storeStatus": {
+    "open": "Abierto",
+    "closed": "Cerrado",
+    "todaySchedule": "Horario de hoy ({day})",
+    "storeSchedule": "Horarios del comercio",
+    "noSchedule": "Sin horarios configurados",
+    "closedToday": "Cerrado hoy",
+    "days": {
+      "monday": "Lunes",
+      "tuesday": "Martes",
+      "wednesday": "Miércoles",
+      "thursday": "Jueves",
+      "friday": "Viernes",
+      "saturday": "Sábado",
+      "sunday": "Domingo"
+    }
   }
 }
 

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import type { DaySchedule } from "@/lib/types/store";
 import { Clock } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface StoreStatusBadgeProps {
   isOpen: boolean;
@@ -11,17 +12,8 @@ interface StoreStatusBadgeProps {
   className?: string;
 }
 
-const DAYS_TRANSLATIONS: Record<string, string> = {
-  monday: "Lunes",
-  tuesday: "Martes",
-  wednesday: "Miércoles",
-  thursday: "Jueves",
-  friday: "Viernes",
-  saturday: "Sábado",
-  sunday: "Domingo",
-};
-
 export function StoreStatusBadge({ isOpen, todaySchedule, className }: StoreStatusBadgeProps) {
+  const t = useTranslations("storeStatus");
   const [showSchedule, setShowSchedule] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +33,7 @@ export function StoreStatusBadge({ isOpen, todaySchedule, className }: StoreStat
   }, [showSchedule]);
 
   const hasSchedule = todaySchedule && todaySchedule.shifts && todaySchedule.shifts.length > 0;
-  const dayName = todaySchedule ? DAYS_TRANSLATIONS[todaySchedule.day] || todaySchedule.day : "";
+  const dayName = todaySchedule ? t(`days.${todaySchedule.day}`) : "";
 
   return (
     <div ref={containerRef} className="relative inline-block">
@@ -68,7 +60,7 @@ export function StoreStatusBadge({ isOpen, todaySchedule, className }: StoreStat
         )}
         aria-haspopup="dialog"
         aria-expanded={showSchedule}
-        title="Ver horario de hoy"
+        title={t("todaySchedule", { day: dayName || t("storeSchedule") })}
       >
         <span
           className={cn(
@@ -76,7 +68,7 @@ export function StoreStatusBadge({ isOpen, todaySchedule, className }: StoreStat
             isOpen ? "bg-emerald-600 dark:bg-emerald-400 animate-pulse" : "bg-[var(--store-accent-foreground)]"
           )}
         />
-        <span>{isOpen ? "Abierto" : "Cerrado"}</span>
+        <span>{isOpen ? t("open") : t("closed")}</span>
       </button>
 
       {/* Popover */}
@@ -89,18 +81,18 @@ export function StoreStatusBadge({ isOpen, todaySchedule, className }: StoreStat
           <div className="flex items-center gap-2 border-b border-zinc-100 pb-2.5 dark:border-zinc-800/50">
             <Clock className="h-4 w-4 text-[var(--store-accent)]" />
             <span className="font-semibold text-xs text-zinc-700 dark:text-zinc-300">
-              {dayName ? `Horario de hoy (${dayName})` : "Horarios del comercio"}
+              {dayName ? t("todaySchedule", { day: dayName }) : t("storeSchedule")}
             </span>
           </div>
 
           <div className="mt-3 space-y-2">
             {!todaySchedule ? (
               <p className="text-xs text-zinc-500 dark:text-zinc-400 italic font-medium">
-                Sin horarios configurados
+                {t("noSchedule")}
               </p>
             ) : !todaySchedule.isOpen || !hasSchedule ? (
               <p className="text-xs text-zinc-500 dark:text-zinc-400 italic font-medium">
-                Cerrado hoy
+                {t("closedToday")}
               </p>
             ) : (
               todaySchedule.shifts.map((shift, idx) => (
