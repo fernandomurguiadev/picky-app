@@ -17,8 +17,8 @@ export function StoreHeader({ store, isOpen, todaySchedule }: StoreHeaderProps) 
     <header className="sticky top-0 z-40 w-full bg-transparent pointer-events-none transition-colors duration-200">
       {/* Barra superior con color de fondo del comercio */}
       <div className="w-full border-b border-[var(--color-primary)]/10 bg-[var(--color-primary)] text-[var(--color-primary-foreground)] shadow-xs pointer-events-auto">
-        <div className="mx-auto flex h-14 max-w-4xl lg:max-w-7xl items-center justify-between px-4">
-          <Link href={`/${store.slug}`} className="flex items-center gap-2.5 min-w-0 text-[var(--color-primary-foreground)]">
+        <div className="mx-auto flex h-14 max-w-4xl lg:max-w-7xl items-center justify-between px-4 gap-4">
+          <Link href={`/${store.slug}`} className="flex items-center gap-2.5 min-w-[200px] text-[var(--color-primary-foreground)]">
             {store.logoUrl ? (
               <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-[var(--color-primary-foreground)]/20 bg-[var(--color-primary-foreground)]">
                 <Image
@@ -37,7 +37,12 @@ export function StoreHeader({ store, isOpen, todaySchedule }: StoreHeaderProps) 
             <span className="truncate font-semibold text-sm">{store.name}</span>
           </Link>
 
-          <div className="flex items-center gap-3">
+          {/* Buscador Desktop centrado */}
+          <div className="hidden lg:block flex-1 max-w-md text-foreground">
+            <StoreSearchBar slug={store.slug} />
+          </div>
+
+          <div className="flex items-center gap-3 min-w-[200px] justify-end">
             <StoreStatusBadge isOpen={isOpen} todaySchedule={todaySchedule} />
             <CartDrawer>
               <CartBadge />
@@ -46,9 +51,9 @@ export function StoreHeader({ store, isOpen, todaySchedule }: StoreHeaderProps) 
         </div>
       </div>
 
-      {/* Buscador flotante siempre visible en mobile */}
-      <div className="mx-auto max-w-4xl px-4 py-2 lg:hidden pointer-events-auto">
-        <div className="shadow-[0_8px_30px_rgba(0,0,0,0.12)] rounded-lg">
+      {/* Buscador sticky en mobile — fondo opaco para no tapar categorías al scrollear */}
+      <div className="w-full bg-[var(--color-background)] border-b border-[var(--border)] lg:hidden pointer-events-auto">
+        <div className="mx-auto max-w-4xl px-4 py-2">
           <StoreSearchBar slug={store.slug} />
         </div>
       </div>
