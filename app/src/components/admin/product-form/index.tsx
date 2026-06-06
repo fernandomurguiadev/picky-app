@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -228,21 +228,27 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
 
             <div className="space-y-1.5">
               <Label htmlFor="p-category">Categoría *</Label>
-              <Select
-                value={watch("categoryId") || ""}
-                onValueChange={(v) => setValue("categoryId", v, { shouldDirty: true })}
-              >
-                <SelectTrigger id="p-category" aria-invalid={!!errors.categoryId}>
-                  <SelectValue placeholder="Seleccioná una categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories?.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                name="categoryId"
+                control={methods.control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value || ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="p-category" aria-invalid={!!errors.categoryId}>
+                      <SelectValue placeholder="Seleccioná una categoría" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.categoryId && (
                 <p className="text-sm text-destructive">{errors.categoryId.message}</p>
               )}
