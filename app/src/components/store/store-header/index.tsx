@@ -3,14 +3,15 @@ import Link from "next/link";
 import { StoreStatusBadge } from "@/components/store/store-status-badge";
 import { CartDrawer } from "@/components/store/cart-drawer";
 import { CartBadge } from "@/components/store/cart-badge";
-import type { StorePublicData } from "@/lib/types/store";
+import type { StorePublicData, DaySchedule } from "@/lib/types/store";
 
 interface StoreHeaderProps {
   store: StorePublicData;
   isOpen: boolean;
+  todaySchedule?: DaySchedule | null;
 }
 
-export function StoreHeader({ store, isOpen }: StoreHeaderProps) {
+export function StoreHeader({ store, isOpen, todaySchedule }: StoreHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[var(--color-primary)]/10 bg-[var(--color-primary)] text-[var(--color-primary-foreground)] shadow-xs transition-colors duration-200">
       <div className="mx-auto flex h-14 max-w-4xl lg:max-w-7xl items-center justify-between px-4">
@@ -34,7 +35,7 @@ export function StoreHeader({ store, isOpen }: StoreHeaderProps) {
         </Link>
 
         <div className="flex items-center gap-3">
-          <StoreStatusBadge isOpen={isOpen} />
+          <StoreStatusBadge isOpen={isOpen} todaySchedule={todaySchedule} />
           <CartDrawer>
             <CartBadge />
           </CartDrawer>

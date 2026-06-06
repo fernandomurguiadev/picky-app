@@ -28,8 +28,22 @@ export interface StorePublicData {
   transferAlias: string | null;
 }
 
+export interface Shift {
+  open: string;
+  close: string;
+}
+
+export interface DaySchedule {
+  day: 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
+  isOpen: boolean;
+  shifts: Shift[];
+}
+
 export interface StoreStatus {
   isOpen: boolean;
+  nextChange: string | null;
+  source: 'manual' | 'schedule';
+  todaySchedule?: DaySchedule | null;
 }
 
 export interface SelectedOption {

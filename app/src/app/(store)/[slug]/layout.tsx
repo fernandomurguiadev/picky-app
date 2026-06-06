@@ -28,10 +28,10 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
   const storeJson = await storeRes.json();
   const statusJson: { data: StoreStatus } = statusRes.ok
     ? await statusRes.json()
-    : { data: { isOpen: false } };
+    : { data: { isOpen: false, nextChange: null, source: "manual", todaySchedule: null } };
 
   const store: StorePublicData = storeJson.data;
-  const { isOpen } = statusJson.data;
+  const { isOpen, todaySchedule } = statusJson.data;
 
   const bgColor = store.theme?.backgroundColor ?? "#ffffff";
   const primaryColor = store.theme?.primaryColor ?? "#f97316";
@@ -145,7 +145,7 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
           "--color-muted": isDarkBg ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.03)",
         } as React.CSSProperties}
       >
-        <StoreHeader store={store} isOpen={isOpen} />
+        <StoreHeader store={store} isOpen={isOpen} todaySchedule={todaySchedule} />
         <main className="flex-1">{children}</main>
         <footer className={`border-t py-6 text-center text-xs ${isDarkBg ? "border-white/10 text-muted-foreground/70" : "border-border text-muted-foreground"}`}>
           Powered by PickyApp

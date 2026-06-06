@@ -13,6 +13,7 @@ export interface StoreStatusResult {
   isOpen: boolean;
   nextChange: string | null;
   source: 'manual' | 'schedule';
+  todaySchedule?: DaySchedule | null;
 }
 
 export type StoreSettingsResponse = Omit<StoreSettings, 'tenant'> & {
@@ -132,19 +133,24 @@ export class TenantsService {
       select: { schedule: true, timezone: true, isManualOpen: true },
     });
 
+    const tz = settings?.timezone ?? 'America/Argentina/Buenos_Aires';
+    const { day } = getCurrentTimeInTz(tz);
+    const todaySchedule = settings?.schedule?.find((d) => d.day === day) ?? null;
+
     if (settings?.isManualOpen === true) {
-      return { isOpen: true, nextChange: null, source: 'manual' };
+      return { isOpen: true, nextChange: null, source: 'manual', todaySchedule };
     }
     if (settings?.isManualOpen === false) {
-      return { isOpen: false, nextChange: null, source: 'manual' };
+      return { isOpen: false, nextChange: null, source: 'manual', todaySchedule };
     }
 
     return {
       ...calcStoreStatus(
         settings?.schedule ?? null,
-        settings?.timezone ?? 'America/Argentina/Buenos_Aires',
+        tz,
       ),
       source: 'schedule',
+      todaySchedule,
     };
   }
 
