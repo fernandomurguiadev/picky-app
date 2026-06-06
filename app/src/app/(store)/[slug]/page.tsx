@@ -122,7 +122,7 @@ export default async function StorePage({ params }: StorePageProps) {
                     )}
                   </div>
 
-                  <div className="pt-2 max-w-md w-full">
+                  <div className="pt-2 max-w-md w-full hidden lg:block">
                     <StoreSearchBar slug={slug} />
                   </div>
                 </div>

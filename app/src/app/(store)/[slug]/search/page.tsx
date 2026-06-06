@@ -19,7 +19,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
   if (!term) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10">
-        <div className="mb-6 max-w-md">
+        <div className="mb-6 max-w-md hidden lg:block">
           <StoreSearchBar slug={slug} />
         </div>
         <EmptyState
@@ -41,7 +41,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
-      <div className="mb-6 max-w-md">
+      <div className="mb-6 max-w-md hidden lg:block">
         <StoreSearchBar slug={slug} defaultValue={term} />
       </div>
       <div className="mb-5 flex items-end justify-between gap-4">

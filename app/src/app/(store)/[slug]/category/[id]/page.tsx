@@ -56,8 +56,8 @@ export default async function CategoryPage({
             {productsJson.meta.total} resultados
           </span>
         </div>
-        <div className="mb-5 max-w-md">
-          <StoreSearchBar slug={slug} />
+        <div className="mb-5 max-w-md hidden lg:block">
+          <StoreSearchBar slug={slug} categoryId={id} />
         </div>
 
         {productsJson.data.length ? (
