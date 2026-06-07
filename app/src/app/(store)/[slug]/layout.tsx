@@ -3,6 +3,7 @@ import { StoreHeader } from "@/components/store/store-header";
 import { CartDrawer } from "@/components/store/cart-drawer";
 import { FloatingCartBanner } from "@/components/store/floating-cart-banner";
 import type { StorePublicData, StoreStatus } from "@/lib/types/store";
+import type { Category } from "@/lib/types/catalog";
 
 interface StoreLayoutProps {
   children: React.ReactNode;
@@ -14,13 +15,10 @@ const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
 export default async function StoreLayout({ children, params }: StoreLayoutProps) {
   const { slug } = await params;
 
-  const [storeRes, statusRes] = await Promise.all([
-    fetch(`${BACKEND_URL}/api/v1/stores/${slug}`, {
-      cache: "no-store",
-    }),
-    fetch(`${BACKEND_URL}/api/v1/stores/${slug}/status`, {
-      cache: "no-store",
-    }),
+  const [storeRes, statusRes, categoriesRes] = await Promise.all([
+    fetch(`${BACKEND_URL}/api/v1/stores/${slug}`, { cache: "no-store" }),
+    fetch(`${BACKEND_URL}/api/v1/stores/${slug}/status`, { cache: "no-store" }),
+    fetch(`${BACKEND_URL}/api/v1/stores/${slug}/categories`, { next: { revalidate: 60 } }),
   ]);
 
   if (!storeRes.ok) notFound();
@@ -32,6 +30,7 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
 
   const store: StorePublicData = storeJson.data;
   const { isOpen, todaySchedule } = statusJson.data;
+  const categories: Category[] = categoriesRes.ok ? (await categoriesRes.json()).data ?? [] : [];
 
   const bgColor = store.theme?.backgroundColor ?? "#ffffff";
   const primaryColor = store.theme?.primaryColor ?? "#f97316";
@@ -130,8 +129,9 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
       .store-card { border: none !important; background: transparent !important; border-radius: 0 !important; overflow: hidden; transition: opacity 0.15s; }
       .store-card:hover { opacity: 0.82; }
       .store-card-info { background: transparent !important; color: var(--foreground) !important; border-top: none !important; padding-top: 6px !important; padding-left: 0 !important; padding-right: 0 !important; }
-      /* Chips de categoría: solo texto, sin fondo, con subrayado en activa */
-      [data-store] nav a { background: transparent !important; font-weight: 600; }
+      /* Chips de categoría: sin fondo; chip activa usa color primario con subrayado */
+      [data-store] nav a { background: transparent !important; color: var(--muted-foreground); font-weight: 600; }
+      [data-store] nav a.text-white { color: var(--color-primary) !important; font-weight: 700; border-bottom: 2px solid var(--color-primary); padding-bottom: 4px; }
     ` : ""}
 
     ${cardStyle === "bold" ? `
@@ -169,8 +169,6 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
       }
       .store-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.18); }
       .store-card-info { background: transparent; color: var(--foreground); border-top: 1px solid ${isDarkBg ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)"}; }
-      /* Chips de categoría con borde degradé también */
-      [data-store] nav a { border: 1.5px solid transparent !important; background: transparent padding-box, linear-gradient(135deg, var(--color-primary), var(--store-accent, var(--color-primary))) border-box !important; }
     ` : ""}
 
     ${cardStyle === "soft" ? `
@@ -241,7 +239,7 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
           "--color-muted": isDarkBg ? "rgba(255, 255, 255, 0.03)" : "rgba(0, 0, 0, 0.03)",
         } as React.CSSProperties}
       >
-        <StoreHeader store={store} isOpen={isOpen} todaySchedule={todaySchedule} />
+        <StoreHeader store={store} isOpen={isOpen} todaySchedule={todaySchedule} categories={categories} />
         <main className="flex-1">{children}</main>
         <footer className={`border-t py-6 text-center text-xs ${isDarkBg ? "border-white/10 text-muted-foreground/70" : "border-border text-muted-foreground"}`}>
           Powered by PickyApp

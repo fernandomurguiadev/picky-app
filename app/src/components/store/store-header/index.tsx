@@ -4,15 +4,18 @@ import { StoreStatusBadge } from "@/components/store/store-status-badge";
 import { CartDrawer } from "@/components/store/cart-drawer";
 import { CartBadge } from "@/components/store/cart-badge";
 import { StoreSearchBar } from "@/components/store/store-search-bar";
+import { MobileCategoryButton } from "@/components/store/mobile-category-button";
 import type { StorePublicData, DaySchedule } from "@/lib/types/store";
+import type { Category } from "@/lib/types/catalog";
 
 interface StoreHeaderProps {
   store: StorePublicData;
   isOpen: boolean;
   todaySchedule?: DaySchedule | null;
+  categories?: Category[];
 }
 
-export function StoreHeader({ store, isOpen, todaySchedule }: StoreHeaderProps) {
+export function StoreHeader({ store, isOpen, todaySchedule, categories = [] }: StoreHeaderProps) {
   return (
     <header className="sticky top-0 z-40 w-full bg-transparent pointer-events-none transition-colors duration-200">
       {/* Barra superior con color de fondo del comercio */}
@@ -51,10 +54,15 @@ export function StoreHeader({ store, isOpen, todaySchedule }: StoreHeaderProps) 
         </div>
       </div>
 
-      {/* Buscador sticky en mobile — fondo opaco para no tapar categorías al scrollear */}
+      {/* Buscador sticky en mobile con botón de categorías a la derecha */}
       <div className="w-full bg-[var(--color-background)] border-b border-[var(--border)] lg:hidden pointer-events-auto">
-        <div className="mx-auto max-w-4xl px-4 py-2">
-          <StoreSearchBar slug={store.slug} />
+        <div className="mx-auto max-w-4xl px-4 py-2 flex items-center gap-2">
+          <div className="flex-1 min-w-0">
+            <StoreSearchBar slug={store.slug} />
+          </div>
+          {categories.length > 0 && (
+            <MobileCategoryButton categories={categories} slug={store.slug} />
+          )}
         </div>
       </div>
     </header>
