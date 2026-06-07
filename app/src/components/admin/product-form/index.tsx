@@ -87,25 +87,9 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     },
   });
 
-  const activeCatId = methods.watch("categoryId") || product?.categoryId || "";
-  const categoryExists = categories?.some((c) => c.id === activeCatId);
-  console.log("DEBUG: Category exists in options?", categoryExists, {
-    activeCatId,
-    categoryIds: categories?.map((c) => c.id),
-  });
-
-  console.log("DEBUG: ProductForm render", {
-    product,
-    categoriesCount: categories?.length,
-    categories,
-    formValues: methods.getValues(),
-  });
-
   useEffect(() => {
-    console.log("DEBUG: useEffect trigger", { isEdit, hasProduct: !!product });
     if (isEdit && product) {
       const targetCategoryId = product.categoryId || product.category?.id || "";
-      console.log("DEBUG: Resetting form with categoryId:", targetCategoryId);
       methods.reset({
         name: product.name,
         description: product.description ?? "",
@@ -251,11 +235,13 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
                 render={({ field }) => (
                   <Select
                     key={categories?.length ?? 0}
-                    value={field.value || ""}
+                    value={field.value || undefined}
                     onValueChange={field.onChange}
                   >
                     <SelectTrigger id="p-category" aria-invalid={!!errors.categoryId}>
-                      <SelectValue placeholder="Seleccioná una categoría" />
+                      <SelectValue placeholder="Seleccioná una categoría">
+                        {categories?.find((cat) => cat.id === field.value)?.name}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {categories?.map((cat) => (
