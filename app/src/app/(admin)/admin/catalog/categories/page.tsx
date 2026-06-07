@@ -69,18 +69,6 @@ function CategoryCard({
         <GripVertical className="h-5 w-5" />
       </button>
 
-      {category.imageUrl ? (
-        <img
-          src={category.imageUrl}
-          alt={category.name}
-          className="h-12 w-12 rounded-lg object-cover shrink-0"
-        />
-      ) : (
-        <div className="h-12 w-12 rounded-lg bg-muted shrink-0 flex items-center justify-center text-muted-foreground text-xs">
-          Sin imagen
-        </div>
-      )}
-
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate">{category.name}</p>
         {category.productCount !== undefined && (

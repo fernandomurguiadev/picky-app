@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { ImageUploader } from "@/components/shared/image-uploader";
 import { useCreateCategory, useUpdateCategory } from "@/lib/hooks/admin/use-categories";
 import { toast } from "@/components/shared/toast";
 import type { Category } from "@/lib/types/catalog";
@@ -107,15 +106,6 @@ export function CategoryFormDialog({
             {errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Imagen</Label>
-            <ImageUploader
-              value={imageUrl ?? undefined}
-              onChange={(url) => setValue("imageUrl", url, { shouldDirty: true })}
-              onRemove={() => setValue("imageUrl", null, { shouldDirty: true })}
-            />
           </div>
 
           <div className="flex items-center justify-between">
