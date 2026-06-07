@@ -73,57 +73,58 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
   const [saveIndicator, setSaveIndicator] = useState<"idle" | "saving" | "saved">("idle");
   const autosaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  const buildProductValues = (p: Product): ProductFormData => ({
+    name: p.name,
+    description: p.description ?? "",
+    categoryId: p.categoryId || p.category?.id || "",
+    price: fromCents(p.price),
+    imageUrl: p.imageUrl ?? null,
+    isFeatured: p.isFeatured,
+    isActive: p.isActive,
+    optionGroups: (p.optionGroups ?? []).map((og) => ({
+      id: og.id,
+      name: og.name,
+      type: og.type as "radio" | "checkbox",
+      isRequired: og.isRequired,
+      minSelections: og.minSelections,
+      maxSelections: og.maxSelections,
+      order: og.order,
+      items: (og.items ?? []).map((it) => ({
+        id: it.id,
+        name: it.name,
+        priceModifier: it.priceModifier,
+        isDefault: it.isDefault,
+        order: it.order,
+      })),
+    })),
+  });
+
+  const emptyValues: ProductFormData = {
+    name: "",
+    description: "",
+    categoryId: "",
+    price: 0,
+    imageUrl: null,
+    isFeatured: false,
+    isActive: true,
+    optionGroups: [],
+  };
+
   const methods = useForm<ProductFormData>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      name: "",
-      description: "",
-      categoryId: "",
-      price: 0,
-      imageUrl: null,
-      isFeatured: false,
-      isActive: true,
-      optionGroups: [],
-    },
+    defaultValues: isEdit && product ? buildProductValues(product) : emptyValues,
   });
 
   useEffect(() => {
-    if (isEdit && product) {
-      const targetCategoryId = product.categoryId || product.category?.id || "";
-      methods.reset({
-        name: product.name,
-        description: product.description ?? "",
-        categoryId: targetCategoryId,
-        price: fromCents(product.price),
-        imageUrl: product.imageUrl ?? null,
-        isFeatured: product.isFeatured,
-        isActive: product.isActive,
-        optionGroups: (product.optionGroups ?? []).map((og) => ({
-          id: og.id,
-          name: og.name,
-          type: og.type as "radio" | "checkbox",
-          isRequired: og.isRequired,
-          minSelections: og.minSelections,
-          maxSelections: og.maxSelections,
-          order: og.order,
-          items: (og.items ?? []).map((it) => ({
-            id: it.id,
-            name: it.name,
-            priceModifier: it.priceModifier,
-            isDefault: it.isDefault,
-            order: it.order,
-          })),
-        })),
-      });
-    } else if (!isEdit) {
-      try {
-        const draft = localStorage.getItem(DRAFT_KEY);
-        if (draft) methods.reset(JSON.parse(draft) as ProductFormData);
-      } catch {
-        // ignorar
-      }
+    if (isEdit) return;
+    try {
+      const draft = localStorage.getItem(DRAFT_KEY);
+      if (draft) methods.reset(JSON.parse(draft) as ProductFormData);
+    } catch {
+      // ignorar
     }
-  }, [product, isEdit, methods.reset]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const {
     register,
@@ -234,14 +235,12 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
                 control={methods.control}
                 render={({ field }) => (
                   <Select
-                    key={categories?.length ?? 0}
-                    value={field.value || undefined}
+                    value={field.value}
                     onValueChange={field.onChange}
+                    disabled={!categories}
                   >
                     <SelectTrigger id="p-category" aria-invalid={!!errors.categoryId}>
-                      <SelectValue placeholder="Seleccioná una categoría">
-                        {categories?.find((cat) => cat.id === field.value)?.name}
-                      </SelectValue>
+                      <SelectValue placeholder="Seleccioná una categoría" />
                     </SelectTrigger>
                     <SelectContent>
                       {categories?.map((cat) => (
