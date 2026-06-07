@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { CategoryNav } from "@/components/store/category-nav";
 import { ProductCard } from "@/components/store/product-card";
-import { StoreSearchBar } from "@/components/store/store-search-bar";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Pagination } from "@/components/shared/pagination";
 import type { Category, PaginatedResponse, Product } from "@/lib/types/catalog";

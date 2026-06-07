@@ -1,7 +1,6 @@
 import { CategoryNav } from "@/components/store/category-nav";
 import { CategorySidebar } from "@/components/store/category-sidebar";
 import { ProductCard } from "@/components/store/product-card";
-import { StoreSearchBar } from "@/components/store/store-search-bar";
 import { EmptyState } from "@/components/shared/empty-state";
 import type { Category, Product } from "@/lib/types/catalog";
 import type { StorePublicData } from "@/lib/types/store";

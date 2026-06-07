@@ -176,17 +176,24 @@ export class CatalogService {
     slug: string,
     q: string,
     opts: { categoryId?: string; page?: number; limit?: number } = {},
-  ): Promise<{ data: Product[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
+  ): Promise<{
+    data: Product[];
+    meta: { page: number; limit: number; total: number; totalPages: number };
+    categoryFacets: Array<{ categoryId: string; count: number }>;
+  }> {
     const safeQ = q.slice(0, 100);
     const page = Math.max(1, opts.page ?? 1);
     const limit = Math.min(48, Math.max(1, opts.limit ?? 24));
     const tenant = await this.resolveTenantBySlug(slug);
 
+    const searchPattern = `%${safeQ}%`;
+    const searchCondition = 'p.name ILIKE :searchQ';
+
     const qb = this.productRepo
       .createQueryBuilder('p')
       .where('p.tenantId = :tenantId', { tenantId: tenant.id })
       .andWhere('p.isActive = true')
-      .andWhere('(p.name ILIKE :q OR p.description ILIKE :q)', { q: `%${safeQ}%` })
+      .andWhere(searchCondition, { searchQ: searchPattern })
       .leftJoinAndSelect('p.optionGroups', 'og')
       .leftJoinAndSelect('og.items', 'oi')
       .orderBy('p.name', 'ASC');
@@ -195,10 +202,34 @@ export class CatalogService {
       qb.andWhere('p.categoryId = :categoryId', { categoryId: opts.categoryId });
     }
 
-    const total = await qb.getCount();
-    const data = await qb.skip((page - 1) * limit).take(limit).getMany();
+    const [total, data] = await Promise.all([
+      qb.getCount(),
+      qb.clone().skip((page - 1) * limit).take(limit).getMany(),
+    ]);
 
-    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 } };
+    // Facets: categorías con resultados para este término (sin filtro de categoría)
+    let categoryFacets: Array<{ categoryId: string; count: number }> = [];
+    try {
+      const facetRows: Array<{ categoryId: string; count: string }> = await this.productRepo
+        .createQueryBuilder('fp')
+        .select('fp.categoryId', 'categoryId')
+        .addSelect('COUNT(*)', 'count')
+        .where('fp.tenantId = :tenantId', { tenantId: tenant.id })
+        .andWhere('fp.isActive = true')
+        .andWhere('fp.name ILIKE :searchQ', { searchQ: searchPattern })
+        .andWhere('fp.categoryId IS NOT NULL')
+        .groupBy('fp.categoryId')
+        .getRawMany();
+
+      categoryFacets = facetRows.map((r) => ({
+        categoryId: r.categoryId,
+        count: Number(r.count),
+      }));
+    } catch {
+      // facets no críticos — no romper la búsqueda principal si fallan
+    }
+
+    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 }, categoryFacets };
   }
 
   // ─── Products (admin) ─────────────────────────────────────────────────────

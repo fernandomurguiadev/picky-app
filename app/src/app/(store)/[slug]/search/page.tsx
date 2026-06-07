@@ -1,8 +1,9 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import { ProductCard } from "@/components/store/product-card";
-import { StoreSearchBar } from "@/components/store/store-search-bar";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Pagination } from "@/components/shared/pagination";
+import { SearchCategoryFilter } from "@/components/store/search-category-filter";
+import { ScrollReset } from "@/components/shared/scroll-reset";
 import type { Category, PaginatedResponse, Product } from "@/lib/types/catalog";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
@@ -44,20 +45,24 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
   searchUrl.searchParams.set("limit", "24");
   if (activeCategoryId) searchUrl.searchParams.set("categoryId", activeCategoryId);
 
-  const searchRes = await fetch(searchUrl.toString(), { next: { revalidate: 10 } });
-  const results: PaginatedResponse<Product> = searchRes.ok
+  const searchRes = await fetch(searchUrl.toString(), { cache: "no-store" });
+  const searchJson: PaginatedResponse<Product> & {
+    categoryFacets?: Array<{ categoryId: string; count: number }>;
+  } = searchRes.ok
     ? await searchRes.json()
     : { data: [], meta: { page, limit: 24, total: 0, totalPages: 1 } };
 
-  const buildSearchUrl = (params: Record<string, string>) => {
-    const base = new URLSearchParams({ q: term });
-    Object.entries(params).forEach(([k, v]) => v ? base.set(k, v) : base.delete(k));
-    return `/${slug}/search?${base.toString()}`;
-  };
+  const results = searchJson;
+
+  // Solo mostrar categorías que tienen al menos un resultado para este término
+  const facetIds = new Set((searchJson.categoryFacets ?? []).map((f) => f.categoryId));
+  const matchedCategories = categories.filter((c) => facetIds.has(c.id));
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
-
+      <Suspense fallback={null}>
+        <ScrollReset />
+      </Suspense>
 
       {/* Header con término y total */}
       <div className="mb-4 flex items-end justify-between gap-4">
@@ -70,33 +75,14 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
         </span>
       </div>
 
-      {/* Chips de categoría como filtros */}
-      {categories.length > 0 && (
-        <div className="mb-5 flex flex-wrap gap-2">
-          <Link
-            href={buildSearchUrl({ category: "" })}
-            className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
-              !activeCategoryId
-                ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)] border-transparent"
-                : "border-border text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Todos
-          </Link>
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              href={buildSearchUrl({ category: activeCategoryId === cat.id ? "" : cat.id })}
-              className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors ${
-                activeCategoryId === cat.id
-                  ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)] border-transparent"
-                  : "border-border text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {cat.name}
-            </Link>
-          ))}
-        </div>
+      {/* Chips de categoría + botón drawer en mobile — solo categorías con resultados */}
+      {matchedCategories.length > 0 && (
+        <SearchCategoryFilter
+          categories={matchedCategories}
+          slug={slug}
+          term={term}
+          activeCategoryId={activeCategoryId}
+        />
       )}
 
       {results.data.length ? (

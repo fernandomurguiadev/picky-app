@@ -43,8 +43,18 @@ export class StorefrontCatalogController {
   }
 
   @Get('products/search')
-  search(@Param('slug') slug: string, @Query('q') q: string) {
-    return this.catalogService.searchProducts(slug, q ?? '');
+  search(
+    @Param('slug') slug: string,
+    @Query('q') q: string,
+    @Query('categoryId') categoryId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.catalogService.searchProducts(slug, q ?? '', {
+      categoryId,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 24,
+    });
   }
 
   @Get('categories/:categoryId/products')

@@ -17,8 +17,8 @@ export function StoreHeader({ store, isOpen, todaySchedule }: StoreHeaderProps) 
     <header className="sticky top-0 z-40 w-full bg-transparent pointer-events-none transition-colors duration-200">
       {/* Barra superior con color de fondo del comercio */}
       <div className="w-full border-b border-[var(--color-primary)]/10 bg-[var(--color-primary)] text-[var(--color-primary-foreground)] shadow-xs pointer-events-auto">
-        <div className="mx-auto flex h-14 max-w-4xl lg:max-w-7xl items-center justify-between px-4 gap-4">
-          <Link href={`/${store.slug}`} className="flex items-center gap-2.5 min-w-[200px] text-[var(--color-primary-foreground)]">
+        <div className="mx-auto flex h-14 max-w-4xl lg:max-w-7xl items-center gap-3 px-4">
+          <Link href={`/${store.slug}`} className="flex min-w-0 flex-1 items-center gap-2.5 text-[var(--color-primary-foreground)]">
             {store.logoUrl ? (
               <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full border border-[var(--color-primary-foreground)]/20 bg-[var(--color-primary-foreground)]">
                 <Image
@@ -37,12 +37,12 @@ export function StoreHeader({ store, isOpen, todaySchedule }: StoreHeaderProps) 
             <span className="truncate font-semibold text-sm">{store.name}</span>
           </Link>
 
-          {/* Buscador Desktop centrado */}
-          <div className="hidden lg:block flex-1 max-w-md text-foreground">
+          {/* Buscador solo en desktop, centrado */}
+          <div className="hidden lg:block flex-[2] max-w-md">
             <StoreSearchBar slug={store.slug} />
           </div>
 
-          <div className="flex items-center gap-3 min-w-[200px] justify-end">
+          <div className="flex shrink-0 items-center gap-3">
             <StoreStatusBadge isOpen={isOpen} todaySchedule={todaySchedule} />
             <CartDrawer>
               <CartBadge />
