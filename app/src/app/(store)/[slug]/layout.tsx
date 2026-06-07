@@ -114,65 +114,80 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
       color: var(--foreground) !important;
     }
 
-    /* ── Card style variants — radio en :root para cubrir portales también ── */
+    /* ── Card style variants — :root para cubrir portales ── */
 
     ${cardStyle === "default" ? `
-      .store-card { border-radius: 0.75rem; border: 1px solid var(--border); background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.07); transition: box-shadow 0.2s; }
+      .store-card { border-radius: 0.75rem; border: 1px solid var(--border); background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.07); transition: box-shadow 0.2s; overflow: hidden; }
       .store-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.13); }
       .store-card-info { background: var(--color-primary); color: var(--color-primary-foreground); border-radius: 0 0 0.75rem 0.75rem; }
     ` : ""}
 
     ${cardStyle === "minimal" ? `
-      :root {
-        --radius: 0.375rem;
-        --radius-sm: 0.125rem;
-        --radius-md: 0.25rem;
-        --radius-lg: 0.375rem;
-        --radius-xl: 0.5rem;
-        --radius-2xl: 0.5rem;
-        --radius-3xl: 0.625rem;
-      }
-      .rounded-full { border-radius: 0.375rem !important; }
+      :root { --radius: 0.25rem; --radius-sm: 0.125rem; --radius-md: 0.25rem; --radius-lg: 0.25rem; --radius-xl: 0.375rem; --radius-2xl: 0.375rem; --radius-3xl: 0.5rem; }
+      .rounded-full { border-radius: 0.25rem !important; }
       * { box-shadow: none !important; }
-      .store-card { border-radius: 0.375rem; border: 1px solid var(--border); background: transparent; }
-      .store-card:hover { background: var(--muted); }
-      .store-card-info { background: transparent; color: var(--foreground); border-top: 1px solid var(--border); }
+      /* Tarjetas: sin contenedor — imagen y texto flotan sobre el fondo */
+      .store-card { border: none !important; background: transparent !important; border-radius: 0 !important; overflow: hidden; transition: opacity 0.15s; }
+      .store-card:hover { opacity: 0.82; }
+      .store-card-info { background: transparent !important; color: var(--foreground) !important; border-top: none !important; padding-top: 6px !important; padding-left: 0 !important; padding-right: 0 !important; }
+      /* Chips de categoría: solo texto, sin fondo, con subrayado en activa */
+      [data-store] nav a { background: transparent !important; font-weight: 600; }
     ` : ""}
 
     ${cardStyle === "bold" ? `
-      :root {
-        --radius: 1.25rem;
-        --radius-sm: 0.875rem;
-        --radius-md: 1rem;
-        --radius-lg: 1.25rem;
-        --radius-xl: 1.5rem;
-        --radius-2xl: 1.75rem;
-        --radius-3xl: 2rem;
-      }
-      .store-card { border-radius: 1.5rem; border: none; background: var(--card); box-shadow: 0 8px 24px rgba(0,0,0,0.18); transition: box-shadow 0.2s, transform 0.2s; overflow: hidden; }
-      .store-card:hover { box-shadow: 0 14px 36px rgba(0,0,0,0.26); transform: translateY(-3px); }
-      .store-card-info { background: var(--color-primary); color: var(--color-primary-foreground); border-radius: 0 0 1.5rem 1.5rem; }
+      :root { --radius: 1.5rem; --radius-sm: 1rem; --radius-md: 1.25rem; --radius-lg: 1.5rem; --radius-xl: 1.75rem; --radius-2xl: 2rem; --radius-3xl: 2.5rem; }
+      /* Cards: pill-shaped con sombra dramática y footer accent */
+      .store-card { border-radius: 2rem; border: none; background: color-mix(in srgb, var(--color-primary) 9%, var(--card)); box-shadow: 0 16px 48px rgba(0,0,0,0.28), 0 4px 16px rgba(0,0,0,0.14); transition: box-shadow 0.25s, transform 0.25s; overflow: hidden; }
+      .store-card:hover { box-shadow: 0 24px 64px rgba(0,0,0,0.36); transform: translateY(-6px); }
+      /* Footer: usa el color de acento — diferente a default que usa primary */
+      .store-card-info { background: var(--store-accent, var(--color-primary)); color: var(--store-accent-foreground, var(--color-primary-foreground)); border-radius: 0 0 2rem 2rem; }
+      /* Floating banner y drawer también con pills grandes */
+      [data-store] .rounded-2xl { border-radius: 2rem !important; }
     ` : ""}
 
     ${cardStyle === "glass" ? `
-      :root {
-        --radius: 1.125rem;
-        --radius-sm: 0.75rem;
-        --radius-md: 0.875rem;
-        --radius-lg: 1.125rem;
-        --radius-xl: 1.375rem;
-        --radius-2xl: 1.625rem;
-        --radius-3xl: 2rem;
+      :root { --radius: 0.875rem; --radius-sm: 0.625rem; --radius-md: 0.75rem; --radius-lg: 0.875rem; --radius-xl: 1.125rem; --radius-2xl: 1.375rem; --radius-3xl: 1.75rem; }
+      /* Cards: borde degradé primario→acento + cristal translúcido */
+      .store-card {
+        border-radius: 1rem;
+        border: 2px solid transparent;
+        background: ${isDarkBg ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.65)"} padding-box,
+                    linear-gradient(135deg, var(--color-primary), var(--store-accent, var(--color-primary))) border-box;
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+        transition: box-shadow 0.2s;
+        overflow: hidden;
       }
-      .store-card { border-radius: 1.25rem; border: 1px solid ${isDarkBg ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.6)"}; background: ${isDarkBg ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.55)"}; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 4px 20px rgba(0,0,0,0.22); transition: background 0.2s; overflow: hidden; }
-      .store-card:hover { background: ${isDarkBg ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.75)"}; }
-      .store-card-info { background: transparent; color: var(--foreground); border-top: 1px solid ${isDarkBg ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)"}; }
+      /* Barra degradé de 4px arriba de cada tarjeta */
+      .store-card::before {
+        content: '';
+        display: block;
+        height: 4px;
+        flex-shrink: 0;
+        background: linear-gradient(90deg, var(--color-primary), var(--store-accent, var(--color-primary)));
+      }
+      .store-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.18); }
+      .store-card-info { background: transparent; color: var(--foreground); border-top: 1px solid ${isDarkBg ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)"}; }
+      /* Chips de categoría con borde degradé también */
+      [data-store] nav a { border: 1.5px solid transparent !important; background: transparent padding-box, linear-gradient(135deg, var(--color-primary), var(--store-accent, var(--color-primary))) border-box !important; }
     ` : ""}
 
     ${cardStyle === "soft" ? `
-      .store-card { border-radius: 0.875rem; border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent); background: var(--card); box-shadow: 0 4px 20px color-mix(in srgb, var(--color-primary) 18%, transparent); transition: box-shadow 0.2s; overflow: hidden; }
-      .store-card:hover { box-shadow: 0 8px 32px color-mix(in srgb, var(--color-primary) 28%, transparent); }
-      .store-card-info { background: color-mix(in srgb, var(--color-primary) 10%, var(--card)); color: var(--foreground); border-top: 1px solid color-mix(in srgb, var(--color-primary) 15%, transparent); }
+      /* Cards: fondo degradé suave con el color de marca — muy visible */
+      .store-card {
+        border-radius: 0.875rem;
+        border: none;
+        background: linear-gradient(150deg,
+          color-mix(in srgb, var(--color-primary) 20%, var(--card)),
+          color-mix(in srgb, var(--store-accent, var(--color-primary)) 14%, var(--card)));
+        box-shadow: 0 8px 32px color-mix(in srgb, var(--color-primary) 36%, transparent), 0 2px 8px color-mix(in srgb, var(--color-primary) 18%, transparent);
+        transition: box-shadow 0.2s, transform 0.2s;
+        overflow: hidden;
+      }
+      .store-card:hover { box-shadow: 0 14px 48px color-mix(in srgb, var(--color-primary) 44%, transparent); transform: translateY(-3px); }
+      /* Footer: tinte más intenso del color primario */
+      .store-card-info { background: color-mix(in srgb, var(--color-primary) 22%, var(--card)); color: var(--foreground); border-top: 2px solid color-mix(in srgb, var(--color-primary) 30%, transparent); }
     ` : ""}
 
     ${cardStyle === "retro" ? `

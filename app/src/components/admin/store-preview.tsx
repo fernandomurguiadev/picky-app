@@ -30,21 +30,27 @@ function getCardStyles(
   switch (style) {
     case "minimal":
       return {
-        wrapper: { borderRadius: 6, border: `1px solid ${borderColor}`, background: "transparent", overflow: "hidden" },
-        imageArea: { background: imageBg },
-        info: { background: "transparent", borderTop: `1px solid ${borderColor}`, padding: "8px 10px" },
+        wrapper: { borderRadius: 0, border: "none", background: "transparent", overflow: "hidden" },
+        imageArea: { background: imageBg, borderRadius: 2, overflow: "hidden" },
+        info: { background: "transparent", borderTop: "none", padding: "6px 0" },
         infoText: textColor,
       };
-    case "bold":
+    case "bold": {
+      const rB = parseInt(primary.replace("#","").substring(0,2),16);
+      const gB = parseInt(primary.replace("#","").substring(2,4),16);
+      const bB = parseInt(primary.replace("#","").substring(4,6),16);
+      const tintBg = isDark ? `rgba(${rB},${gB},${bB},0.12)` : `rgb(${Math.round(255*0.91+rB*0.09)},${Math.round(255*0.91+gB*0.09)},${Math.round(255*0.91+bB*0.09)})`;
+      const accentTextColor = getContrastColor(accent);
       return {
-        wrapper: { borderRadius: 16, border: "none", background: cardBg, boxShadow: isDark ? "0 10px 28px rgba(0,0,0,0.5)" : "0 10px 28px rgba(0,0,0,0.18)", overflow: "hidden" },
+        wrapper: { borderRadius: 28, border: "none", background: tintBg, boxShadow: isDark ? "0 16px 40px rgba(0,0,0,0.6)" : "0 16px 40px rgba(0,0,0,0.26)", overflow: "hidden" },
         imageArea: { background: imageBg },
-        info: { background: primary, padding: "10px 12px" },
-        infoText: textOnPrimary,
+        info: { background: accent, padding: "10px 12px", borderRadius: "0 0 28px 28px" },
+        infoText: accentTextColor,
       };
+    }
     case "glass":
       return {
-        wrapper: { borderRadius: 16, border: `1px solid ${isDark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.6)"}`, background: isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.55)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", overflow: "hidden" },
+        wrapper: { borderRadius: 14, border: `1.5px solid transparent`, background: `${isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.6)"} padding-box, linear-gradient(135deg, ${primary}, ${accent}) border-box`, backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", boxShadow: "0 4px 18px rgba(0,0,0,0.14)", overflow: "hidden" },
         imageArea: { background: isDark ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.3)" },
         info: { background: "transparent", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)"}`, padding: "8px 10px" },
         infoText: textColor,
@@ -53,11 +59,16 @@ function getCardStyles(
       const r = parseInt(primary.replace("#","").substring(0,2),16);
       const g = parseInt(primary.replace("#","").substring(2,4),16);
       const b = parseInt(primary.replace("#","").substring(4,6),16);
-      const rgba = (a: number) => `rgba(${r},${g},${b},${a})`;
+      const ra = parseInt(accent.replace("#","").substring(0,2),16);
+      const ga = parseInt(accent.replace("#","").substring(2,4),16);
+      const ba = parseInt(accent.replace("#","").substring(4,6),16);
+      const blend = (c: number, t: number) => isDark ? Math.round(c*t) : Math.round(255*(1-t)+c*t);
+      const gradBg = `rgb(${blend(r,0.2)},${blend(g,0.2)},${blend(b,0.2)})`;
+      const gradBg2 = `rgb(${blend(ra,0.14)},${blend(ga,0.14)},${blend(ba,0.14)})`;
       return {
-        wrapper: { borderRadius: 14, border: `1px solid ${rgba(0.18)}`, background: cardBg, boxShadow: `0 4px 20px ${rgba(0.2)}`, overflow: "hidden" },
-        imageArea: { background: imageBg },
-        info: { background: rgba(0.08), borderTop: `1px solid ${rgba(0.15)}`, padding: "8px 10px" },
+        wrapper: { borderRadius: 12, border: "none", background: `linear-gradient(150deg, ${gradBg}, ${gradBg2})`, boxShadow: `0 8px 28px rgba(${r},${g},${b},0.36), 0 2px 8px rgba(${r},${g},${b},0.18)`, overflow: "hidden" },
+        imageArea: { background: isDark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.55)" },
+        info: { background: `rgba(${r},${g},${b},0.2)`, borderTop: `2px solid rgba(${r},${g},${b},0.28)`, padding: "8px 10px" },
         infoText: textColor,
       };
     }
@@ -152,6 +163,9 @@ export function StorePreview({
               const imgHeight = cardStyle === "bold" ? 80 : cardStyle === "minimal" ? 58 : 70;
               return (
                 <div key={i} style={wrapper} className="flex flex-col transition-all">
+                  {cardStyle === "glass" && (
+                    <div style={{ height: 3, flexShrink: 0, background: `linear-gradient(90deg, ${primaryColor}, ${accentColor})` }} />
+                  )}
                   <div
                     className="flex items-center justify-center text-2xl"
                     style={{ height: imgHeight, ...imageArea }}
