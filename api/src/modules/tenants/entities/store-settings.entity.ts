@@ -51,6 +51,9 @@ export class StoreSettings {
   @Column({ type: 'varchar', length: 7, default: '#ffffff' })
   backgroundColor!: string;
 
+  @Column({ type: 'varchar', length: 20, default: 'default' })
+  cardStyle!: string;
+
   // Entrega
   @Column({ type: 'boolean', default: false })
   deliveryEnabled!: boolean;

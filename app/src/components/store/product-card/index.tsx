@@ -18,7 +18,7 @@ export function ProductCard({ product, slug }: ProductCardProps) {
   return (
     <>
       <div
-        className="group flex cursor-pointer flex-col overflow-hidden rounded-xl border bg-card transition-shadow hover:shadow-md"
+        className="store-card group flex cursor-pointer flex-col overflow-hidden transition-all"
         onClick={(e) => {
           e.currentTarget.blur();
           setSheetOpen(true);
@@ -52,17 +52,17 @@ export function ProductCard({ product, slug }: ProductCardProps) {
         </div>
 
         {/* Info */}
-        <div className="flex flex-1 flex-col gap-1 p-3 bg-[var(--color-primary)] text-[var(--color-primary-foreground)]">
+        <div className="store-card-info flex flex-1 flex-col gap-1 p-3">
           <p className="line-clamp-2 text-sm font-bold leading-tight">
             {product.name}
           </p>
           {product.description && (
-            <p className="line-clamp-1 text-xs opacity-85 text-[var(--color-primary-foreground)]/85">
+            <p className="line-clamp-1 text-xs opacity-75">
               {product.description}
             </p>
           )}
           <div className="mt-auto flex items-center justify-between pt-2">
-            <span className="font-extrabold text-sm text-[var(--color-primary-foreground)]">
+            <span className="font-extrabold text-sm">
               {formatCurrency(product.price)}
             </span>
             <button

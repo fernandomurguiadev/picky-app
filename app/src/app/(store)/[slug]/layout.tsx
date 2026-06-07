@@ -36,6 +36,7 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
   const bgColor = store.theme?.backgroundColor ?? "#ffffff";
   const primaryColor = store.theme?.primaryColor ?? "#f97316";
   const accentColor = store.theme?.accentColor ?? "#fb923c";
+  const cardStyle = store.theme?.cardStyle ?? "default";
 
   // Determina si el color primario es claro u oscuro para calcular el color de texto óptimo
   const textOnPrimary = (() => {
@@ -112,12 +113,71 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
       background-color: var(--color-background) !important;
       color: var(--foreground) !important;
     }
+
+    /* ── Card style variants + UI global radius ── */
+
+    ${cardStyle === "default" ? `
+      .store-card { border-radius: 0.75rem; border: 1px solid var(--border); background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.07); transition: box-shadow 0.2s; }
+      .store-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.13); }
+      .store-card-info { background: var(--color-primary); color: var(--color-primary-foreground); border-radius: 0 0 0.75rem 0.75rem; }
+    ` : ""}
+
+    ${cardStyle === "minimal" ? `
+      .store-card { border-radius: 4px; border: 1px solid var(--border); background: transparent; box-shadow: none; transition: background 0.2s; }
+      .store-card:hover { background: var(--muted); }
+      .store-card-info { background: transparent; color: var(--foreground); border-top: 1px solid var(--border); }
+      [data-store] button, [data-store] [role="button"] { border-radius: 4px !important; }
+      [data-store] .rounded-full, [data-store] .rounded-3xl, [data-store] .rounded-2xl,
+      [data-store] .rounded-xl, [data-store] .rounded-lg { border-radius: 4px !important; }
+      [data-store] .rounded-md, [data-store] .rounded-sm, [data-store] .rounded { border-radius: 2px !important; }
+      [data-store] input, [data-store] textarea { border-radius: 4px !important; }
+    ` : ""}
+
+    ${cardStyle === "bold" ? `
+      .store-card { border-radius: 1.25rem; border: none; background: var(--card); box-shadow: 0 8px 24px rgba(0,0,0,0.18); transition: box-shadow 0.2s, transform 0.2s; }
+      .store-card:hover { box-shadow: 0 14px 36px rgba(0,0,0,0.26); transform: translateY(-3px); }
+      .store-card-info { background: var(--color-primary); color: var(--color-primary-foreground); border-radius: 0 0 1.25rem 1.25rem; }
+      [data-store] button, [data-store] [role="button"] { border-radius: 1rem !important; }
+      [data-store] .rounded-lg { border-radius: 1rem !important; }
+      [data-store] .rounded-xl { border-radius: 1.25rem !important; }
+      [data-store] .rounded-2xl { border-radius: 1.5rem !important; }
+      [data-store] input, [data-store] textarea { border-radius: 1rem !important; }
+    ` : ""}
+
+    ${cardStyle === "glass" ? `
+      .store-card { border-radius: 1.25rem; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.07); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 4px 20px rgba(0,0,0,0.22); transition: background 0.2s; }
+      .store-card:hover { background: rgba(255,255,255,0.12); }
+      .store-card-info { background: transparent; color: var(--foreground); border-top: 1px solid rgba(255,255,255,0.1); }
+      [data-store] button, [data-store] [role="button"] { border-radius: 1rem !important; }
+      [data-store] .rounded-lg { border-radius: 1rem !important; }
+      [data-store] .rounded-xl { border-radius: 1.25rem !important; }
+      [data-store] .rounded-2xl { border-radius: 1.5rem !important; }
+    ` : ""}
+
+    ${cardStyle === "outlined" ? `
+      .store-card { border-radius: 0.75rem; border: 2px solid var(--color-primary); background: transparent; box-shadow: none; transition: background 0.2s; }
+      .store-card:hover { background: var(--muted); }
+      .store-card-info { background: transparent; color: var(--foreground); border-top: 2px solid var(--color-primary); }
+      [data-store] button, [data-store] [role="button"] { border-radius: 0.75rem !important; border: 2px solid transparent; }
+    ` : ""}
+
+    ${cardStyle === "retro" ? `
+      .store-card { border-radius: 0; border: none; background: var(--color-primary); transition: opacity 0.15s; }
+      .store-card:hover { opacity: 0.92; }
+      .store-card-info { background: transparent; color: var(--color-primary-foreground); border-top: 1.5px solid rgba(255,255,255,0.2); }
+      [data-store] button, [data-store] [role="button"] { border-radius: 0 !important; }
+      [data-store] .rounded-full, [data-store] .rounded-3xl, [data-store] .rounded-2xl,
+      [data-store] .rounded-xl, [data-store] .rounded-lg, [data-store] .rounded-md,
+      [data-store] .rounded-sm, [data-store] .rounded { border-radius: 0 !important; }
+      [data-store] input, [data-store] textarea { border-radius: 0 !important; }
+    ` : ""}
   `.trim();
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: themeCss }} />
-      <div 
+      <div
+        data-store
         className={`min-h-screen flex flex-col transition-colors duration-300 ${isDarkBg ? "dark text-gray-100" : "text-foreground"}`}
         style={{
           backgroundColor: bgColor,

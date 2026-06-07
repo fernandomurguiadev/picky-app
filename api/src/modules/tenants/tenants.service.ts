@@ -110,6 +110,7 @@ export class TenantsService {
         primaryColor: settings?.primaryColor ?? '#000000',
         accentColor: settings?.accentColor ?? '#ffffff',
         backgroundColor: settings?.backgroundColor ?? '#ffffff',
+        cardStyle: settings?.cardStyle ?? 'default',
       },
       deliveryEnabled: settings?.deliveryEnabled ?? false,
       deliveryCost: settings?.deliveryCost ?? 0,

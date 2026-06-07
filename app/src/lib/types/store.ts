@@ -1,9 +1,12 @@
 // Tipos para la tienda pública (visible al cliente final sin autenticación)
 
+export type CardStyle = 'default' | 'minimal' | 'bold' | 'glass' | 'outlined' | 'retro';
+
 export interface StoreTheme {
   primaryColor: string;
   accentColor: string;
   backgroundColor?: string;
+  cardStyle?: CardStyle;
 }
 
 export interface StorePublicData {
