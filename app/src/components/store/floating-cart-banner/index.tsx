@@ -58,7 +58,7 @@ export const FloatingCartBanner = React.forwardRef<
         ref={ref}
         type="button"
         className={cn(
-          "pointer-events-auto relative w-full flex items-center justify-between rounded-2xl bg-[var(--store-accent)] px-5 py-4 text-white shadow-xl transition-transform active:scale-[0.98]",
+          "pointer-events-auto relative w-full flex items-center justify-between rounded-2xl bg-[var(--store-accent)] px-5 py-4 text-[var(--store-accent-foreground)] shadow-xl transition-transform active:scale-[0.98]",
           className
         )}
         {...props}
@@ -67,9 +67,9 @@ export const FloatingCartBanner = React.forwardRef<
           <div 
             className={cn(
               "relative flex h-8 w-8 items-center justify-center rounded-full transition-all duration-300",
-              isAnimating 
-                ? "bg-white scale-125 text-[var(--store-accent)] shadow-[0_0_15px_rgba(255,255,255,0.5)] rotate-12" 
-                : "bg-white/20 scale-100 text-white"
+              isAnimating
+                ? "bg-white scale-125 text-[var(--store-accent)] shadow-[0_0_15px_rgba(255,255,255,0.5)] rotate-12"
+                : "bg-[var(--store-accent-foreground)]/20 scale-100 text-[var(--store-accent-foreground)]"
             )}
           >
             <span className="text-sm font-bold">{totalItems}</span>
