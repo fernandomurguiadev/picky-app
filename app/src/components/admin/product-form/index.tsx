@@ -233,6 +233,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
                 control={methods.control}
                 render={({ field }) => (
                   <Select
+                    key={categories?.length ?? 0}
                     value={field.value || ""}
                     onValueChange={field.onChange}
                   >
