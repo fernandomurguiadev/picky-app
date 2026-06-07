@@ -87,6 +87,13 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     },
   });
 
+  const activeCatId = methods.watch("categoryId") || product?.categoryId || "";
+  const categoryExists = categories?.some((c) => c.id === activeCatId);
+  console.log("DEBUG: Category exists in options?", categoryExists, {
+    activeCatId,
+    categoryIds: categories?.map((c) => c.id),
+  });
+
   console.log("DEBUG: ProductForm render", {
     product,
     categoriesCount: categories?.length,
