@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { useCategoryNavStore } from "@/lib/stores/category-nav.store";
 import type { Category } from "@/lib/types/catalog";
 
 interface CategoryNavProps {
@@ -10,7 +11,7 @@ interface CategoryNavProps {
 }
 
 export function CategoryNav({ categories }: CategoryNavProps) {
-  const [activeId, setActiveId] = useState<string>("inicio");
+  const { activeId, setActiveId } = useCategoryNavStore();
 
   useEffect(() => {
     // Scrollspy logic
