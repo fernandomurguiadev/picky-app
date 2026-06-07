@@ -8,6 +8,7 @@ import {
   Package,
   ShoppingBag,
   Settings,
+  Warehouse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,7 @@ const navItems = [
   { href: "/admin/dashboard", label: "Dash", icon: LayoutDashboard },
   { href: "/admin/catalog/categories", label: "Cats", icon: Tag },
   { href: "/admin/catalog/products", label: "Prods", icon: Package },
+  { href: "/admin/inventory", label: "Stock", icon: Warehouse },
   { href: "/admin/orders", label: "Pedidos", icon: ShoppingBag },
   { href: "/admin/settings/info", label: "Config", icon: Settings },
 ];

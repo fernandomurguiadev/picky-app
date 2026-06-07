@@ -13,9 +13,11 @@ import {
   AdminOrdersController,
 } from './orders.controller.js';
 import { ApiKeyGuard } from './guards/api-key.guard.js';
+import { InventoryModule } from '../inventory/inventory.module.js';
 
 @Module({
   imports: [
+    InventoryModule,
     TypeOrmModule.forFeature([Order, OrderItem, StoreSettings, Product]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

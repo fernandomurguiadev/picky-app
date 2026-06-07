@@ -10,7 +10,8 @@ import {
   Settings,
   LogOut,
   Store,
-  ChevronDown
+  ChevronDown,
+  Warehouse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/stores/auth.store";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/catalog/categories", label: "Categorías", icon: Tag },
   { href: "/admin/catalog/products", label: "Productos", icon: Package },
+  { href: "/admin/inventory", label: "Inventario", icon: Warehouse },
   { href: "/admin/orders", label: "Pedidos", icon: ShoppingBag },
   { href: "/admin/settings/info", label: "Configuración", icon: Settings },
 ];

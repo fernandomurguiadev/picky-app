@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnprocessableEntityException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Repository,
@@ -22,6 +22,8 @@ import type { UpdateOrderNotesDto } from './dto/update-order-notes.dto.js';
 import type { OrdersQueryDto } from './dto/orders-query.dto.js';
 import { OrdersGateway } from './orders.gateway.js';
 import { ConfigService } from '@nestjs/config';
+import { InventoryService } from '../inventory/inventory.service.js';
+import { StockMovementType } from '../inventory/entities/stock-movement.entity.js';
 
 const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
@@ -46,6 +48,7 @@ export class OrdersService {
     private readonly dataSource: DataSource,
     private readonly ordersGateway: OrdersGateway,
     private readonly configService: ConfigService,
+    private readonly inventoryService: InventoryService,
   ) {}
 
   // ─── Creación pública (tienda) ────────────────────────────────────────────
@@ -72,7 +75,7 @@ export class OrdersService {
             `Producto ${item.productId} no encontrado`,
           );
         }
-        if (!product.inStock) {
+        if (!product.inStock || (product.stockQuantity !== null && product.stockQuantity < item.quantity)) {
           throw toBusinessException(
             OrderErrors.productOutOfStock(product.name),
           );
@@ -154,6 +157,33 @@ export class OrdersService {
         }),
       );
       await queryRunner.manager.save(OrderItem, items);
+
+      // Deduct stock for items managed by quantity
+      for (const item of items) {
+        const product = await queryRunner.manager.findOne(Product, {
+          where: { id: item.productId, tenantId: dto.tenantId },
+        });
+        if (product && product.stockQuantity !== null) {
+          try {
+            await this.inventoryService.createMovement(
+              dto.tenantId,
+              item.productId,
+              {
+                type: StockMovementType.SALE_OUT,
+                quantity: item.quantity,
+                orderId: order.id,
+                notes: `Pedido ${order.orderNumber}`,
+              },
+              queryRunner.manager,
+            );
+          } catch (err) {
+            if (err instanceof ConflictException) {
+              throw new UnprocessableEntityException((err as any).message);
+            }
+            throw err;
+          }
+        }
+      }
 
       await queryRunner.commitTransaction();
 
@@ -274,6 +304,31 @@ export class OrdersService {
 
       order.status = dto.status;
       order.statusHistory = [...order.statusHistory, historyEntry];
+
+      if (dto.status === OrderStatus.CANCELLED) {
+        const orderItems = await queryRunner.manager.find(OrderItem, {
+          where: { orderId: order.id },
+        });
+        for (const item of orderItems) {
+          const product = await queryRunner.manager.findOne(Product, {
+            where: { id: item.productId, tenantId },
+          });
+          if (product && product.stockQuantity !== null) {
+            await this.inventoryService.createMovement(
+              tenantId,
+              item.productId,
+              {
+                type: StockMovementType.CANCELLATION_RETURN,
+                quantity: item.quantity,
+                orderId: order.id,
+                notes: `Cancelación de pedido ${order.orderNumber}`,
+              },
+              queryRunner.manager,
+            );
+          }
+        }
+      }
+
       const saved = await queryRunner.manager.save(order);
       await queryRunner.commitTransaction();
 

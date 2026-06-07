@@ -18,6 +18,7 @@ import { CatalogModule } from './modules/catalog/catalog.module.js';
 import { OrdersModule } from './modules/orders/orders.module.js';
 import { UploadModule } from './modules/upload/upload.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
+import { InventoryModule } from './modules/inventory/inventory.module.js';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module.js';
     OrdersModule,
     UploadModule,
     DashboardModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [
