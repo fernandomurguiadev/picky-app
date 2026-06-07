@@ -9,6 +9,7 @@ import { BrandColorSelector } from "@/components/admin/brand-color-selector";
 import { CardStyleSelector } from "@/components/admin/card-style-selector";
 import { StorePreview } from "../store-preview";
 import type { CardStyle } from "@/lib/types/store";
+import { LayoutGrid, LayoutList, Rows3 } from "lucide-react";
 
 const hexRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
 
@@ -17,6 +18,7 @@ const schema = z.object({
   accentColor: z.string().regex(hexRegex, "Color hex inválido (ej. #FFFFFF)"),
   backgroundColor: z.string().regex(hexRegex, "Color hex inválido"),
   cardStyle: z.enum(["default", "minimal", "bold", "glass", "soft", "retro"]),
+  mobileGridCols: z.union([z.literal(0), z.literal(1), z.literal(2)]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -27,6 +29,7 @@ interface ThemeEditorProps {
     accentColor: string;
     backgroundColor?: string;
     cardStyle?: CardStyle;
+    mobileGridCols?: 0 | 1 | 2;
   } | null;
   storeName: string;
   onSubmit: (values: FormValues) => Promise<void>;
@@ -47,6 +50,7 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
       accentColor: value?.accentColor ?? "#ffffff",
       backgroundColor: value?.backgroundColor ?? "#ffffff",
       cardStyle: value?.cardStyle ?? "default",
+      mobileGridCols: (value?.mobileGridCols ?? 2) as 0 | 1 | 2,
     },
   });
 
@@ -57,6 +61,7 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
         accentColor: value.accentColor,
         backgroundColor: value.backgroundColor ?? "#ffffff",
         cardStyle: value.cardStyle ?? "default",
+        mobileGridCols: value.mobileGridCols ?? 2,
       });
     }
   }, [value, reset]);
@@ -65,6 +70,7 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
   const accentColor = watch("accentColor");
   const backgroundColor = watch("backgroundColor");
   const cardStyle = watch("cardStyle");
+  const mobileGridCols = watch("mobileGridCols");
 
   const safePrimary = hexRegex.test(primaryColor) ? primaryColor : "#000000";
   const safeAccent = hexRegex.test(accentColor) ? accentColor : "#ffffff";
@@ -92,6 +98,30 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
             accentColor={safeAccent}
             backgroundColor={safeBg}
           />
+
+          <hr className="border-border/30" />
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Vista mobile (por defecto)</p>
+            <p className="text-xs text-muted-foreground">El cliente puede cambiarlo desde la tienda.</p>
+            <div className="flex gap-2">
+              {([1, 2, 0] as const).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setValue("mobileGridCols", n, { shouldDirty: true })}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-medium transition-colors ${
+                    mobileGridCols === n
+                      ? "border-[var(--color-primary)] bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
+                      : "border-border text-muted-foreground hover:border-border/80 hover:bg-muted/50"
+                  }`}
+                >
+                  {n === 1 ? <LayoutList className="h-4 w-4" /> : n === 2 ? <LayoutGrid className="h-4 w-4" /> : <Rows3 className="h-4 w-4" />}
+                  {n === 1 ? "1 col" : n === 2 ? "2 col" : "Lista"}
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
 
         <div className="flex justify-end">

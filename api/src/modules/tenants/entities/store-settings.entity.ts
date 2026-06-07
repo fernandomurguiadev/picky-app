@@ -38,7 +38,11 @@ export class StoreSettings {
   @Column({ type: 'jsonb', nullable: true })
   schedule!: DaySchedule[] | null;
 
-  @Column({ type: 'varchar', length: 100, default: 'America/Argentina/Buenos_Aires' })
+  @Column({
+    type: 'varchar',
+    length: 100,
+    default: 'America/Argentina/Buenos_Aires',
+  })
   timezone!: string;
 
   // Tema
@@ -53,6 +57,9 @@ export class StoreSettings {
 
   @Column({ type: 'varchar', length: 20, default: 'default' })
   cardStyle!: string;
+
+  @Column({ type: 'integer', default: 2 })
+  mobileGridCols!: number;
 
   // Entrega
   @Column({ type: 'boolean', default: false })

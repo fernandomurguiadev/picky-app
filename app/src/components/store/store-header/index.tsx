@@ -4,7 +4,7 @@ import { StoreStatusBadge } from "@/components/store/store-status-badge";
 import { CartDrawer } from "@/components/store/cart-drawer";
 import { CartBadge } from "@/components/store/cart-badge";
 import { StoreSearchBar } from "@/components/store/store-search-bar";
-import { MobileCategoryButton } from "@/components/store/mobile-category-button";
+import { MobileStoreBar } from "@/components/store/mobile-store-bar";
 import type { StorePublicData, DaySchedule } from "@/lib/types/store";
 import type { Category } from "@/lib/types/catalog";
 
@@ -54,17 +54,8 @@ export function StoreHeader({ store, isOpen, todaySchedule, categories = [] }: S
         </div>
       </div>
 
-      {/* Buscador sticky en mobile con botón de categorías a la derecha */}
-      <div className="w-full bg-[var(--color-background)] border-b border-[var(--border)] lg:hidden pointer-events-auto">
-        <div className="mx-auto max-w-4xl px-4 py-2 flex items-center gap-2">
-          <div className="flex-1 min-w-0">
-            <StoreSearchBar slug={store.slug} />
-          </div>
-          {categories.length > 0 && (
-            <MobileCategoryButton categories={categories} />
-          )}
-        </div>
-      </div>
+      {/* Buscador sticky en mobile con botón de categorías (oculto en checkout) */}
+      <MobileStoreBar slug={store.slug} categories={categories} />
     </header>
   );
 }

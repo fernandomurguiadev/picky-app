@@ -1,9 +1,9 @@
 import { CategoryNav } from "@/components/store/category-nav";
 import { CategorySidebar } from "@/components/store/category-sidebar";
-import { ProductCard } from "@/components/store/product-card";
-import { EmptyState } from "@/components/shared/empty-state";
+import { StoreProductList } from "@/components/store/store-product-list";
 import type { Category, Product } from "@/lib/types/catalog";
 import type { StorePublicData } from "@/lib/types/store";
+import { MOBILE_COLS_TO_LAYOUT } from "@/lib/types/store";
 import { MapPin, Truck, ShoppingBag } from "lucide-react";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
@@ -34,6 +34,7 @@ export default async function StorePage({ params }: StorePageProps) {
   const categories: Category[] = categoriesJson.data ?? [];
   const featured: Product[] = featuredJson.data ?? [];
   const store: StorePublicData | null = storeJson?.data;
+  const defaultLayout = MOBILE_COLS_TO_LAYOUT[(store?.theme?.mobileGridCols ?? 2) as 0 | 1 | 2];
 
   // Fetch products for all categories in parallel
   const categoryProductsPromises = categories.map((cat) =>
@@ -126,53 +127,13 @@ export default async function StorePage({ params }: StorePageProps) {
               </div>
             </section>
 
-            {/* DESTACADOS */}
-            <section>
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-semibold tracking-tight">Destacados</h2>
-                <span className="text-sm font-medium text-muted-foreground">{featured.length} productos</span>
-              </div>
-              {featured.length ? (
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  {featured.map((product) => (
-                    <ProductCard key={product.id} product={product} slug={slug} />
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  title="No hay destacados todavía"
-                  description="El comercio todavía no marcó productos destacados en su catálogo."
-                />
-              )}
-            </section>
-
-            {/* 📋 CATEGORÍAS (SCROLLSPY) */}
-            <div className="space-y-12">
-              {categories.map((category) => {
-                const categoryProducts = productsByCategory[category.id] ?? [];
-                if (categoryProducts.length === 0) return null;
-
-                return (
-                  <section
-                    key={category.id}
-                    id={`category-${category.id}`}
-                    className="scroll-mt-[130px] lg:scroll-mt-[72px]"
-                  >
-                    <div className="mb-4 flex items-center justify-between border-b pb-2">
-                      <h2 className="text-xl font-bold tracking-tight">{category.name}</h2>
-                      <span className="text-sm font-medium text-muted-foreground">
-                        {categoryProducts.length}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-                      {categoryProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} slug={slug} />
-                      ))}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
+            <StoreProductList
+              featured={featured}
+              categories={categories}
+              productsByCategory={productsByCategory}
+              slug={slug}
+              defaultLayout={defaultLayout}
+            />
 
           </div>
         </div>

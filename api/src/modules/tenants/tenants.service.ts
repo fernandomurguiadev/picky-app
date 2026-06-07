@@ -94,17 +94,23 @@ export class TenantsService {
       where: { slug },
       select: { id: true },
     });
-    if (!tenant) throw toBusinessException(CommonErrors.notFound('Store', { slug }));
+    if (!tenant)
+      throw toBusinessException(CommonErrors.notFound('Store', { slug }));
     return { tenantId: tenant.id };
   }
 
   /** B3.2 — Datos públicos del comercio para la tienda pública */
   async getPublicStore(slug: string) {
-    const tenant = await this.tenantRepo.findOne({ where: { slug, isActive: true } });
-    if (!tenant) throw toBusinessException(CommonErrors.notFound('Store', { slug }));
+    const tenant = await this.tenantRepo.findOne({
+      where: { slug, isActive: true },
+    });
+    if (!tenant)
+      throw toBusinessException(CommonErrors.notFound('Store', { slug }));
 
-    const settings = await this.settingsRepo.findOne({ where: { tenantId: tenant.id } });
-    
+    const settings = await this.settingsRepo.findOne({
+      where: { tenantId: tenant.id },
+    });
+
     return {
       id: tenant.id,
       tenantId: tenant.id,
@@ -120,6 +126,7 @@ export class TenantsService {
         accentColor: settings?.accentColor ?? '#ffffff',
         backgroundColor: settings?.backgroundColor ?? '#ffffff',
         cardStyle: settings?.cardStyle ?? 'default',
+        mobileGridCols: (settings?.mobileGridCols ?? 2) as 0 | 1 | 2,
       },
       deliveryEnabled: settings?.deliveryEnabled ?? false,
       deliveryCost: settings?.deliveryCost ?? 0,
@@ -135,8 +142,11 @@ export class TenantsService {
 
   /** B3.3 — Estado abierto/cerrado calculado con timezone del tenant */
   async getStoreStatus(slug: string): Promise<StoreStatusResult> {
-    const tenant = await this.tenantRepo.findOne({ where: { slug, isActive: true } });
-    if (!tenant) throw toBusinessException(CommonErrors.notFound('Store', { slug }));
+    const tenant = await this.tenantRepo.findOne({
+      where: { slug, isActive: true },
+    });
+    if (!tenant)
+      throw toBusinessException(CommonErrors.notFound('Store', { slug }));
 
     const settings = await this.settingsRepo.findOne({
       where: { tenantId: tenant.id },
@@ -145,39 +155,52 @@ export class TenantsService {
 
     const tz = settings?.timezone ?? 'America/Argentina/Buenos_Aires';
     const { day } = getCurrentTimeInTz(tz);
-    const todaySchedule = settings?.schedule?.find((d) => d.day === day) ?? null;
+    const todaySchedule =
+      settings?.schedule?.find((d) => d.day === day) ?? null;
 
     if (settings?.isManualOpen === true) {
-      return { isOpen: true, nextChange: null, source: 'manual', todaySchedule };
+      return {
+        isOpen: true,
+        nextChange: null,
+        source: 'manual',
+        todaySchedule,
+      };
     }
     if (settings?.isManualOpen === false) {
-      return { isOpen: false, nextChange: null, source: 'manual', todaySchedule };
+      return {
+        isOpen: false,
+        nextChange: null,
+        source: 'manual',
+        todaySchedule,
+      };
     }
 
     return {
-      ...calcStoreStatus(
-        settings?.schedule ?? null,
-        tz,
-      ),
+      ...calcStoreStatus(settings?.schedule ?? null, tz),
       source: 'schedule',
       todaySchedule,
     };
   }
 
   /** B3.4 — Configuración completa del tenant autenticado (lazy-init si no existe) */
-  async getMySettings(tenantId: string, runner?: QueryRunner): Promise<StoreSettingsResponse | null> {
+  async getMySettings(
+    tenantId: string,
+    runner?: QueryRunner,
+  ): Promise<StoreSettingsResponse | null> {
     if (!tenantId) return null;
 
-    const repo = runner ? runner.manager.getRepository(StoreSettings) : this.settingsRepo;
+    const repo = runner
+      ? runner.manager.getRepository(StoreSettings)
+      : this.settingsRepo;
     let settings = await repo.findOne({
-      where: { tenantId: tenantId as any },
+      where: { tenantId: tenantId },
       relations: ['tenant'],
     });
 
     if (!settings) {
       settings = await repo.save(repo.create({ tenantId }));
       settings = await repo.findOne({
-        where: { tenantId: tenantId as any },
+        where: { tenantId: tenantId },
         relations: ['tenant'],
       });
     }
@@ -188,21 +211,29 @@ export class TenantsService {
     const { tenant, ...rest } = settings;
     return {
       ...rest,
-      tenant: tenant ? {
-        id: tenant.id,
-        name: tenant.name,
-        slug: tenant.slug,
-        isActive: tenant.isActive,
-      } : null,
-    } as StoreSettingsResponse;
+      tenant: tenant
+        ? {
+            id: tenant.id,
+            name: tenant.name,
+            slug: tenant.slug,
+            isActive: tenant.isActive,
+          }
+        : null,
+    };
   }
 
   /** B3.5 — Upsert de StoreSettings (crea si no existe) */
-  async updateMySettings(tenantId: string, dto: UpdateStoreSettingsDto, runner?: QueryRunner): Promise<StoreSettingsResponse | null> {
-    const repo = runner ? runner.manager.getRepository(StoreSettings) : this.settingsRepo;
+  async updateMySettings(
+    tenantId: string,
+    dto: UpdateStoreSettingsDto,
+    runner?: QueryRunner,
+  ): Promise<StoreSettingsResponse | null> {
+    const repo = runner
+      ? runner.manager.getRepository(StoreSettings)
+      : this.settingsRepo;
 
     let settings = await repo.findOne({
-      where: { tenantId } as any
+      where: { tenantId },
     });
 
     if (!settings) {
@@ -211,7 +242,7 @@ export class TenantsService {
       Object.assign(settings, dto);
     }
 
-    await repo.save(settings!);
+    await repo.save(settings);
     return this.getMySettings(tenantId, runner);
   }
 
@@ -221,9 +252,11 @@ export class TenantsService {
     isManualOpen: boolean | null,
     runner?: QueryRunner,
   ): Promise<StoreSettingsResponse | null> {
-    const repo = runner ? runner.manager.getRepository(StoreSettings) : this.settingsRepo;
-    let settings = await repo.findOne({ 
-      where: { tenantId } as any 
+    const repo = runner
+      ? runner.manager.getRepository(StoreSettings)
+      : this.settingsRepo;
+    let settings = await repo.findOne({
+      where: { tenantId },
     });
 
     if (!settings) {
@@ -232,7 +265,7 @@ export class TenantsService {
       settings.isManualOpen = isManualOpen;
     }
 
-    await repo.save(settings!);
+    await repo.save(settings);
     return this.getMySettings(tenantId, runner);
   }
 }

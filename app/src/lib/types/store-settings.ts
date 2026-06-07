@@ -25,6 +25,7 @@ export interface StoreSettings {
   accentColor: string;
   backgroundColor: string;
   cardStyle: string;
+  mobileGridCols: number;
   deliveryEnabled: boolean;
   deliveryCost: number; // centavos
   deliveryMinOrder: number; // centavos

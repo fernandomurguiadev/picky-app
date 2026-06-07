@@ -15,6 +15,7 @@ export default function SettingsThemePage() {
     accentColor: string;
     backgroundColor: string;
     cardStyle: CardStyle;
+    mobileGridCols: 0 | 1 | 2;
   }) => {
     try {
       await updateMutation.mutateAsync(values);
@@ -42,6 +43,7 @@ export default function SettingsThemePage() {
                 accentColor: settings.accentColor,
                 backgroundColor: settings.backgroundColor,
                 cardStyle: (settings.cardStyle as CardStyle) ?? "default",
+                mobileGridCols: (settings.mobileGridCols ?? 2) as 0 | 1 | 2,
               }
             : null
         }

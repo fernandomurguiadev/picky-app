@@ -2,11 +2,23 @@
 
 export type CardStyle = 'default' | 'minimal' | 'bold' | 'glass' | 'soft' | 'retro';
 
+/** 0=list, 1=grid-1col, 2=grid-2col (valor guardado en DB) */
+export type MobileGridCols = 0 | 1 | 2;
+
+export type GridLayout = 'grid-1' | 'grid-2' | 'list';
+
+export const MOBILE_COLS_TO_LAYOUT: Record<MobileGridCols, GridLayout> = {
+  0: 'list',
+  1: 'grid-1',
+  2: 'grid-2',
+};
+
 export interface StoreTheme {
   primaryColor: string;
   accentColor: string;
   backgroundColor?: string;
   cardStyle?: CardStyle;
+  mobileGridCols?: MobileGridCols;
 }
 
 export interface StorePublicData {
