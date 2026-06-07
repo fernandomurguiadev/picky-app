@@ -17,10 +17,10 @@ export default async function StorePage({ params }: StorePageProps) {
 
   const [categoriesRes, featuredRes, storeRes] = await Promise.all([
     fetch(`${BACKEND_URL}/api/v1/stores/${slug}/categories`, {
-      next: { revalidate: 60 },
+      next: { revalidate: 15 },
     }),
     fetch(`${BACKEND_URL}/api/v1/stores/${slug}/products/featured`, {
-      next: { revalidate: 30 },
+      next: { revalidate: 10 },
     }),
     fetch(`${BACKEND_URL}/api/v1/stores/${slug}`, {
       cache: "no-store",
@@ -57,7 +57,7 @@ export default async function StorePage({ params }: StorePageProps) {
       {/* Nav horizontal — solo mobile/tablet. `contents` hace el wrapper transparente al layout
           para que el sticky de CategoryNav siga usando el contenedor de página como bloque contenedor. */}
       <div className="contents lg:hidden">
-        <CategoryNav categories={categories} slug={slug} />
+        <CategoryNav categories={categories} />
       </div>
 
       {/* Wrapper general con max-w amplio en desktop */}

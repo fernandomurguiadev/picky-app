@@ -30,7 +30,7 @@ export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardPro
     return (
       <>
         <div
-          className="store-card group flex cursor-pointer flex-row items-center overflow-hidden transition-all"
+          className="store-card group flex cursor-pointer flex-row items-stretch overflow-hidden transition-all"
           data-list-card=""
           onClick={handleOpen}
           role="button"
@@ -39,7 +39,7 @@ export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardPro
           aria-label={`Ver detalle de ${product.name}`}
         >
           {/* Imagen */}
-          <div className="relative h-24 w-24 shrink-0 overflow-hidden bg-muted">
+          <div className="relative w-24 shrink-0 overflow-hidden bg-muted" style={{ minHeight: "5rem" }}>
             {product.imageUrl ? (
               <Image
                 src={product.imageUrl}
