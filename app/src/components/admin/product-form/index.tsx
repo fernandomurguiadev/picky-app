@@ -87,12 +87,22 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     },
   });
 
+  console.log("DEBUG: ProductForm render", {
+    product,
+    categoriesCount: categories?.length,
+    categories,
+    formValues: methods.getValues(),
+  });
+
   useEffect(() => {
+    console.log("DEBUG: useEffect trigger", { isEdit, hasProduct: !!product });
     if (isEdit && product) {
+      const targetCategoryId = product.categoryId || product.category?.id || "";
+      console.log("DEBUG: Resetting form with categoryId:", targetCategoryId);
       methods.reset({
         name: product.name,
         description: product.description ?? "",
-        categoryId: product.categoryId || product.category?.id || "",
+        categoryId: targetCategoryId,
         price: fromCents(product.price),
         imageUrl: product.imageUrl ?? null,
         isFeatured: product.isFeatured,
