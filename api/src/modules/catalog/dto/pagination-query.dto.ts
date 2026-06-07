@@ -1,5 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsInt, IsOptional, IsString, IsUUID, Max, Min } from 'class-validator';
 
 export class PaginationQueryDto {
   @IsInt()
@@ -21,11 +21,12 @@ export class ProductsQueryDto extends PaginationQueryDto {
   @IsOptional()
   categoryId?: string;
 
-  @IsString()
+  @IsBoolean()
   @IsOptional()
-  isActive?: string;
+  @Transform(({ value }) => value === 'true' ? true : value === 'false' ? false : value)
+  isActive?: boolean;
 
   @IsString()
   @IsOptional()
-  q?: string;
+  search?: string;
 }

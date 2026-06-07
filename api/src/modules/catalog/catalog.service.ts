@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Repository, QueryRunner } from 'typeorm';
+import { DataSource, EntityManager, In, Repository, QueryRunner } from 'typeorm';
 
 import { toBusinessException } from '../../common/errors/business.exception.js';
 import { Category } from './entities/category.entity.js';
@@ -304,13 +304,11 @@ export class CatalogService {
       });
     }
     if (query.isActive !== undefined) {
-      qb.andWhere('p.isActive = :isActive', {
-        isActive: query.isActive === 'true',
-      });
+      qb.andWhere('p.isActive = :isActive', { isActive: query.isActive });
     }
-    if (query.q) {
+    if (query.search) {
       qb.andWhere('(p.name ILIKE :q OR p.description ILIKE :q)', {
-        q: `%${query.q}%`,
+        q: `%${query.search}%`,
       });
     }
 
@@ -352,6 +350,7 @@ export class CatalogService {
       : this.productRepo;
 
     if (runner) {
+      const order = dto.order ?? await this.getNextProductOrder(tenantId, dto.categoryId, manager!);
       const product = manager!.create(Product, {
         tenantId,
         categoryId: dto.categoryId,
@@ -361,8 +360,9 @@ export class CatalogService {
         imageUrl: dto.imageUrl ?? null,
         isFeatured: dto.isFeatured ?? false,
         isActive: dto.isActive ?? true,
-        inStock: dto.inStock ?? true,
-        order: dto.order ?? 0,
+        inStock: dto.stockQuantity !== undefined && dto.stockQuantity !== null ? dto.stockQuantity > 0 : (dto.inStock ?? true),
+        stockQuantity: dto.stockQuantity ?? null,
+        order,
       });
       const saved = await manager!.save(product);
 
@@ -379,6 +379,7 @@ export class CatalogService {
       await queryRunner.connect();
       await queryRunner.startTransaction();
       try {
+        const order = dto.order ?? await this.getNextProductOrder(tenantId, dto.categoryId, queryRunner.manager);
         const product = queryRunner.manager.create(Product, {
           tenantId,
           categoryId: dto.categoryId,
@@ -388,8 +389,9 @@ export class CatalogService {
           imageUrl: dto.imageUrl ?? null,
           isFeatured: dto.isFeatured ?? false,
           isActive: dto.isActive ?? true,
-          inStock: dto.inStock ?? true,
-          order: dto.order ?? 0,
+          inStock: dto.stockQuantity !== undefined && dto.stockQuantity !== null ? dto.stockQuantity > 0 : (dto.inStock ?? true),
+          stockQuantity: dto.stockQuantity ?? null,
+          order,
         });
         const saved = await queryRunner.manager.save(product);
 
@@ -430,7 +432,11 @@ export class CatalogService {
 
     if (runner) {
       const { optionGroups, ...rest } = dto;
-      await runner.manager.update(Product, id, rest);
+      const updateData: any = { ...rest };
+      if (rest.stockQuantity !== undefined) {
+        updateData.inStock = rest.stockQuantity !== null ? rest.stockQuantity > 0 : (rest.inStock ?? product.inStock);
+      }
+      await runner.manager.update(Product, id, updateData);
 
       if (optionGroups !== undefined) {
         await runner.manager.delete(OptionGroup, { productId: id });
@@ -449,7 +455,11 @@ export class CatalogService {
       await queryRunner.startTransaction();
       try {
         const { optionGroups, ...rest } = dto;
-        await queryRunner.manager.update(Product, id, rest);
+        const updateData: any = { ...rest };
+        if (rest.stockQuantity !== undefined) {
+          updateData.inStock = rest.stockQuantity !== null ? rest.stockQuantity > 0 : (rest.inStock ?? product.inStock);
+        }
+        await queryRunner.manager.update(Product, id, updateData);
 
         if (optionGroups !== undefined) {
           await queryRunner.manager.delete(OptionGroup, { productId: id });
@@ -501,6 +511,10 @@ export class CatalogService {
     const product = await repo.findOne({ where: { id, tenantId } });
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
 
+    if (product.stockQuantity !== null) {
+      throw toBusinessException(CatalogErrors.productStockManagedByQuantity(id));
+    }
+
     await repo.update(id, { inStock });
     return { id, inStock };
   }
@@ -533,7 +547,14 @@ export class CatalogService {
       throw toBusinessException(CatalogErrors.productHasActiveOrders(id));
     }
 
-    await productRepo.remove(product);
+    const manager = runner ? runner.manager : this.dataSource.manager;
+    await manager.query(
+      `DELETE FROM "stock_movements" WHERE "productId" = $1 AND "tenantId" = $2`,
+      [id, tenantId],
+    ).catch(() => {
+      // Tabla puede no existir todavía si la migración aún no corrió
+    });
+    await productRepo.delete({ id, tenantId });
   }
 
   async reorderProducts(
@@ -577,6 +598,25 @@ export class CatalogService {
   }
 
   // ─── Private helpers ──────────────────────────────────────────────────────
+
+  private async getNextProductOrder(
+    tenantId: string,
+    categoryId: string,
+    manager?: EntityManager,
+  ): Promise<number> {
+    const qb = manager
+      ? manager.getRepository(Product).createQueryBuilder('p')
+      : this.productRepo.createQueryBuilder('p');
+    const row = await qb
+      .select('MAX(p.order)', 'maxOrder')
+      .where('p.tenantId = :tenantId AND p.categoryId = :categoryId', {
+        tenantId,
+        categoryId,
+      })
+      .getRawOne<{ maxOrder: string | null }>();
+    const max = row?.maxOrder;
+    return max !== null && max !== undefined ? parseInt(max, 10) + 1 : 0;
+  }
 
   private async saveOptionGroups(
     manager: DataSource['manager'],
