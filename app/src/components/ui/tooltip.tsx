@@ -43,15 +43,17 @@ function TooltipTrigger({
   children,
   className,
   asChild,
+  type,
   ...props
 }: {
   children?: React.ReactNode
   className?: string
   asChild?: boolean
+  type?: "button" | "submit" | "reset"
   [key: string]: unknown
 }) {
   return (
-    <TooltipPrimitive.Trigger className={className} asChild={asChild} {...props}>
+    <TooltipPrimitive.Trigger className={className} asChild={asChild} type={type} {...props}>
       {children}
     </TooltipPrimitive.Trigger>
   )

@@ -23,12 +23,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useCartStore } from "@/lib/stores/cart.store";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "@/components/shared/toast";
@@ -172,6 +166,8 @@ function OrderStep({
   onNext: (data: NotesData) => void;
   defaultValues?: NotesData;
 }) {
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -190,48 +186,53 @@ function OrderStep({
           Detalle del pedido
         </div>
         <Separator />
-          <TooltipProvider delayDuration={250}>
-            <ul className="max-h-52 overflow-y-auto px-4 py-3 space-y-2">
-              {items.map((item) => {
-                const itemTotal =
-                  (item.unitPrice +
-                    item.selectedOptions.reduce((s, o) => s + o.extraPrice, 0)) *
-                  item.quantity;
-                const tooltipText = [
-                  item.name,
-                  ...item.selectedOptions.map((o) => o.itemName),
-                ].join(" · ");
-                return (
-                  <li
-                    key={item.cartItemId}
-                    className="flex items-center gap-2 text-sm"
+        <ul className="max-h-52 overflow-y-auto px-4 py-3 space-y-2">
+          {items.map((item) => {
+            const itemTotal =
+              (item.unitPrice +
+                item.selectedOptions.reduce((s, o) => s + o.extraPrice, 0)) *
+              item.quantity;
+            const isExpanded = expandedItem === item.cartItemId;
+            const hasOptions = item.selectedOptions.length > 0;
+            return (
+              <li key={item.cartItemId} className="flex items-start gap-2 text-sm">
+                {/* Nombre — tap/click expande, hover en desktop muestra cursor pointer */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setExpandedItem(isExpanded ? null : item.cartItemId)
+                  }
+                  className="flex-1 min-w-0 text-left"
+                >
+                  <span
+                    className={
+                      isExpanded
+                        ? "font-medium break-words leading-snug"
+                        : "font-medium truncate block"
+                    }
                   >
-                    {/* Nombre truncado con tooltip */}
-                    <Tooltip>
-                      <TooltipTrigger className="flex-1 min-w-0 text-left">
-                        <span className="block truncate font-medium">
-                          {item.name}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-64">
-                        <p>{tooltipText}</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                    {/* Cantidad — chip con color del tema */}
-                    <span className="shrink-0 inline-flex items-center justify-center rounded-full bg-[var(--color-primary)]/10 px-2 py-0.5 text-xs font-semibold text-[var(--color-primary)] min-w-[2rem]">
-                      ×{item.quantity}
+                    {item.name}
+                  </span>
+                  {isExpanded && hasOptions && (
+                    <span className="text-xs text-muted-foreground mt-0.5 block">
+                      {item.selectedOptions.map((o) => o.itemName).join(" · ")}
                     </span>
+                  )}
+                </button>
 
-                    {/* Precio — columna fija, dígitos tabulares */}
-                    <span className="shrink-0 w-20 text-right tabular-nums font-medium text-foreground">
-                      {formatCurrency(itemTotal)}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </TooltipProvider>
+                {/* Cantidad — chip con color del tema */}
+                <span className="shrink-0 inline-flex items-center justify-center rounded-full bg-[var(--color-primary)]/10 px-2 py-0.5 text-xs font-semibold text-[var(--color-primary)] min-w-[2rem]">
+                  ×{item.quantity}
+                </span>
+
+                {/* Precio — columna fija, dígitos tabulares */}
+                <span className="shrink-0 w-20 text-right tabular-nums font-medium text-foreground">
+                  {formatCurrency(itemTotal)}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
         <Separator />
         <div className="flex items-center justify-between px-4 py-3">
           <span className="text-sm font-semibold">Subtotal</span>
