@@ -43,6 +43,7 @@ export class UpdateStoreSettingsDto {
 
   @IsOptional()
   @IsString()
+  @Matches(/^[A-Za-z_\/\-+0-9]+$/, { message: 'Invalid timezone format' })
   timezone?: string;
 
   // Tema

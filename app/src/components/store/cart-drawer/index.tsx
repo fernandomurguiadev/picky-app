@@ -32,7 +32,7 @@ interface CartDrawerProps {
 export function CartDrawer({ children }: CartDrawerProps) {
   const router = useRouter();
   const params = useParams();
-  const slug = params.slug as string;
+  const slug = typeof params?.slug === "string" ? params.slug : null;
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -43,6 +43,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleCheckout = () => {
+    if (!slug) return;
     setIsSheetOpen(false);
     setIsPopoverOpen(false);
     router.push(`/${slug}/checkout`);
@@ -140,7 +141,7 @@ export function CartDrawer({ children }: CartDrawerProps) {
                             className="text-muted-foreground hover:text-destructive transition-colors"
                             aria-label="Eliminar item"
                           >
-                            <X className="h-3.5 h-3.5" />
+                            <X className="h-3.5 w-3.5" />
                           </button>
                         </div>
 

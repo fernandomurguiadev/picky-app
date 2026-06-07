@@ -31,6 +31,7 @@ export const FloatingCartBanner = React.forwardRef<
     if (totalItems > prevCountRef.current) {
       setIsAnimating(true);
       const timer = setTimeout(() => setIsAnimating(false), 300);
+      prevCountRef.current = totalItems;
       return () => clearTimeout(timer);
     }
     prevCountRef.current = totalItems;
@@ -47,7 +48,7 @@ export const FloatingCartBanner = React.forwardRef<
   }, [cartSubtotal, displayTotal]);
 
   // No mostramos el banner si estamos en el checkout, ni si no hay items
-  if (!isMounted || totalItems === 0 || pathname?.includes("/checkout") || pathname?.includes("/order-confirmation")) {
+  if (!isMounted || totalItems === 0 || pathname.includes("/checkout") || pathname.includes("/order-confirmation")) {
     return null;
   }
 

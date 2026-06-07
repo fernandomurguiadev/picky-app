@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { ProductDetailSheet } from "@/components/store/product-detail-sheet";
+import { useCartStore } from "@/lib/stores/cart.store";
 import type { Product } from "@/lib/types/catalog";
 
 interface ProductCardProps {
@@ -14,6 +15,11 @@ interface ProductCardProps {
 
 export function ProductCard({ product, slug }: ProductCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const cartQuantity = useCartStore((state) =>
+    state.items
+      .filter((i) => i.productId === product.id)
+      .reduce((sum, i) => sum + i.quantity, 0)
+  );
 
   return (
     <>
@@ -49,6 +55,13 @@ export function ProductCard({ product, slug }: ProductCardProps) {
               🍽️
             </div>
           )}
+
+          {/* Badge de cantidad en carrito */}
+          {cartQuantity > 0 && (
+            <div className="absolute right-2 top-2 z-10 flex min-w-[1.375rem] items-center justify-center rounded-full bg-[var(--store-accent)] px-1.5 py-0.5 text-[10px] font-bold leading-none text-[var(--store-accent-foreground)] shadow-md ring-2 ring-[var(--color-background)]">
+              {cartQuantity}
+            </div>
+          )}
         </div>
 
         {/* Info */}
@@ -66,14 +79,21 @@ export function ProductCard({ product, slug }: ProductCardProps) {
               {formatCurrency(product.price)}
             </span>
             <button
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--store-accent)] text-[var(--store-accent-foreground)] transition-opacity hover:opacity-90 shadow-sm"
+              className={`flex h-8 items-center justify-center rounded-full transition-all shadow-sm ${
+                cartQuantity > 0
+                  ? "gap-1.5 px-2.5 bg-[var(--store-accent)] text-[var(--store-accent-foreground)] ring-2 ring-[var(--store-accent)]/30"
+                  : "w-8 bg-[var(--store-accent)] text-[var(--store-accent-foreground)] hover:opacity-90"
+              }`}
               onClick={(e) => {
                 e.stopPropagation();
                 setSheetOpen(true);
               }}
               aria-label={`Agregar ${product.name} al carrito`}
             >
-              <ShoppingCart className="h-4 w-4" />
+              <ShoppingCart className="h-4 w-4 shrink-0" />
+              {cartQuantity > 0 && (
+                <span className="text-xs font-bold leading-none">{cartQuantity}</span>
+              )}
             </button>
           </div>
         </div>

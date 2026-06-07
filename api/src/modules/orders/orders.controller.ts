@@ -21,6 +21,7 @@ import { LinkWhatsappDto } from './dto/link-whatsapp.dto.js';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
 import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
+import { ApiKeyGuard } from './guards/api-key.guard.js';
 
 // ─── Tienda pública (sin auth) ────────────────────────────────────────────────
 
@@ -36,8 +37,8 @@ export class StorefrontOrdersController {
   }
 
   @Patch('webhook/whatsapp-link')
+  @UseGuards(ApiKeyGuard)
   linkWhatsappNumber(@Body() dto: LinkWhatsappDto) {
-    // Nota: Aquí se podría validar un header x-api-key en un Guard.
     return this.ordersService.linkWhatsappNumber(dto.orderNumber, dto.verifiedWhatsappNumber);
   }
 }

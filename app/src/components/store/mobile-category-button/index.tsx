@@ -15,7 +15,6 @@ import type { Category } from "@/lib/types/catalog";
 
 interface MobileCategoryButtonProps {
   categories: Category[];
-  slug: string;
 }
 
 export function MobileCategoryButton({ categories }: MobileCategoryButtonProps) {

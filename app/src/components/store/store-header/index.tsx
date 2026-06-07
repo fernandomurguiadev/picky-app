@@ -61,7 +61,7 @@ export function StoreHeader({ store, isOpen, todaySchedule, categories = [] }: S
             <StoreSearchBar slug={store.slug} />
           </div>
           {categories.length > 0 && (
-            <MobileCategoryButton categories={categories} slug={store.slug} />
+            <MobileCategoryButton categories={categories} />
           )}
         </div>
       </div>

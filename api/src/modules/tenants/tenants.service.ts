@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DeepPartial, QueryRunner } from 'typeorm';
+import { Repository, QueryRunner } from 'typeorm';
 
 import { CommonErrors } from '../../common/errors/common.errors.js';
 import { toBusinessException } from '../../common/errors/business.exception.js';
@@ -23,10 +23,19 @@ export type StoreSettingsResponse = Omit<StoreSettings, 'tenant'> & {
 // ─── Helpers de timezone ──────────────────────────────────────────────────
 
 function getCurrentTimeInTz(timezone: string): { day: string; time: string } {
+  const safeTimezone = (() => {
+    try {
+      Intl.DateTimeFormat('en-US', { timeZone: timezone });
+      return timezone;
+    } catch {
+      return 'UTC';
+    }
+  })();
+
   const now = new Date();
   const day = new Intl.DateTimeFormat('en-US', {
     weekday: 'long',
-    timeZone: timezone,
+    timeZone: safeTimezone,
   })
     .format(now)
     .toLowerCase();
@@ -35,7 +44,7 @@ function getCurrentTimeInTz(timezone: string): { day: string; time: string } {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-    timeZone: timezone,
+    timeZone: safeTimezone,
   }).format(now);
 
   return { day, time };
@@ -190,24 +199,19 @@ export class TenantsService {
 
   /** B3.5 — Upsert de StoreSettings (crea si no existe) */
   async updateMySettings(tenantId: string, dto: UpdateStoreSettingsDto, runner?: QueryRunner): Promise<StoreSettingsResponse | null> {
-    console.log(`[TenantsService] updateMySettings para tenantId: ${tenantId}`);
     const repo = runner ? runner.manager.getRepository(StoreSettings) : this.settingsRepo;
-    
-    let settings = await repo.findOne({ 
+
+    let settings = await repo.findOne({
       where: { tenantId } as any
     });
 
     if (!settings) {
-      console.log(`[TenantsService] No se encontraron settings, creando nuevos para ${tenantId}`);
       settings = repo.create({ tenantId, ...dto });
     } else {
-      console.log(`[TenantsService] Actualizando settings existentes ID: ${settings.id}`);
       Object.assign(settings, dto);
     }
 
-    const saved = await repo.save(settings!);
-    console.log(`[TenantsService] Settings guardados exitosamente. ID: ${saved.id}`);
-    
+    await repo.save(settings!);
     return this.getMySettings(tenantId, runner);
   }
 
@@ -223,10 +227,8 @@ export class TenantsService {
     });
 
     if (!settings) {
-      console.log(`[TenantsService] No se encontraron settings en toggle, creando nuevos para ${tenantId}`);
       settings = repo.create({ tenantId, isManualOpen });
     } else {
-      console.log(`[TenantsService] Toggle status para settings existentes ID: ${settings.id}`);
       settings.isManualOpen = isManualOpen;
     }
 

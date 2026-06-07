@@ -1,6 +1,7 @@
 import {
   Injectable,
   UnauthorizedException,
+  ConflictException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, MoreThan } from 'typeorm';
@@ -91,9 +92,19 @@ export class AuthService {
 
       const access_token = this.signAccessToken(user, tenant.id);
       return { access_token };
-    } catch (err) {
+    } catch (error) {
       await queryRunner.rollbackTransaction();
-      throw err;
+      if ((error as any)?.code === '23505') {
+        const detail = (error as any)?.detail ?? '';
+        if (detail.includes('email')) {
+          throw new ConflictException('El email ya está registrado');
+        }
+        if (detail.includes('slug')) {
+          throw new ConflictException('El nombre de tienda no está disponible');
+        }
+        throw new ConflictException('Ya existe una cuenta con esos datos');
+      }
+      throw error;
     } finally {
       await queryRunner.release();
     }

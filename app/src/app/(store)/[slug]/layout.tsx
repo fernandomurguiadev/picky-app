@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { StoreHeader } from "@/components/store/store-header";
 import { CartDrawer } from "@/components/store/cart-drawer";
 import { FloatingCartBanner } from "@/components/store/floating-cart-banner";
-import type { StorePublicData, StoreStatus } from "@/lib/types/store";
+import { getContrastColor, safeHex } from "@/lib/utils/color";
+import type { StorePublicData, StoreStatus, CardStyle } from "@/lib/types/store";
 import type { Category } from "@/lib/types/catalog";
 
 interface StoreLayoutProps {
@@ -32,43 +33,24 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
   const { isOpen, todaySchedule } = statusJson.data;
   const categories: Category[] = categoriesRes.ok ? (await categoriesRes.json()).data ?? [] : [];
 
-  const bgColor = store.theme?.backgroundColor ?? "#ffffff";
-  const primaryColor = store.theme?.primaryColor ?? "#f97316";
-  const accentColor = store.theme?.accentColor ?? "#fb923c";
-  const cardStyle = store.theme?.cardStyle ?? "default";
+  const VALID_CARD_STYLES = ["default", "minimal", "bold", "glass", "soft", "retro"] as const;
+
+  const theme = store.theme;
+  const primaryColor = safeHex(theme?.primaryColor, "#f97316");
+  const accentColor = safeHex(theme?.accentColor ?? theme?.primaryColor, primaryColor);
+  const bgColor = safeHex(theme?.backgroundColor, "#ffffff");
+  const cardStyle: CardStyle = VALID_CARD_STYLES.includes(theme?.cardStyle as CardStyle)
+    ? (theme.cardStyle as CardStyle)
+    : "default";
 
   // Determina si el color primario es claro u oscuro para calcular el color de texto óptimo
-  const textOnPrimary = (() => {
-    const hex = primaryColor.replace("#", "");
-    if (hex.length !== 6 && hex.length !== 3) return "#ffffff";
-    const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
-    const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
-    const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 128 ? "#000000" : "#ffffff";
-  })();
+  const textOnPrimary = getContrastColor(primaryColor);
 
   // Determina si el color secundario es claro u oscuro para calcular el color de texto óptimo
-  const textOnAccent = (() => {
-    const hex = accentColor.replace("#", "");
-    if (hex.length !== 6 && hex.length !== 3) return "#ffffff";
-    const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
-    const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
-    const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 128 ? "#000000" : "#ffffff";
-  })();
+  const textOnAccent = getContrastColor(accentColor);
 
   // Determina si el fondo es oscuro usando fórmula de luminiscencia YIQ
-  const isDarkBg = (() => {
-    const hex = bgColor.replace("#", "");
-    if (hex.length !== 6 && hex.length !== 3) return false;
-    const r = parseInt(hex.length === 3 ? hex[0] + hex[0] : hex.substring(0, 2), 16);
-    const g = parseInt(hex.length === 3 ? hex[1] + hex[1] : hex.substring(2, 4), 16);
-    const b = parseInt(hex.length === 3 ? hex[2] + hex[2] : hex.substring(4, 6), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq < 128;
-  })();
+  const isDarkBg = getContrastColor(bgColor) === "#fff";
 
   const themeCss = `
     :root {

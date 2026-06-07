@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
 import { Order, StatusHistoryEntry } from './entities/order.entity.js';
 import { OrderItem } from './entities/order-item.entity.js';
 import { StoreSettings } from '../tenants/entities/store-settings.entity.js';
+import { Product } from '../catalog/entities/product.entity.js';
 import { OrderStatus, DeliveryMethod, PaymentMethod } from './enums/order.enums.js';
 import { toBusinessException } from '../../common/errors/business.exception.js';
 import { OrderErrors } from './errors/orders.errors.js';
@@ -13,6 +14,7 @@ import type { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
 import type { UpdateOrderNotesDto } from './dto/update-order-notes.dto.js';
 import type { OrdersQueryDto } from './dto/orders-query.dto.js';
 import { OrdersGateway } from './orders.gateway.js';
+import { ConfigService } from '@nestjs/config';
 
 const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   [OrderStatus.PENDING]:   [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
@@ -32,8 +34,11 @@ export class OrdersService {
     private readonly orderItemRepo: Repository<OrderItem>,
     @InjectRepository(StoreSettings)
     private readonly settingsRepo: Repository<StoreSettings>,
+    @InjectRepository(Product)
+    private readonly productRepo: Repository<Product>,
     private readonly dataSource: DataSource,
     private readonly ordersGateway: OrdersGateway,
+    private readonly configService: ConfigService,
   ) {}
 
   // ─── Creación pública (tienda) ────────────────────────────────────────────
@@ -49,7 +54,22 @@ export class OrdersService {
     this.validateDeliveryMethod(dto.deliveryMethod, settings);
     this.validatePaymentMethod(dto.paymentMethod, settings);
 
-    const subtotal = this.calculateSubtotal(dto);
+    // Validate and override client-supplied prices with server-side DB prices
+    const validatedItems = await Promise.all(
+      dto.items.map(async (item) => {
+        const product = await this.productRepo.findOne({
+          where: { id: item.productId, tenantId: dto.tenantId },
+        });
+        if (!product) {
+          throw new NotFoundException(`Producto ${item.productId} no encontrado`);
+        }
+        return { ...item, unitPrice: product.price };
+      }),
+    );
+
+    const validatedDto = { ...dto, items: validatedItems };
+
+    const subtotal = this.calculateSubtotal(validatedDto);
 
     if (
       dto.deliveryMethod === DeliveryMethod.DELIVERY &&
@@ -101,7 +121,7 @@ export class OrdersService {
       });
       await queryRunner.manager.save(Order, order);
 
-      const items = dto.items.map((item) =>
+      const items = validatedDto.items.map((item) =>
         queryRunner.manager.create(OrderItem, {
           orderId: order.id,
           productId: item.productId,
@@ -124,7 +144,7 @@ export class OrdersService {
       this.ordersGateway.emitOrderNew(order.tenantId, order);
       this.notifyOrderN8n(order);
 
-      const businessNumber = process.env.WHATSAPP_BUSINESS_NUMBER || '';
+      const businessNumber = this.configService.get<string>('WHATSAPP_BUSINESS_NUMBER', '');
       const message = `Hola, quiero confirmar mi pedido ${order.orderNumber}`;
       const encodedMessage = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/${businessNumber}?text=${encodedMessage}`;
@@ -163,6 +183,7 @@ export class OrdersService {
 
     const qb = this.orderRepo
       .createQueryBuilder('o')
+      .leftJoinAndSelect('o.items', 'i')
       .where('o.tenantId = :tenantId', { tenantId })
       .orderBy('o.createdAt', 'DESC')
       .skip((page - 1) * limit)
@@ -184,11 +205,10 @@ export class OrdersService {
 
   async getAdminOrderById(tenantId: string, id: string): Promise<Order> {
     const order = await this.orderRepo.findOne({
-      where: { id },
+      where: { id, tenantId },
       relations: ['items'],
     });
     if (!order) throw toBusinessException(OrderErrors.notFound(id));
-    if (order.tenantId !== tenantId) throw toBusinessException(OrderErrors.forbidden(id));
     return order;
   }
 
@@ -197,30 +217,47 @@ export class OrdersService {
     id: string,
     dto: UpdateOrderStatusDto,
   ): Promise<Order> {
-    const order = await this.orderRepo.findOne({ where: { id } });
-    if (!order) throw toBusinessException(OrderErrors.notFound(id));
-    if (order.tenantId !== tenantId) throw toBusinessException(OrderErrors.forbidden(id));
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      const order = await queryRunner.manager
+        .getRepository(Order)
+        .createQueryBuilder('order')
+        .setLock('pessimistic_write')
+        .where('order.id = :id AND order.tenantId = :tenantId', { id, tenantId })
+        .getOne();
 
-    const allowed = VALID_TRANSITIONS[order.status] ?? [];
-    if (!allowed.includes(dto.status)) {
-      throw toBusinessException(OrderErrors.invalidTransition(order.status, dto.status));
+      if (!order) throw toBusinessException(OrderErrors.notFound(id));
+
+      const allowed = VALID_TRANSITIONS[order.status] ?? [];
+      if (!allowed.includes(dto.status)) {
+        throw toBusinessException(OrderErrors.invalidTransition(order.status, dto.status));
+      }
+
+      const historyEntry: StatusHistoryEntry = {
+        status: dto.status,
+        changedAt: new Date().toISOString(),
+        note: dto.note,
+      };
+
+      order.status = dto.status;
+      order.statusHistory = [...order.statusHistory, historyEntry];
+      const saved = await queryRunner.manager.save(order);
+      await queryRunner.commitTransaction();
+
+      this.ordersGateway.emitOrderStatusChanged(saved.tenantId, {
+        orderId: saved.id,
+        newStatus: saved.status,
+        statusHistory: saved.statusHistory,
+      });
+      return saved;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-
-    const historyEntry: StatusHistoryEntry = {
-      status: dto.status,
-      changedAt: new Date().toISOString(),
-      note: dto.note,
-    };
-
-    order.status = dto.status;
-    order.statusHistory = [...order.statusHistory, historyEntry];
-    const saved = await this.orderRepo.save(order);
-    this.ordersGateway.emitOrderStatusChanged(saved.tenantId, {
-      orderId: saved.id,
-      newStatus: saved.status,
-      statusHistory: saved.statusHistory,
-    });
-    return saved;
   }
 
   async createAdminOrder(tenantId: string, dto: CreateOrderAdminDto): Promise<Order> {
@@ -232,9 +269,8 @@ export class OrdersService {
     id: string,
     dto: UpdateOrderNotesDto,
   ): Promise<Order> {
-    const order = await this.orderRepo.findOne({ where: { id } });
+    const order = await this.orderRepo.findOne({ where: { id, tenantId } });
     if (!order) throw toBusinessException(OrderErrors.notFound(id));
-    if (order.tenantId !== tenantId) throw toBusinessException(OrderErrors.forbidden(id));
 
     order.internalNotes = dto.internalNotes;
     return this.orderRepo.save(order);
@@ -285,12 +321,7 @@ export class OrdersService {
 
   private notifyOrderN8n(order: Order): void {
     const webhookUrl = process.env.N8N_WEBHOOK_URL;
-    console.log('[N8N DEBUG] URL del webhook:', webhookUrl);
-    
-    if (!webhookUrl) {
-      console.log('[N8N DEBUG] ABORTADO: No hay N8N_WEBHOOK_URL configurado en .env');
-      return;
-    }
+    if (!webhookUrl) return;
 
     try {
       const itemsDetail = (order.items as OrderItem[])
@@ -303,27 +334,25 @@ export class OrdersService {
         detallePedido: itemsDetail,
         orderId: order.id,
         orderNumber: order.orderNumber,
-        total: order.total
+        total: order.total,
       };
-
-      console.log('[N8N DEBUG] Enviando payload:', payload);
 
       fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(5000),
       })
       .then(async res => {
-        console.log('[N8N DEBUG] Status respuesta n8n:', res.status);
         if (!res.ok) {
-           console.log('[N8N DEBUG] Body respuesta error:', await res.text());
+          console.error('[N8N] Webhook responded with status:', res.status);
         }
       })
       .catch(err => {
-        console.error('[N8N DEBUG] Error fatal en fetch a n8n:', err);
+        console.error('[N8N] Error notifying webhook:', err);
       });
     } catch (err) {
-      console.error('[N8N DEBUG] Error al preparar webhook n8n:', err);
+      console.error('[N8N] Error preparing webhook payload:', err);
     }
   }
 }

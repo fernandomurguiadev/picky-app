@@ -24,6 +24,7 @@ import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
 import { ReorderProductsDto } from './dto/reorder-products.dto.js';
 import { PaginationQueryDto, ProductsQueryDto } from './dto/pagination-query.dto.js';
+import { ToggleProductStatusDto } from './dto/toggle-product-status.dto.js';
 
 // ─── Public store routes ───────────────────────────────────────────────────
 
@@ -136,10 +137,10 @@ export class AdminProductsController {
   updateStatus(
     @TenantId() tenantId: string,
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('isActive') isActive: boolean,
+    @Body() dto: ToggleProductStatusDto,
     @RlsRunner() runner: QueryRunner,
   ) {
-    return this.catalogService.updateProductStatus(tenantId, id, isActive, runner);
+    return this.catalogService.updateProductStatus(tenantId, id, dto.isActive, runner);
   }
 
   @Delete(':id')

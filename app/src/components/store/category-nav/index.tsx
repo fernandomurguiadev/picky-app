@@ -7,11 +7,16 @@ import type { Category } from "@/lib/types/catalog";
 
 interface CategoryNavProps {
   categories: Category[];
-  slug?: string;
 }
 
 export function CategoryNav({ categories }: CategoryNavProps) {
-  const { activeId, setActiveId } = useCategoryNavStore();
+  const { activeId, setActiveId, reset } = useCategoryNavStore();
+
+  useEffect(() => {
+    reset();
+    return () => reset();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     // Scrollspy logic
@@ -36,7 +41,7 @@ export function CategoryNav({ categories }: CategoryNavProps) {
     });
 
     return () => observer.disconnect();
-  }, [categories]);
+  }, [categories, setActiveId]);
 
   // Auto-scroll the horizontal nav to keep the active item visible
   useEffect(() => {

@@ -16,7 +16,7 @@ interface SearchPageProps {
 export default async function SearchPage({ params, searchParams }: SearchPageProps) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const term = query.q?.trim() ?? "";
-  const page = Number(query.page ?? "1");
+  const page = Math.max(1, parseInt(query.page ?? "1", 10) || 1);
   const activeCategoryId = query.category ?? "";
 
   const categoriesRes = await fetch(
@@ -52,8 +52,6 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
     ? await searchRes.json()
     : { data: [], meta: { page, limit: 24, total: 0, totalPages: 1 } };
 
-  const results = searchJson;
-
   // Solo mostrar categorías que tienen al menos un resultado para este término
   const facetIds = new Set((searchJson.categoryFacets ?? []).map((f) => f.categoryId));
   const matchedCategories = categories.filter((c) => facetIds.has(c.id));
@@ -71,7 +69,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
           <h1 className="text-2xl font-bold">"{term}"</h1>
         </div>
         <span className="text-sm text-muted-foreground shrink-0">
-          {results.meta.total} encontrados
+          {searchJson.meta.total} encontrados
         </span>
       </div>
 
@@ -85,17 +83,17 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
         />
       )}
 
-      {results.data.length ? (
+      {searchJson.data.length ? (
         <>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
-            {results.data.map((product) => (
+            {searchJson.data.map((product) => (
               <ProductCard key={product.id} product={product} slug={slug} />
             ))}
           </div>
           <div className="mt-8">
             <Pagination
-              page={results.meta.page}
-              totalPages={results.meta.totalPages}
+              page={searchJson.meta.page}
+              totalPages={searchJson.meta.totalPages}
               basePath={`/${slug}/search`}
               searchParams={{ q: term, ...(activeCategoryId && { category: activeCategoryId }) }}
             />

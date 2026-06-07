@@ -82,9 +82,8 @@ export class CatalogService {
     runner?: QueryRunner,
   ): Promise<Category> {
     const repo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
-    const category = await repo.findOne({ where: { id } });
+    const category = await repo.findOne({ where: { id, tenantId } });
     if (!category) throw toBusinessException(CatalogErrors.categoryNotFound(id));
-    if (category.tenantId !== tenantId) throw toBusinessException(CatalogErrors.categoryForbidden(id));
 
     Object.assign(category, dto);
     return repo.save(category);
@@ -94,12 +93,11 @@ export class CatalogService {
     const categoryRepo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
     const productRepo = runner ? runner.manager.getRepository(Product) : this.productRepo;
 
-    const category = await categoryRepo.findOne({ where: { id } });
+    const category = await categoryRepo.findOne({ where: { id, tenantId } });
     if (!category) throw toBusinessException(CatalogErrors.categoryNotFound(id));
-    if (category.tenantId !== tenantId) throw toBusinessException(CatalogErrors.categoryForbidden(id));
 
     const activeCount = await productRepo.count({
-      where: { categoryId: id },
+      where: { categoryId: id, isActive: true },
     });
     if (activeCount > 0) {
       throw toBusinessException(CatalogErrors.categoryHasActiveProducts(id, activeCount));
@@ -275,13 +273,12 @@ export class CatalogService {
       .leftJoinAndSelect('p.category', 'c')
       .leftJoinAndSelect('p.optionGroups', 'og')
       .leftJoinAndSelect('og.items', 'oi')
-      .where('p.id = :id', { id })
+      .where('p.id = :id AND p.tenantId = :tenantId', { id, tenantId })
       .orderBy('og.order', 'ASC')
       .addOrderBy('oi.order', 'ASC')
       .getOne();
 
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
-    if (product.tenantId !== tenantId) throw toBusinessException(CatalogErrors.productForbidden(id));
 
     return product;
   }
@@ -334,11 +331,12 @@ export class CatalogService {
           await this.saveOptionGroups(queryRunner.manager, saved.id, dto.optionGroups);
         }
 
-        await queryRunner.commitTransaction();
-        return this.productRepo.findOneOrFail({
+        const result = await queryRunner.manager.findOneOrFail(Product, {
           where: { id: saved.id },
           relations: ['optionGroups', 'optionGroups.items'],
         });
+        await queryRunner.commitTransaction();
+        return result;
       } catch (err) {
         await queryRunner.rollbackTransaction();
         throw err;
@@ -355,9 +353,8 @@ export class CatalogService {
     runner?: QueryRunner,
   ): Promise<Product> {
     const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
-    const product = await repo.findOne({ where: { id } });
+    const product = await repo.findOne({ where: { id, tenantId } });
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
-    if (product.tenantId !== tenantId) throw toBusinessException(CatalogErrors.productForbidden(id));
 
     if (runner) {
       const { optionGroups, ...rest } = dto;
@@ -389,11 +386,12 @@ export class CatalogService {
           }
         }
 
-        await queryRunner.commitTransaction();
-        return this.productRepo.findOneOrFail({
+        const result = await queryRunner.manager.findOneOrFail(Product, {
           where: { id },
           relations: ['optionGroups', 'optionGroups.items'],
         });
+        await queryRunner.commitTransaction();
+        return result;
       } catch (err) {
         await queryRunner.rollbackTransaction();
         throw err;
@@ -410,9 +408,8 @@ export class CatalogService {
     runner?: QueryRunner,
   ): Promise<{ id: string; isActive: boolean }> {
     const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
-    const product = await repo.findOne({ where: { id } });
+    const product = await repo.findOne({ where: { id, tenantId } });
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
-    if (product.tenantId !== tenantId) throw toBusinessException(CatalogErrors.productForbidden(id));
 
     await repo.update(id, { isActive });
     return { id, isActive };
@@ -422,9 +419,8 @@ export class CatalogService {
     const productRepo = runner ? runner.manager.getRepository(Product) : this.productRepo;
     const orderRepo = runner ? runner.manager.getRepository(Order) : this.orderRepo;
 
-    const product = await productRepo.findOne({ where: { id } });
+    const product = await productRepo.findOne({ where: { id, tenantId } });
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
-    if (product.tenantId !== tenantId) throw toBusinessException(CatalogErrors.productForbidden(id));
 
     const activeOrders = await orderRepo
       .createQueryBuilder('o')

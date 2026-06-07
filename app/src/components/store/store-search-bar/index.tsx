@@ -1,8 +1,8 @@
 "use client";
 
+import { useRef, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { SearchBar } from "@/components/shared/search-bar";
-import { Suspense } from "react";
 
 interface StoreSearchBarProps {
   slug: string;
@@ -14,11 +14,24 @@ function StoreSearchBarInput({ slug }: StoreSearchBarProps) {
   const searchParams = useSearchParams();
   const isOnSearchPage = pathname.includes("/search");
   const showSearch = !pathname.includes("/checkout") && !pathname.includes("/order-confirmation");
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   // defaultValue solo se usa al montar; carga el término actual si entramos a la página de búsqueda
   const initialTerm = isOnSearchPage ? (searchParams.get("q") ?? "") : "";
 
   if (!showSearch) return null;
+
+  const handleChange = (value: string) => {
+    const term = value.trim();
+    clearTimeout(debounceRef.current!);
+    debounceRef.current = setTimeout(() => {
+      if (term) {
+        router.push(`/${slug}/search?q=${encodeURIComponent(term)}`);
+      } else {
+        router.push(`/${slug}`);
+      }
+    }, 300);
+  };
 
   return (
     <SearchBar
@@ -27,14 +40,7 @@ function StoreSearchBarInput({ slug }: StoreSearchBarProps) {
       key={slug}
       defaultValue={initialTerm}
       placeholder="Buscar en la tienda"
-      onChange={(value) => {
-        const term = value.trim();
-        if (!term) {
-          if (isOnSearchPage) router.push(`/${slug}`);
-          return;
-        }
-        router.push(`/${slug}/search?q=${encodeURIComponent(term)}`);
-      }}
+      onChange={handleChange}
     />
   );
 }

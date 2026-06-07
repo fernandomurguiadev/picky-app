@@ -5,13 +5,15 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Order } from './entities/order.entity.js';
 import { OrderItem } from './entities/order-item.entity.js';
 import { StoreSettings } from '../tenants/entities/store-settings.entity.js';
+import { Product } from '../catalog/entities/product.entity.js';
 import { OrdersService } from './orders.service.js';
 import { OrdersGateway } from './orders.gateway.js';
 import { StorefrontOrdersController, AdminOrdersController } from './orders.controller.js';
+import { ApiKeyGuard } from './guards/api-key.guard.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, StoreSettings]),
+    TypeOrmModule.forFeature([Order, OrderItem, StoreSettings, Product]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (cfg: ConfigService) => ({
@@ -21,7 +23,7 @@ import { StorefrontOrdersController, AdminOrdersController } from './orders.cont
       inject: [ConfigService],
     }),
   ],
-  providers: [OrdersService, OrdersGateway],
+  providers: [OrdersService, OrdersGateway, ApiKeyGuard],
   controllers: [StorefrontOrdersController, AdminOrdersController],
   exports: [OrdersService],
 })
