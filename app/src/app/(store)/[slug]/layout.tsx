@@ -101,6 +101,7 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
       .store-card { border-radius: 0.75rem; border: 1px solid var(--border); background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.07); transition: box-shadow 0.2s; overflow: hidden; }
       .store-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.13); }
       .store-card-info { background: var(--color-primary); color: var(--color-primary-foreground); border-radius: 0 0 0.75rem 0.75rem; }
+      [data-list-card] .store-card-info { border-radius: 0 0.75rem 0.75rem 0 !important; }
     ` : ""}
 
     ${cardStyle === "minimal" ? `
@@ -111,6 +112,7 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
       .store-card { border: none !important; background: transparent !important; border-radius: 0 !important; overflow: hidden; transition: opacity 0.15s; }
       .store-card:hover { opacity: 0.82; }
       .store-card-info { background: transparent !important; color: var(--foreground) !important; border-top: none !important; padding-top: 6px !important; padding-left: 0 !important; padding-right: 0 !important; }
+      [data-list-card] .store-card-info { padding-top: 0 !important; padding-left: 12px !important; }
       /* Chips de categoría: sin fondo; chip activa usa color primario con subrayado */
       [data-store] nav a { background: transparent !important; color: var(--muted-foreground); font-weight: 600; }
       [data-store] nav a.text-white { color: var(--color-primary) !important; font-weight: 700; border-bottom: 2px solid var(--color-primary); padding-bottom: 4px; }
@@ -123,6 +125,7 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
       .store-card:hover { box-shadow: 0 24px 64px rgba(0,0,0,0.36); transform: translateY(-6px); }
       /* Footer: usa el color de acento — diferente a default que usa primary */
       .store-card-info { background: var(--store-accent, var(--color-primary)); color: var(--store-accent-foreground, var(--color-primary-foreground)); border-radius: 0 0 2rem 2rem; }
+      [data-list-card] .store-card-info { border-radius: 0 2rem 2rem 0 !important; }
       /* Floating banner y drawer también con pills grandes */
       [data-store] .rounded-2xl { border-radius: 2rem !important; }
     ` : ""}
@@ -151,6 +154,10 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
       }
       .store-card:hover { box-shadow: 0 6px 28px rgba(0,0,0,0.18); }
       .store-card-info { background: transparent; color: var(--foreground); border-top: 1px solid ${isDarkBg ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)"}; }
+      /* Lista: barra pasa de horizontal (tope) a vertical (izquierda) */
+      [data-list-card].store-card { position: relative; }
+      [data-list-card].store-card::before { position: absolute; top: 0; left: 0; width: 4px !important; height: 100% !important; background: linear-gradient(180deg, var(--color-primary), var(--store-accent, var(--color-primary))) !important; }
+      [data-list-card] .store-card-info { border-top: none !important; border-left: 1px solid ${isDarkBg ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)"} !important; }
     ` : ""}
 
     ${cardStyle === "soft" ? `
@@ -168,6 +175,7 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
       .store-card:hover { box-shadow: 0 14px 48px color-mix(in srgb, var(--color-primary) 44%, transparent); transform: translateY(-3px); }
       /* Footer: tinte más intenso del color primario */
       .store-card-info { background: color-mix(in srgb, var(--color-primary) 22%, var(--card)); color: var(--foreground); border-top: 2px solid color-mix(in srgb, var(--color-primary) 30%, transparent); }
+      [data-list-card] .store-card-info { border-top: none !important; border-left: 2px solid color-mix(in srgb, var(--color-primary) 30%, transparent) !important; }
     ` : ""}
 
     ${cardStyle === "retro" ? `
@@ -186,6 +194,7 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
       .store-card { border-radius: 0; border: none; background: var(--color-primary); transition: opacity 0.15s; overflow: hidden; }
       .store-card:hover { opacity: 0.92; }
       .store-card-info { background: transparent; color: var(--color-primary-foreground); border-top: 1.5px solid rgba(255,255,255,0.2); }
+      [data-list-card] .store-card-info { border-top: none !important; border-left: 1.5px solid rgba(255,255,255,0.2) !important; }
     ` : ""}
   `.trim();
 

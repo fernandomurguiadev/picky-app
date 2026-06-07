@@ -31,6 +31,7 @@ export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardPro
       <>
         <div
           className="store-card group flex cursor-pointer flex-row items-center overflow-hidden transition-all"
+          data-list-card=""
           onClick={handleOpen}
           role="button"
           tabIndex={0}
