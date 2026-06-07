@@ -1,0 +1,12 @@
+change: inventory-stock-ledger
+phase: proposal
+artifact_store: openspec
+artifacts:
+  exploration: true
+  proposal: true
+  specs: false
+  design: false
+tasks_progress:
+  completed: []
+  pending: []
+last_updated: 2026-06-07T17:00:00Z
