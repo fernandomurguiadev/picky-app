@@ -9,6 +9,7 @@ import { BrandColorSelector } from "@/components/admin/brand-color-selector";
 import { CardStyleSelector } from "@/components/admin/card-style-selector";
 import { StorePreview } from "../store-preview";
 import type { CardStyle } from "@/lib/types/store";
+import { MOBILE_COLS_TO_LAYOUT } from "@/lib/types/store";
 import { LayoutGrid, LayoutList, Rows3 } from "lucide-react";
 
 const hexRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
@@ -143,6 +144,7 @@ export function ThemeEditor({ value, storeName, onSubmit, isPending }: ThemeEdit
           backgroundColor={safeBg}
           storeName={storeName}
           cardStyle={cardStyle}
+          mobileLayout={MOBILE_COLS_TO_LAYOUT[mobileGridCols]}
         />
       </div>
     </div>

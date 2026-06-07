@@ -1,7 +1,7 @@
 "use client";
 
 import { ShoppingCart } from "lucide-react";
-import type { CardStyle } from "@/lib/types/store";
+import type { CardStyle, GridLayout } from "@/lib/types/store";
 
 export const hexRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
 
@@ -96,6 +96,7 @@ interface StorePreviewProps {
   backgroundColor: string;
   storeName: string;
   cardStyle?: CardStyle;
+  mobileLayout?: GridLayout;
 }
 
 export function StorePreview({
@@ -104,6 +105,7 @@ export function StorePreview({
   backgroundColor,
   storeName,
   cardStyle = "default",
+  mobileLayout = "grid-2",
 }: StorePreviewProps) {
   const textOnPrimary = getContrastColor(primaryColor);
   const textOnAccent = getContrastColor(accentColor);
@@ -156,43 +158,73 @@ export function StorePreview({
             ))}
           </div>
 
-          {/* Grid de productos — aplica cardStyle real */}
-          <div className="grid grid-cols-2 gap-3">
-            {products.map((prod, i) => {
-              const { wrapper, imageArea, info, infoText } = getCardStyles(cardStyle, primaryColor, accentColor, isDarkTheme);
-              const imgHeight = cardStyle === "bold" ? 80 : cardStyle === "minimal" ? 58 : 70;
-              return (
-                <div key={i} style={wrapper} className="flex flex-col transition-all">
-                  {cardStyle === "glass" && (
-                    <div style={{ height: 3, flexShrink: 0, background: `linear-gradient(90deg, ${primaryColor}, ${accentColor})` }} />
-                  )}
-                  <div
-                    className="flex items-center justify-center text-2xl"
-                    style={{ height: imgHeight, ...imageArea }}
-                  >
-                    {prod.icon}
-                  </div>
-                  <div style={info} className="flex-1 flex flex-col justify-between">
-                    <p className="text-[10px] font-bold leading-tight truncate" style={{ color: infoText }}>
-                      {prod.name}
-                    </p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="font-extrabold text-[9px]" style={{ color: infoText }}>
-                        {prod.price}
-                      </span>
-                      <button
-                        type="button"
-                        className="flex h-5 w-5 items-center justify-center rounded-full shadow-xs"
-                        style={{ backgroundColor: accentColor, color: textOnAccent }}
-                      >
+          {/* Grid de productos — aplica cardStyle y mobileLayout */}
+          {mobileLayout === "list" ? (
+            <div className="flex flex-col gap-2">
+              {products.map((prod, i) => {
+                const { wrapper, imageArea, info, infoText } = getCardStyles(cardStyle, primaryColor, accentColor, isDarkTheme);
+                return (
+                  <div key={i} style={{ ...wrapper, borderRadius: typeof wrapper.borderRadius === "number" ? wrapper.borderRadius : undefined }} className="flex flex-row items-center overflow-hidden transition-all">
+                    {cardStyle === "glass" && (
+                      <div style={{ width: 3, flexShrink: 0, alignSelf: "stretch", background: `linear-gradient(180deg, ${primaryColor}, ${accentColor})` }} />
+                    )}
+                    <div
+                      className="flex items-center justify-center text-xl shrink-0"
+                      style={{ width: 52, height: 52, ...imageArea }}
+                    >
+                      {prod.icon}
+                    </div>
+                    <div style={{ ...info, flex: 1, minWidth: 0 }} className="flex flex-row items-center justify-between px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-bold leading-tight truncate" style={{ color: infoText }}>{prod.name}</p>
+                        <span className="font-extrabold text-[9px]" style={{ color: infoText }}>{prod.price}</span>
+                      </div>
+                      <button type="button" className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full shadow-xs ml-2" style={{ backgroundColor: accentColor, color: textOnAccent }}>
                         <ShoppingCart className="h-2.5 w-2.5" />
                       </button>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className={mobileLayout === "grid-1" ? "flex flex-col gap-3" : "grid grid-cols-2 gap-3"}>
+              {products.map((prod, i) => {
+                const { wrapper, imageArea, info, infoText } = getCardStyles(cardStyle, primaryColor, accentColor, isDarkTheme);
+                const imgHeight = cardStyle === "bold" ? 80 : cardStyle === "minimal" ? 58 : 70;
+                return (
+                  <div key={i} style={wrapper} className="flex flex-col transition-all">
+                    {cardStyle === "glass" && (
+                      <div style={{ height: 3, flexShrink: 0, background: `linear-gradient(90deg, ${primaryColor}, ${accentColor})` }} />
+                    )}
+                    <div
+                      className="flex items-center justify-center text-2xl"
+                      style={{ height: imgHeight, ...imageArea }}
+                    >
+                      {prod.icon}
+                    </div>
+                    <div style={info} className="flex-1 flex flex-col justify-between">
+                      <p className="text-[10px] font-bold leading-tight truncate" style={{ color: infoText }}>
+                        {prod.name}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="font-extrabold text-[9px]" style={{ color: infoText }}>
+                          {prod.price}
+                        </span>
+                        <button
+                          type="button"
+                          className="flex h-5 w-5 items-center justify-center rounded-full shadow-xs"
+                          style={{ backgroundColor: accentColor, color: textOnAccent }}
+                        >
+                          <ShoppingCart className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
