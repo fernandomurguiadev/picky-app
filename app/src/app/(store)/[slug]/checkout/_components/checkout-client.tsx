@@ -23,6 +23,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useCartStore } from "@/lib/stores/cart.store";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "@/components/shared/toast";
@@ -156,13 +162,11 @@ function FieldError({ message }: { message?: string }) {
 // ─── Step 1: Tu pedido ────────────────────────────────────────────────────────
 
 function OrderStep({
-  storeName,
   items,
   cartSubtotal,
   onNext,
   defaultValues,
 }: {
-  storeName: string;
   items: CartItemDisplay[];
   cartSubtotal: number;
   onNext: (data: NotesData) => void;
@@ -180,44 +184,61 @@ function OrderStep({
   return (
     <form onSubmit={handleSubmit(onNext)} noValidate className="space-y-5">
       {/* Lista de productos */}
-      <div className="rounded-xl border bg-muted/30 p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <ShoppingBag className="h-4 w-4 text-[var(--color-primary)]" />
-            {storeName}
-          </div>
+      <div className="rounded-xl border bg-muted/30 overflow-hidden">
+        <div className="flex items-center gap-2 px-4 pt-4 pb-3 text-sm font-medium">
+          <ShoppingBag className="h-4 w-4 text-[var(--color-primary)]" />
+          Detalle del pedido
+        </div>
+        <Separator />
+          <TooltipProvider delayDuration={250}>
+            <ul className="max-h-52 overflow-y-auto px-4 py-3 space-y-2">
+              {items.map((item) => {
+                const itemTotal =
+                  (item.unitPrice +
+                    item.selectedOptions.reduce((s, o) => s + o.extraPrice, 0)) *
+                  item.quantity;
+                const tooltipText = [
+                  item.name,
+                  ...item.selectedOptions.map((o) => o.itemName),
+                ].join(" · ");
+                return (
+                  <li
+                    key={item.cartItemId}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    {/* Nombre truncado con tooltip */}
+                    <Tooltip>
+                      <TooltipTrigger className="flex-1 min-w-0 text-left">
+                        <span className="block truncate font-medium">
+                          {item.name}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-64">
+                        <p>{tooltipText}</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    {/* Cantidad — chip con color del tema */}
+                    <span className="shrink-0 inline-flex items-center justify-center rounded-full bg-[var(--color-primary)]/10 px-2 py-0.5 text-xs font-semibold text-[var(--color-primary)] min-w-[2rem]">
+                      ×{item.quantity}
+                    </span>
+
+                    {/* Precio — columna fija, dígitos tabulares */}
+                    <span className="shrink-0 w-20 text-right tabular-nums font-medium text-foreground">
+                      {formatCurrency(itemTotal)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </TooltipProvider>
+        <Separator />
+        <div className="flex items-center justify-between px-4 py-3">
+          <span className="text-sm font-semibold">Subtotal</span>
           <span className="text-sm font-bold text-[var(--color-primary)]">
             {formatCurrency(cartSubtotal)}
           </span>
         </div>
-        <Separator />
-        <ul className="space-y-3">
-          {items.map((item) => {
-            const itemTotal =
-              (item.unitPrice +
-                item.selectedOptions.reduce((s, o) => s + o.extraPrice, 0)) *
-              item.quantity;
-            return (
-              <li
-                key={item.cartItemId}
-                className="flex items-start justify-between gap-2 text-sm"
-              >
-                <div className="flex-1">
-                  <span className="font-medium">{item.name}</span>
-                  <span className="text-muted-foreground"> ×{item.quantity}</span>
-                  {item.selectedOptions.length > 0 && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {item.selectedOptions.map((o) => o.itemName).join(", ")}
-                    </p>
-                  )}
-                </div>
-                <span className="text-sm font-medium shrink-0">
-                  {formatCurrency(itemTotal)}
-                </span>
-              </li>
-            );
-          })}
-        </ul>
       </div>
 
       {/* Notas */}
@@ -798,7 +819,6 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
       {/* Paso activo */}
       {step === "order" && (
         <OrderStep
-          storeName={store.name}
           items={items as unknown as CartItemDisplay[]}
           cartSubtotal={cartSubtotal}
           onNext={handleNotesNext}
