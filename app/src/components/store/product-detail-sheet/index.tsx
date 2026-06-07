@@ -123,17 +123,19 @@ export function ProductDetailSheet({
 
   const content = (
     <div className="flex h-full flex-col">
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+      <div className="w-full overflow-hidden bg-muted">
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
             alt={product.name}
-            fill
-            className="object-cover"
+            width={800}
+            height={600}
+            className="w-full aspect-[4/3] object-cover"
             sizes="(max-width: 768px) 100vw, 40vw"
+            priority
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-5xl text-muted-foreground">
+          <div className="flex aspect-[4/3] w-full items-center justify-center text-5xl text-muted-foreground">
             🍽️
           </div>
         )}
