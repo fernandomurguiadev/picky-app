@@ -58,6 +58,9 @@ export class Order {
   @Column({ type: 'jsonb' })
   customerInfo!: CustomerInfo;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  tableNumber!: string | null;
+
   @Column({ type: 'text', nullable: true })
   notes!: string | null;
 

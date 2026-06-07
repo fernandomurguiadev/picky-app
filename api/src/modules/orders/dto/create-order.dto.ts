@@ -34,5 +34,9 @@ export class CreateOrderDto {
 
   @IsOptional()
   @IsString()
+  tableNumber?: string;
+
+  @IsOptional()
+  @IsString()
   notes?: string;
 }

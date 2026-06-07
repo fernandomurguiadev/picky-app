@@ -113,6 +113,7 @@ export class OrdersService {
           phone: dto.customer.phone,
           address: dto.customer.address,
         },
+        tableNumber: dto.tableNumber ?? null,
         notes: dto.notes ?? null,
         internalNotes: null,
         statusHistory: [
