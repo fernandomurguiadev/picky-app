@@ -1,0 +1,23 @@
+name: app-fase-8-dashboard
+project_id: app
+version: "1.0.0"
+status: done
+created_at: "2026-05-20"
+scope:
+  - app/src/app/(admin)/admin/dashboard/page.tsx
+  - app/src/components/admin/metric-card/index.tsx
+  - app/src/app/(admin)/admin/onboarding/page.tsx
+description: >
+  Dashboard admin con métricas, gráfico de barras por hora, selector de período
+  y toggle abierto/cerrado. MetricCard component con trend. Onboarding wizard
+  de 4 pasos para nuevos comercios.
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: done
+    path: tasks.md

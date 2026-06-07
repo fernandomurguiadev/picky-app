@@ -1,0 +1,33 @@
+name: shared-decoupled-multitenancy
+project_id: shared
+version: "1.0.0"
+status: done
+created_at: "2026-05-16"
+scope:
+  - api/src/modules/auth/entities/user.entity.ts
+  - api/src/modules/auth/entities/tenant-membership.entity.ts
+  - api/src/modules/auth/auth.service.ts
+  - api/src/modules/auth/auth.controller.ts
+  - api/src/modules/auth/auth.module.ts
+  - api/src/scripts/seed.ts
+  - app/src/app/api/auth/login/route.ts
+  - app/src/app/api/auth/select-tenant/route.ts
+  - app/src/app/auth/login/page.tsx
+description: >
+  Desacoplamiento de identidad multi-tenant. User pasa a ser global (sin
+  tenantId); la relación User↔Tenant se gestiona via TenantMembership.
+  Login emite JWT directo (1 tenant) o selectionToken efímero (N tenants).
+  Nuevo endpoint POST /auth/select-tenant. Frontend con selector de tienda.
+artifacts:
+  exploration:
+    status: done
+    path: exploration.md
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: done
+    path: tasks.md

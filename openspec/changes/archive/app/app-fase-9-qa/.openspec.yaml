@@ -1,0 +1,22 @@
+name: app-fase-9-qa
+project_id: app
+version: "1.0.0"
+status: done
+created_at: "2026-05-22"
+scope:
+  - app/src/
+  - api/src/
+description: >
+  QA integral: viewport 360px, anti-FOUC, LCP < 2.5s, WebSocket < 500ms,
+  auditoría de tokens en storage, dangerouslySetInnerHTML, noValidate en forms,
+  typecheck + lint + build limpio.
+artifacts:
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: done
+    path: tasks.md
