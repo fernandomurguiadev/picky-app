@@ -16,7 +16,7 @@ const schema = z.object({
   primaryColor: z.string().regex(hexRegex, "Color hex inválido (ej. #FF5500)"),
   accentColor: z.string().regex(hexRegex, "Color hex inválido (ej. #FFFFFF)"),
   backgroundColor: z.string().regex(hexRegex, "Color hex inválido"),
-  cardStyle: z.enum(["default", "minimal", "bold", "glass", "outlined", "retro"]),
+  cardStyle: z.enum(["default", "minimal", "bold", "glass", "soft", "retro"]),
 });
 
 type FormValues = z.infer<typeof schema>;

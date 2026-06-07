@@ -15,7 +15,7 @@ const CARD_STYLES: CardStyleOption[] = [
   { id: "minimal",  name: "Minimal",   description: "Sin sombra, fondo transparente, muy limpio" },
   { id: "bold",     name: "Bold",      description: "Sombra pronunciada, sube al hover" },
   { id: "glass",    name: "Glass",     description: "Blur translúcido, ideal para fondos oscuros" },
-  { id: "outlined", name: "Outlined",  description: "Solo borde de color primario, sin relleno" },
+  { id: "soft",     name: "Soft",      description: "Sombra de color de marca, efecto luminoso" },
   { id: "retro",    name: "Retro",     description: "Colorblock plano, sin bordes, color primario total" },
 ];
 
@@ -49,6 +49,15 @@ function MiniCardPreview({ style, primary, accent, bg }: MiniCardPreviewProps) {
     height: "100%",
   };
 
+  const primaryRgba = (alpha: number): string => {
+    const hex = primary.replace("#", "");
+    if (hex.length !== 6) return `rgba(0,0,0,${alpha})`;
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  };
+
   const textOnPrimary = (() => {
     const hex = primary.replace("#", "");
     if (hex.length !== 6) return "#fff";
@@ -68,8 +77,8 @@ function MiniCardPreview({ style, primary, accent, bg }: MiniCardPreviewProps) {
         return { borderRadius: 12, border: "none", background: cardBg, boxShadow: isDark ? "0 8px 20px rgba(0,0,0,0.5)" : "0 8px 20px rgba(0,0,0,0.18)", overflow: "hidden" };
       case "glass":
         return { borderRadius: 12, border: `1px solid ${isDark ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.6)"}`, background: isDark ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.55)", backdropFilter: "blur(8px)", overflow: "hidden" };
-      case "outlined":
-        return { borderRadius: 8, border: `2px solid ${primary}`, background: "transparent", overflow: "hidden" };
+      case "soft":
+        return { borderRadius: 10, border: `1px solid ${primaryRgba(0.18)}`, background: cardBg, boxShadow: `0 4px 16px ${primaryRgba(0.2)}`, overflow: "hidden" };
       case "retro":
         return { borderRadius: 0, border: "none", background: primary, overflow: "hidden" };
     }
@@ -84,15 +93,15 @@ function MiniCardPreview({ style, primary, accent, bg }: MiniCardPreviewProps) {
         return { background: "transparent", padding: "4px 5px", borderTop: `1px solid ${borderColor}` };
       case "glass":
         return { background: "transparent", padding: "4px 5px", borderTop: `1px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)"}` };
-      case "outlined":
-        return { background: "transparent", padding: "4px 5px", borderTop: `2px solid ${primary}` };
+      case "soft":
+        return { background: primaryRgba(0.08), padding: "4px 5px", borderTop: `1px solid ${primaryRgba(0.15)}` };
       case "retro":
-        return { background: "transparent", padding: "4px 5px", borderTop: `1.5px solid ${textOnPrimary === "#ffffff" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.15)"}` };
+        return { background: "transparent", padding: "4px 5px", borderTop: `1.5px solid ${textOnPrimary === "#fff" ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.15)"}` };
     }
   };
 
   const imageBg: React.CSSProperties = style === "retro"
-    ? { background: textOnPrimary === "#ffffff" ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.15)" }
+    ? { background: textOnPrimary === "#fff" ? "rgba(0,0,0,0.15)" : "rgba(255,255,255,0.15)" }
     : { background: mutedBg };
 
   const infoTextColor = ["default", "bold", "retro"].includes(style) ? textOnPrimary : textColor;

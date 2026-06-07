@@ -55,8 +55,8 @@ export class UpdateStoreSettingsDto {
   accentColor?: string;
 
   @IsOptional()
-  @IsIn(['default', 'minimal', 'bold', 'glass', 'outlined', 'retro'], {
-    message: 'cardStyle must be one of: default, minimal, bold, glass, outlined, retro',
+  @IsIn(['default', 'minimal', 'bold', 'glass', 'soft', 'retro'], {
+    message: 'cardStyle must be one of: default, minimal, bold, glass, soft, retro',
   })
   cardStyle?: string;
 
