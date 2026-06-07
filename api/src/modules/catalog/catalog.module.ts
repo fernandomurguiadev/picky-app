@@ -9,13 +9,27 @@ import { Tenant } from '../tenants/entities/tenant.entity.js';
 import { Order } from '../orders/entities/order.entity.js';
 import { CatalogService } from './catalog.service.js';
 import { CategoriesController } from './categories.controller.js';
-import { AdminProductsController, StorefrontCatalogController } from './products.controller.js';
+import {
+  AdminProductsController,
+  StorefrontCatalogController,
+} from './products.controller.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Category, Product, OptionGroup, OptionItem, Tenant, Order]),
+    TypeOrmModule.forFeature([
+      Category,
+      Product,
+      OptionGroup,
+      OptionItem,
+      Tenant,
+      Order,
+    ]),
   ],
-  controllers: [CategoriesController, AdminProductsController, StorefrontCatalogController],
+  controllers: [
+    CategoriesController,
+    AdminProductsController,
+    StorefrontCatalogController,
+  ],
   providers: [CatalogService],
   exports: [CatalogService],
 })

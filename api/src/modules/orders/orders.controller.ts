@@ -39,7 +39,10 @@ export class StorefrontOrdersController {
   @Patch('webhook/whatsapp-link')
   @UseGuards(ApiKeyGuard)
   linkWhatsappNumber(@Body() dto: LinkWhatsappDto) {
-    return this.ordersService.linkWhatsappNumber(dto.orderNumber, dto.verifiedWhatsappNumber);
+    return this.ordersService.linkWhatsappNumber(
+      dto.orderNumber,
+      dto.verifiedWhatsappNumber,
+    );
   }
 }
 
@@ -51,10 +54,7 @@ export class AdminOrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get()
-  getOrders(
-    @TenantId() tenantId: string,
-    @Query() query: OrdersQueryDto,
-  ) {
+  getOrders(@TenantId() tenantId: string, @Query() query: OrdersQueryDto) {
     return this.ordersService.getAdminOrders(tenantId, query);
   }
 

@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
 export const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  NODE_ENV: z
+    .enum(['development', 'test', 'production'])
+    .default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
 
   // Database
@@ -26,7 +28,7 @@ export const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().min(1).optional(),
   CLOUDINARY_API_KEY: z.string().min(1).optional(),
   CLOUDINARY_API_SECRET: z.string().min(1).optional(),
-  
+
   // N8N Webhook
   N8N_WEBHOOK_URL: z.string().url().optional(),
 

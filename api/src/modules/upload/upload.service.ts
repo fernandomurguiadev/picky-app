@@ -25,7 +25,10 @@ export class UploadService {
     }
 
     const detectedMime = this.detectMime(file.buffer);
-    if (!detectedMime || !(ALLOWED_MIME_TYPES as readonly string[]).includes(detectedMime)) {
+    if (
+      !detectedMime ||
+      !(ALLOWED_MIME_TYPES as readonly string[]).includes(detectedMime)
+    ) {
       throw new BadRequestException(
         'Tipo de archivo no permitido. Se aceptan: jpg, png, webp.',
       );
@@ -47,7 +50,8 @@ export class UploadService {
           allowed_formats: ['jpg', 'png', 'webp'],
         },
         (error, result: UploadApiResponse | undefined) => {
-          if (error || !result) return reject(error ?? new Error('Upload falló sin resultado.'));
+          if (error || !result)
+            return reject(error ?? new Error('Upload falló sin resultado.'));
           resolve({ url: result.secure_url, publicId: result.public_id });
         },
       );
@@ -89,7 +93,9 @@ export class UploadService {
   async deleteImage(publicId: string, tenantId: string): Promise<void> {
     // Seguridad: Asegurar que el tenant solo pueda borrar imágenes de su propia carpeta
     if (!publicId.startsWith(`tenants/${tenantId}/`)) {
-      throw new BadRequestException('No tienes permiso para borrar esta imagen o el formato es inválido.');
+      throw new BadRequestException(
+        'No tienes permiso para borrar esta imagen o el formato es inválido.',
+      );
     }
 
     if (!process.env.CLOUDINARY_CLOUD_NAME) {

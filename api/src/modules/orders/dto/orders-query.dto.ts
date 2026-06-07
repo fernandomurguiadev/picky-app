@@ -1,4 +1,11 @@
-import { IsDateString, IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  Max,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { OrderStatus } from '../enums/order.enums.js';
 

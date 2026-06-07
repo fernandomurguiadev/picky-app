@@ -23,7 +23,8 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
         publicKey: cfg.get<string>('jwt.publicKey') ?? '',
         signOptions: {
           algorithm: 'RS256' as const,
-          expiresIn: (cfg.get<string>('jwt.accessExpiration') ?? '15m') as `${number}${'s'|'m'|'h'|'d'}`,
+          expiresIn: (cfg.get<string>('jwt.accessExpiration') ??
+            '15m') as `${number}${'s' | 'm' | 'h' | 'd'}`,
         },
       }),
       inject: [ConfigService],

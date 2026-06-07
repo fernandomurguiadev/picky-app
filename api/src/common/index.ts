@@ -1,5 +1,8 @@
 // Errors
-export { BusinessException, toBusinessException } from './errors/business.exception.js';
+export {
+  BusinessException,
+  toBusinessException,
+} from './errors/business.exception.js';
 export { CommonErrors } from './errors/common.errors.js';
 export type { ErrorDefinition } from './errors/error-definition.js';
 
@@ -22,4 +25,3 @@ export { CurrentUser } from './decorators/current-user.decorator.js';
 export { Roles } from './decorators/roles.decorator.js';
 export { SkipRls } from './decorators/skip-rls.decorator.js';
 export { RlsRunner } from './decorators/rls-runner.decorator.js';
-

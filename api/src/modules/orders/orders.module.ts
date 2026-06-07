@@ -8,7 +8,10 @@ import { StoreSettings } from '../tenants/entities/store-settings.entity.js';
 import { Product } from '../catalog/entities/product.entity.js';
 import { OrdersService } from './orders.service.js';
 import { OrdersGateway } from './orders.gateway.js';
-import { StorefrontOrdersController, AdminOrdersController } from './orders.controller.js';
+import {
+  StorefrontOrdersController,
+  AdminOrdersController,
+} from './orders.controller.js';
 import { ApiKeyGuard } from './guards/api-key.guard.js';
 
 @Module({

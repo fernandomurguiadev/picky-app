@@ -52,7 +52,11 @@ export class TenantsController {
     @Body() dto: ToggleStoreStatusDto,
     @RlsRunner() runner: QueryRunner,
   ) {
-    return this.tenantsService.toggleStoreStatus(tenantId, dto.isManualOpen, runner);
+    return this.tenantsService.toggleStoreStatus(
+      tenantId,
+      dto.isManualOpen,
+      runner,
+    );
   }
 
   // ─── Rutas públicas ──────────────────────────────────────────────────────

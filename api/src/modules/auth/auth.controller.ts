@@ -35,10 +35,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(
-    @Body() dto: LoginDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
     return this.authService.login(dto, res);
   }
 
@@ -53,10 +50,7 @@ export class AuthController {
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refresh(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const token = req.cookies?.['refresh-token'] as string | undefined;
     if (!token) {
       throw new UnauthorizedException('Sin refresh token.');

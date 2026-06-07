@@ -12,12 +12,14 @@ async function main() {
 
   await client.connect();
   console.log('Connected to PG');
-  
-  const res = await client.query('SELECT id, name, slug, "isActive" FROM tenants;');
+
+  const res = await client.query(
+    'SELECT id, name, slug, "isActive" FROM tenants;',
+  );
   console.log('--- TENANTS ---');
   console.log(res.rows);
   console.log('Total tenants:', res.rowCount);
-  
+
   await client.end();
 }
 

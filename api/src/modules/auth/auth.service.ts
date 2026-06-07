@@ -40,12 +40,16 @@ export class AuthService {
 
   async register(dto: RegisterDto): Promise<{ access_token: string }> {
     const lowercaseEmail = dto.email.toLowerCase();
-    const existingTenant = await this.tenantRepo.findOne({ where: { slug: dto.slug } });
+    const existingTenant = await this.tenantRepo.findOne({
+      where: { slug: dto.slug },
+    });
     if (existingTenant) {
       throw toBusinessException(AuthErrors.slugInUse(dto.slug));
     }
 
-    const existingUser = await this.userRepo.findOne({ where: { email: lowercaseEmail } });
+    const existingUser = await this.userRepo.findOne({
+      where: { email: lowercaseEmail },
+    });
     if (existingUser) {
       throw toBusinessException(AuthErrors.emailInUse(lowercaseEmail));
     }
@@ -65,7 +69,10 @@ export class AuthService {
       await queryRunner.manager.save(tenant);
 
       // Set current tenant ID in transaction context for RLS policies (e.g. store_settings INSERT RETURNING)
-      await queryRunner.query(`SELECT set_config('app.current_tenant_id', $1, true)`, [tenant.id]);
+      await queryRunner.query(
+        `SELECT set_config('app.current_tenant_id', $1, true)`,
+        [tenant.id],
+      );
 
       const passwordHash = await bcrypt.hash(dto.password, bcryptRounds);
       const user = queryRunner.manager.create(User, {
@@ -110,9 +117,16 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginDto, response: Response): Promise<
+  async login(
+    dto: LoginDto,
+    response: Response,
+  ): Promise<
     | { access_token: string }
-    | { requiresSelection: true; selectionToken: string; tenants: { id: string; name: string; slug: string }[] }
+    | {
+        requiresSelection: true;
+        selectionToken: string;
+        tenants: { id: string; name: string; slug: string }[];
+      }
   > {
     const lowercaseEmail = dto.email.toLowerCase();
     const user = await this.userRepo.findOne({
@@ -126,7 +140,9 @@ export class AuthService {
       },
     });
 
-    const isValid = user ? await bcrypt.compare(dto.password, user.passwordHash) : false;
+    const isValid = user
+      ? await bcrypt.compare(dto.password, user.passwordHash)
+      : false;
 
     if (!user || !isValid) {
       throw new UnauthorizedException('Credenciales inválidas.');
@@ -143,24 +159,31 @@ export class AuthService {
     });
 
     if (memberships.length === 0) {
-      throw new UnauthorizedException('Usuario sin comercios activos vinculados.');
+      throw new UnauthorizedException(
+        'Usuario sin comercios activos vinculados.',
+      );
     }
 
     // Filter strictly active tenants
     const activeMemberships = memberships.filter((m) => m.tenant.isActive);
 
     if (activeMemberships.length === 0) {
-      throw new UnauthorizedException('Todos tus comercios asociados están deshabilitados.');
+      throw new UnauthorizedException(
+        'Todos tus comercios asociados están deshabilitados.',
+      );
     }
 
     // If single active shop, log in immediately
     if (activeMemberships.length === 1) {
-      const membership = activeMemberships[0]!;
+      const membership = activeMemberships[0];
       const tenantId = membership.tenant.id;
 
       const refreshToken = crypto.randomUUID();
-      const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-      
+      const tokenHash = crypto
+        .createHash('sha256')
+        .update(refreshToken)
+        .digest('hex');
+
       // Store concatenated token to persist tenant context in standard session
       await this.userRepo.update(user.id, {
         refreshToken: `${tokenHash}:${tenantId}`,
@@ -184,7 +207,11 @@ export class AuthService {
       slug: m.tenant.slug,
     }));
 
-    const selectionToken = this.signSelectionToken(user.id, user.email, tenantList);
+    const selectionToken = this.signSelectionToken(
+      user.id,
+      user.email,
+      tenantList,
+    );
     return {
       requiresSelection: true,
       selectionToken,
@@ -201,7 +228,9 @@ export class AuthService {
     try {
       payload = this.jwtService.verify(selectionToken);
     } catch {
-      throw new UnauthorizedException('Token de selección expirado o inválido.');
+      throw new UnauthorizedException(
+        'Token de selección expirado o inválido.',
+      );
     }
 
     if (payload.purpose !== 'tenant_selection') {
@@ -217,12 +246,17 @@ export class AuthService {
     });
 
     if (!membership || !membership.tenant.isActive) {
-      throw new UnauthorizedException('No tenés permisos para acceder a este comercio.');
+      throw new UnauthorizedException(
+        'No tenés permisos para acceder a este comercio.',
+      );
     }
 
     const refreshToken = crypto.randomUUID();
-    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
+
     await this.userRepo.update(userId, {
       refreshToken: `${tokenHash}:${tenantId}`,
     });
@@ -238,9 +272,15 @@ export class AuthService {
     return { access_token: this.signAccessToken(membership.user, tenantId) };
   }
 
-  async refresh(rawToken: string, response: Response): Promise<{ access_token: string }> {
-    const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
-    
+  async refresh(
+    rawToken: string,
+    response: Response,
+  ): Promise<{ access_token: string }> {
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(rawToken)
+      .digest('hex');
+
     // Use Like operator to match token prefix since we appended tenantId metadata
     const { Like } = await import('typeorm');
     const matchedUser = await this.userRepo.findOne({
@@ -259,13 +299,15 @@ export class AuthService {
     const sessionTenantId = parts[1];
 
     if (!sessionTenantId) {
-      throw new UnauthorizedException('Contexto de sesión corrupto o inválido.');
+      throw new UnauthorizedException(
+        'Contexto de sesión corrupto o inválido.',
+      );
     }
 
     // Rotate token
     const newRaw = crypto.randomUUID();
     const newHash = crypto.createHash('sha256').update(newRaw).digest('hex');
-    
+
     await this.userRepo.update(matchedUser.id, {
       refreshToken: `${newHash}:${sessionTenantId}`,
     });
@@ -281,15 +323,21 @@ export class AuthService {
     return { access_token: this.signAccessToken(matchedUser, sessionTenantId) };
   }
 
-  async logout(userId: string, response: Response): Promise<{ message: string }> {
+  async logout(
+    userId: string,
+    response: Response,
+  ): Promise<{ message: string }> {
     await this.userRepo.update(userId, { refreshToken: null });
     response.clearCookie('refresh-token');
     return { message: 'ok' };
   }
 
   async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string }> {
-    const message = 'Si el email existe, recibirás un correo con instrucciones.';
-    const user = await this.userRepo.findOne({ where: { email: dto.email.toLowerCase() } });
+    const message =
+      'Si el email existe, recibirás un correo con instrucciones.';
+    const user = await this.userRepo.findOne({
+      where: { email: dto.email.toLowerCase() },
+    });
 
     if (!user) {
       return { message };
@@ -297,7 +345,10 @@ export class AuthService {
 
     const rawToken = crypto.randomBytes(32).toString('hex');
     await this.userRepo.update(user.id, {
-      resetPasswordToken: crypto.createHash('sha256').update(rawToken).digest('hex'),
+      resetPasswordToken: crypto
+        .createHash('sha256')
+        .update(rawToken)
+        .digest('hex'),
       resetPasswordExpiresAt: new Date(Date.now() + 60 * 60 * 1000),
     });
 
@@ -306,7 +357,10 @@ export class AuthService {
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
-    const tokenHash = crypto.createHash('sha256').update(dto.token).digest('hex');
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(dto.token)
+      .digest('hex');
     const matchedUser = await this.userRepo.findOne({
       where: {
         resetPasswordToken: tokenHash,
@@ -328,7 +382,9 @@ export class AuthService {
     return { message: 'Contraseña actualizada.' };
   }
 
-  async getMeTenants(userId: string): Promise<{ id: string; name: string; slug: string }[]> {
+  async getMeTenants(
+    userId: string,
+  ): Promise<{ id: string; name: string; slug: string }[]> {
     const memberships = await this.membershipRepo.find({
       where: { userId, isActive: true },
       relations: { tenant: true },
@@ -355,11 +411,16 @@ export class AuthService {
     });
 
     if (!membership || !membership.tenant.isActive) {
-      throw new UnauthorizedException('No tenés permisos para acceder a este comercio.');
+      throw new UnauthorizedException(
+        'No tenés permisos para acceder a este comercio.',
+      );
     }
 
     const refreshToken = crypto.randomUUID();
-    const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
 
     await this.userRepo.update(userId, {
       refreshToken: `${tokenHash}:${tenantId}`,
@@ -390,7 +451,10 @@ export class AuthService {
   private signAccessToken(user: User, tenantId: string): string {
     return this.jwtService.sign(
       { sub: user.id, tenantId, role: user.role },
-      { algorithm: 'RS256', expiresIn: this.configService.get('jwt.accessExpiration') ?? '15m' },
+      {
+        algorithm: 'RS256',
+        expiresIn: this.configService.get('jwt.accessExpiration') ?? '15m',
+      },
     );
   }
 }

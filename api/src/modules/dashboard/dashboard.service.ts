@@ -24,15 +24,21 @@ export class DashboardService {
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
-    const [ordersToday, revenueToday, pendingOrders, hourlyOrders, topProducts, deliveredCount] =
-      await Promise.all([
-        this.countOrdersToday(tenantId, startOfDay, endOfDay),
-        this.sumRevenueToday(tenantId, startOfDay, endOfDay),
-        this.countPendingOrders(tenantId),
-        this.getHourlyOrders(tenantId, startOfDay, endOfDay),
-        this.getTopProducts(tenantId, startOfDay, endOfDay),
-        this.countDeliveredToday(tenantId, startOfDay, endOfDay),
-      ]);
+    const [
+      ordersToday,
+      revenueToday,
+      pendingOrders,
+      hourlyOrders,
+      topProducts,
+      deliveredCount,
+    ] = await Promise.all([
+      this.countOrdersToday(tenantId, startOfDay, endOfDay),
+      this.sumRevenueToday(tenantId, startOfDay, endOfDay),
+      this.countPendingOrders(tenantId),
+      this.getHourlyOrders(tenantId, startOfDay, endOfDay),
+      this.getTopProducts(tenantId, startOfDay, endOfDay),
+      this.countDeliveredToday(tenantId, startOfDay, endOfDay),
+    ]);
 
     const averageTicket =
       deliveredCount > 0 ? Math.round(revenueToday / deliveredCount) : 0;

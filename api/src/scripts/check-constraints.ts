@@ -12,7 +12,7 @@ async function main() {
 
   await client.connect();
   console.log('Connected to PG');
-  
+
   const res = await client.query(`
     SELECT conname, contype, pg_get_constraintdef(c.oid) 
     FROM pg_constraint c 
@@ -25,7 +25,7 @@ async function main() {
     SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'store_settings';
   `);
   console.log('Indexes:', indexes.rows);
-  
+
   await client.end();
 }
 

@@ -28,10 +28,7 @@ export class CategoriesController {
   constructor(private readonly catalogService: CatalogService) {}
 
   @Get()
-  getAll(
-    @TenantId() tenantId: string,
-    @RlsRunner() runner: QueryRunner,
-  ) {
+  getAll(@TenantId() tenantId: string, @RlsRunner() runner: QueryRunner) {
     return this.catalogService.getAdminCategories(tenantId, runner);
   }
 

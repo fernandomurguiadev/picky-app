@@ -27,7 +27,11 @@ export class OptionGroup {
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 
-  @Column({ type: 'enum', enum: OptionGroupType, default: OptionGroupType.RADIO })
+  @Column({
+    type: 'enum',
+    enum: OptionGroupType,
+    default: OptionGroupType.RADIO,
+  })
   type!: OptionGroupType;
 
   @Column({ type: 'boolean', default: false })

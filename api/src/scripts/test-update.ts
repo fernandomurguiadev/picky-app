@@ -7,7 +7,7 @@ import { Tenant } from '../modules/tenants/entities/tenant.entity.js';
 async function main() {
   await AppDataSource.initialize();
   console.log('DB Initialized');
-  
+
   const tenantsService = new TenantsService(
     AppDataSource.getRepository(Tenant),
     AppDataSource.getRepository(StoreSettings),
@@ -15,7 +15,7 @@ async function main() {
 
   // We will run the query on the real repository
   const repo = AppDataSource.getRepository(StoreSettings);
-  
+
   // Find a tenant settings record that exists
   const existing = await repo.findOne({ where: {} });
   if (!existing) {
@@ -24,17 +24,32 @@ async function main() {
     return;
   }
 
-  console.log('Testing with tenantId:', existing.tenantId, 'Existing ID:', existing.id);
-  
+  console.log(
+    'Testing with tenantId:',
+    existing.tenantId,
+    'Existing ID:',
+    existing.id,
+  );
+
   // Now call updateMySettings
   console.log('--- Calling updateMySettings ---');
-  let settings = await repo.findOne({ where: { tenantId: existing.tenantId } });
-  console.log('Found settings in test:', settings ? 'YES, ID: ' + settings.id : 'NO');
-  
+  const settings = await repo.findOne({
+    where: { tenantId: existing.tenantId },
+  });
+  console.log(
+    'Found settings in test:',
+    settings ? 'YES, ID: ' + settings.id : 'NO',
+  );
+
   if (settings) {
     Object.assign(settings, { primaryColor: '#aabbcc' });
     const saved = await repo.save(settings);
-    console.log('Saved settings. New ID:', saved.id, 'Original ID was:', existing.id);
+    console.log(
+      'Saved settings. New ID:',
+      saved.id,
+      'Original ID was:',
+      existing.id,
+    );
   }
 
   await AppDataSource.destroy();

@@ -10,7 +10,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Tenant } from '../../tenants/entities/tenant.entity.js';
-import { OrderStatus, DeliveryMethod, PaymentMethod } from '../enums/order.enums.js';
+import {
+  OrderStatus,
+  DeliveryMethod,
+  PaymentMethod,
+} from '../enums/order.enums.js';
 
 export interface CustomerInfo {
   name: string;

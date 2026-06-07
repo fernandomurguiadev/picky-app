@@ -61,7 +61,7 @@ function ValidShifts(validationOptions?: ValidationOptions) {
           }
 
           for (let i = 0; i < shifts.length - 1; i++) {
-            if (shifts[i]!.close > shifts[i + 1]!.open) return false;
+            if (shifts[i].close > shifts[i + 1].open) return false;
           }
 
           return true;

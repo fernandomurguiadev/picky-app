@@ -30,10 +30,7 @@ export class RlsInterceptor implements NestInterceptor {
     private readonly reflector: Reflector,
   ) {}
 
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler,
-  ): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const isSkipRls = this.reflector.getAllAndOverride<boolean>(SKIP_RLS_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -54,9 +51,15 @@ export class RlsInterceptor implements NestInterceptor {
     const queryRunner = this.dataSource.createQueryRunner();
 
     return from(
-      queryRunner.connect()
+      queryRunner
+        .connect()
         .then(() => queryRunner.startTransaction())
-        .then(() => queryRunner.query('SELECT set_config(\'app.current_tenant_id\', $1, true);', [tenantId]))
+        .then(() =>
+          queryRunner.query(
+            "SELECT set_config('app.current_tenant_id', $1, true);",
+            [tenantId],
+          ),
+        ),
     ).pipe(
       mergeMap(() => {
         request.rlsQueryRunner = queryRunner;
@@ -76,7 +79,7 @@ export class RlsInterceptor implements NestInterceptor {
               await queryRunner.release();
             }
             throw error;
-          })
+          }),
         );
       }),
       catchError(async (error) => {
@@ -89,7 +92,7 @@ export class RlsInterceptor implements NestInterceptor {
           await queryRunner.release();
         }
         throw error;
-      })
+      }),
     );
   }
 }

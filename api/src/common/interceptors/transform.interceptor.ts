@@ -12,9 +12,7 @@ interface PaginatedResponse<T> {
   meta: Record<string, unknown>;
 }
 
-function isPaginatedResponse<T>(
-  value: unknown,
-): value is PaginatedResponse<T> {
+function isPaginatedResponse<T>(value: unknown): value is PaginatedResponse<T> {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -25,7 +23,10 @@ function isPaginatedResponse<T>(
 
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<T, unknown> {
-  intercept(_context: ExecutionContext, next: CallHandler<T>): Observable<unknown> {
+  intercept(
+    _context: ExecutionContext,
+    next: CallHandler<T>,
+  ): Observable<unknown> {
     return next.handle().pipe(
       map((value) => {
         // Si la respuesta ya tiene forma { data, meta }, pasar sin modificar

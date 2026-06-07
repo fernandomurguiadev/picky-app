@@ -20,9 +20,7 @@ export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
   @Post('image')
-  @UseInterceptors(
-    FileInterceptor('file', { storage: memoryStorage() }),
-  )
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,
     @TenantId() tenantId: string,
@@ -36,7 +34,9 @@ export class UploadController {
     @TenantId() tenantId: string,
   ): Promise<{ success: boolean }> {
     if (!publicId) {
-      throw new BadRequestException('El parámetro publicId es requerido en la query url.');
+      throw new BadRequestException(
+        'El parámetro publicId es requerido en la query url.',
+      );
     }
     await this.uploadService.deleteImage(publicId, tenantId);
     return { success: true };

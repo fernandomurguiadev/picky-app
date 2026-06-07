@@ -62,7 +62,11 @@ export class OrdersGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   emitOrderStatusChanged(
     tenantId: string,
-    payload: { orderId: string; newStatus: string; statusHistory: StatusHistoryEntry[] },
+    payload: {
+      orderId: string;
+      newStatus: string;
+      statusHistory: StatusHistoryEntry[];
+    },
   ): void {
     this.server.to(`tenant:${tenantId}`).emit('order:status-changed', payload);
   }

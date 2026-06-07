@@ -7,7 +7,7 @@ import { Tenant } from '../modules/tenants/entities/tenant.entity.js';
 async function main() {
   await AppDataSource.initialize();
   console.log('DB Initialized');
-  
+
   const tenantsService = new TenantsService(
     AppDataSource.getRepository(Tenant),
     AppDataSource.getRepository(StoreSettings),
@@ -19,7 +19,7 @@ async function main() {
   const res1 = await tenantsService.updateMySettings(tenantId, {
     primaryColor: '#ff0000',
     accentColor: '#00ff00',
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
   });
   console.log('Result 1 ID:', res1?.id, 'primaryColor:', res1?.primaryColor);
 
@@ -27,7 +27,7 @@ async function main() {
   const res2 = await tenantsService.updateMySettings(tenantId, {
     primaryColor: '#0000ff',
     accentColor: '#00ff00',
-    backgroundColor: '#ffffff'
+    backgroundColor: '#ffffff',
   });
   console.log('Result 2 ID:', res2?.id, 'primaryColor:', res2?.primaryColor);
 
