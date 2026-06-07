@@ -42,6 +42,7 @@ export interface Product {
   imageUrl: string | null;
   isFeatured: boolean;
   isActive: boolean;
+  inStock: boolean;
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -96,5 +97,6 @@ export interface ProductFormData {
   imageUrl: string | null;
   isFeatured: boolean;
   isActive: boolean;
+  inStock: boolean;
   optionGroups: OptionGroupFormData[];
 }

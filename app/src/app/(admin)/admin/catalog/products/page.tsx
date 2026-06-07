@@ -41,6 +41,7 @@ import { useCategories } from "@/lib/hooks/admin/use-categories";
 import {
   useProducts,
   useToggleProductStatus,
+  useToggleProductStock,
   useDeleteProduct,
   useReorderProducts,
   productKeys,
@@ -57,12 +58,12 @@ function SortableProductCard({
   product,
   onDelete,
   toggleStatus,
+  toggleStock,
 }: {
   product: Product;
   onDelete: (p: Product) => void;
-  toggleStatus: {
-    mutate: (variables: { id: string; isActive: boolean }) => void;
-  };
+  toggleStatus: { mutate: (variables: { id: string; isActive: boolean }) => void };
+  toggleStock: { mutate: (variables: { id: string; inStock: boolean }) => void };
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: product.id });
@@ -109,15 +110,27 @@ function SortableProductCard({
       </div>
 
       <div className="flex items-center gap-4 shrink-0 ml-2">
-        <div className="flex items-center gap-2 bg-muted/30 py-1.5 px-3 rounded-full border border-border/50">
-          <span className="text-xs text-muted-foreground hidden sm:inline">Activo</span>
-          <Switch
-            checked={product.isActive}
-            onCheckedChange={(val) =>
-              toggleStatus.mutate({ id: product.id, isActive: val })
-            }
-            aria-label={`${product.isActive ? "Desactivar" : "Activar"} ${product.name}`}
-          />
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-muted/30 py-1.5 px-3 rounded-full border border-border/50">
+            <span className="text-xs text-muted-foreground hidden sm:inline">Stock</span>
+            <Switch
+              checked={product.inStock}
+              onCheckedChange={(val) =>
+                toggleStock.mutate({ id: product.id, inStock: val })
+              }
+              aria-label={`${product.inStock ? "Marcar sin stock" : "Marcar con stock"}: ${product.name}`}
+            />
+          </div>
+          <div className="flex items-center gap-2 bg-muted/30 py-1.5 px-3 rounded-full border border-border/50">
+            <span className="text-xs text-muted-foreground hidden sm:inline">Activo</span>
+            <Switch
+              checked={product.isActive}
+              onCheckedChange={(val) =>
+                toggleStatus.mutate({ id: product.id, isActive: val })
+              }
+              aria-label={`${product.isActive ? "Desactivar" : "Activar"} ${product.name}`}
+            />
+          </div>
         </div>
 
         <div className="flex gap-1">
@@ -164,6 +177,7 @@ export default function ProductsPage() {
   const { data, isLoading } = useProducts(queryParams);
 
   const toggleStatus = useToggleProductStatus();
+  const toggleStock = useToggleProductStock();
   const deleteProduct = useDeleteProduct();
   const reorderMutation = useReorderProducts();
 
@@ -303,6 +317,7 @@ export default function ProductsPage() {
                   product={product}
                   onDelete={setDeleting}
                   toggleStatus={toggleStatus}
+                  toggleStock={toggleStock}
                 />
               ))}
             </div>

@@ -96,6 +96,10 @@ export class UpdateProductDto {
   @IsOptional()
   isActive?: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  inStock?: boolean;
+
   @IsInt()
   @Min(0)
   @IsOptional()

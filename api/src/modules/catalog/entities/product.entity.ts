@@ -16,6 +16,7 @@ import type { OptionGroup } from './option-group.entity.js';
 
 @Index(['tenantId', 'categoryId'])
 @Index(['tenantId', 'isActive'])
+@Index(['tenantId', 'inStock'])
 @Entity('products')
 export class Product {
   @PrimaryGeneratedColumn('uuid')
@@ -44,6 +45,9 @@ export class Product {
 
   @Column({ type: 'boolean', default: true })
   isActive!: boolean;
+
+  @Column({ type: 'boolean', default: true })
+  inStock!: boolean;
 
   @Column({ type: 'integer', default: 0 })
   order!: number;

@@ -37,6 +37,7 @@ const schema = z.object({
   imageUrl: z.string().nullable(),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
+  inStock: z.boolean(),
   optionGroups: z.array(
     z.object({
       id: z.string().optional(),
@@ -81,6 +82,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     imageUrl: p.imageUrl ?? null,
     isFeatured: p.isFeatured,
     isActive: p.isActive,
+    inStock: p.inStock,
     optionGroups: (p.optionGroups ?? []).map((og) => ({
       id: og.id,
       name: og.name,
@@ -107,6 +109,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     imageUrl: null,
     isFeatured: false,
     isActive: true,
+    inStock: true,
     optionGroups: [],
   };
 
@@ -138,6 +141,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
   const imageUrl = watch("imageUrl");
   const isActive = watch("isActive");
   const isFeatured = watch("isFeatured");
+  const inStock = watch("inStock");
 
   // Autosave en localStorage cada 30s (solo para nuevo producto)
   const saveToLocalStorage = useCallback(() => {
@@ -320,18 +324,32 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
           </section>
 
           {/* Sección 5: Estado */}
-          <section className="rounded-xl border border-border p-6 mb-6">
+          <section className="rounded-xl border border-border p-6 mb-6 space-y-4">
+            <h2 className="font-semibold">Publicar producto</h2>
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-semibold">Publicar producto</h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Los productos inactivos no se muestran en la tienda.
+                <p className="text-sm font-medium">Visible en la tienda</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Los productos inactivos no se muestran en la carta.
                 </p>
               </div>
               <Switch
                 id="p-active"
                 checked={isActive}
                 onCheckedChange={(v) => setValue("isActive", v, { shouldDirty: true })}
+              />
+            </div>
+            <div className="flex items-center justify-between border-t border-border pt-4">
+              <div>
+                <p className="text-sm font-medium">Disponible (en stock)</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Si está desactivado, el producto se muestra con la etiqueta "Sin stock" y no se puede comprar.
+                </p>
+              </div>
+              <Switch
+                id="p-instock"
+                checked={inStock}
+                onCheckedChange={(v) => setValue("inStock", v, { shouldDirty: true })}
               />
             </div>
           </section>

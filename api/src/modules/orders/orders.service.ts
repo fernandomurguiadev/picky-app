@@ -1,11 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import {
+  Repository,
+  DataSource,
+} from 'typeorm';
 import { Order, StatusHistoryEntry } from './entities/order.entity.js';
 import { OrderItem } from './entities/order-item.entity.js';
 import { StoreSettings } from '../tenants/entities/store-settings.entity.js';
 import { Product } from '../catalog/entities/product.entity.js';
-import { OrderStatus, DeliveryMethod, PaymentMethod } from './enums/order.enums.js';
+import {
+  OrderStatus,
+  DeliveryMethod,
+  PaymentMethod,
+} from './enums/order.enums.js';
 import { toBusinessException } from '../../common/errors/business.exception.js';
 import { OrderErrors } from './errors/orders.errors.js';
 import type { CreateOrderDto } from './dto/create-order.dto.js';
@@ -17,10 +24,10 @@ import { OrdersGateway } from './orders.gateway.js';
 import { ConfigService } from '@nestjs/config';
 
 const VALID_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  [OrderStatus.PENDING]:   [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
-  [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING,  OrderStatus.CANCELLED],
-  [OrderStatus.PREPARING]: [OrderStatus.READY,       OrderStatus.CANCELLED],
-  [OrderStatus.READY]:     [OrderStatus.DELIVERED,   OrderStatus.CANCELLED],
+  [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+  [OrderStatus.CONFIRMED]: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
+  [OrderStatus.PREPARING]: [OrderStatus.READY, OrderStatus.CANCELLED],
+  [OrderStatus.READY]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
   [OrderStatus.DELIVERED]: [],
   [OrderStatus.CANCELLED]: [],
 };
@@ -61,7 +68,14 @@ export class OrdersService {
           where: { id: item.productId, tenantId: dto.tenantId },
         });
         if (!product) {
-          throw new NotFoundException(`Producto ${item.productId} no encontrado`);
+          throw new NotFoundException(
+            `Producto ${item.productId} no encontrado`,
+          );
+        }
+        if (!product.inStock) {
+          throw toBusinessException(
+            OrderErrors.productOutOfStock(product.name),
+          );
         }
         return { ...item, unitPrice: product.price };
       }),
@@ -82,7 +96,9 @@ export class OrdersService {
     }
 
     const deliveryCost =
-      dto.deliveryMethod === DeliveryMethod.DELIVERY ? settings.deliveryCost : 0;
+      dto.deliveryMethod === DeliveryMethod.DELIVERY
+        ? settings.deliveryCost
+        : 0;
     const total = subtotal + deliveryCost;
     const orderNumber = this.generateOrderNumber();
 
@@ -141,11 +157,14 @@ export class OrdersService {
 
       await queryRunner.commitTransaction();
 
-      order.items = items as unknown[];
+      order.items = items;
       this.ordersGateway.emitOrderNew(order.tenantId, order);
       this.notifyOrderN8n(order);
 
-      const businessNumber = this.configService.get<string>('WHATSAPP_BUSINESS_NUMBER', '');
+      const businessNumber = this.configService.get<string>(
+        'WHATSAPP_BUSINESS_NUMBER',
+        '',
+      );
       const message = `Hola, quiero confirmar mi pedido ${order.orderNumber}`;
       const encodedMessage = encodeURIComponent(message);
       const whatsappUrl = `https://wa.me/${businessNumber}?text=${encodedMessage}`;
@@ -154,7 +173,10 @@ export class OrdersService {
         ...order,
         whatsappConfirmationMessage: message,
         whatsappConfirmationUrl: whatsappUrl,
-      } as Order & { whatsappConfirmationMessage: string; whatsappConfirmationUrl: string };
+      } as Order & {
+        whatsappConfirmationMessage: string;
+        whatsappConfirmationUrl: string;
+      };
     } catch (err) {
       await queryRunner.rollbackTransaction();
       throw err;
@@ -163,7 +185,10 @@ export class OrdersService {
     }
   }
 
-  async linkWhatsappNumber(orderNumber: string, whatsappNumber: string): Promise<Order> {
+  async linkWhatsappNumber(
+    orderNumber: string,
+    whatsappNumber: string,
+  ): Promise<Order> {
     const order = await this.orderRepo.findOne({ where: { orderNumber } });
     if (!order) {
       throw toBusinessException(OrderErrors.notFound(orderNumber));
@@ -226,14 +251,19 @@ export class OrdersService {
         .getRepository(Order)
         .createQueryBuilder('order')
         .setLock('pessimistic_write')
-        .where('order.id = :id AND order.tenantId = :tenantId', { id, tenantId })
+        .where('order.id = :id AND order.tenantId = :tenantId', {
+          id,
+          tenantId,
+        })
         .getOne();
 
       if (!order) throw toBusinessException(OrderErrors.notFound(id));
 
       const allowed = VALID_TRANSITIONS[order.status] ?? [];
       if (!allowed.includes(dto.status)) {
-        throw toBusinessException(OrderErrors.invalidTransition(order.status, dto.status));
+        throw toBusinessException(
+          OrderErrors.invalidTransition(order.status, dto.status),
+        );
       }
 
       const historyEntry: StatusHistoryEntry = {
@@ -261,7 +291,10 @@ export class OrdersService {
     }
   }
 
-  async createAdminOrder(tenantId: string, dto: CreateOrderAdminDto): Promise<Order> {
+  async createAdminOrder(
+    tenantId: string,
+    dto: CreateOrderAdminDto,
+  ): Promise<Order> {
     return this.createOrder({ ...dto, tenantId });
   }
 
@@ -286,7 +319,9 @@ export class OrdersService {
     return `ORD-${yyyymmdd}-${rand}`;
   }
 
-  private calculateSubtotal(dto: CreateOrderDto | { items: CreateOrderDto['items'] }): number {
+  private calculateSubtotal(
+    dto: CreateOrderDto | { items: CreateOrderDto['items'] },
+  ): number {
     return dto.items.reduce((total, item) => {
       const optionsTotal = item.selectedOptions.reduce(
         (s, o) => s + o.priceModifier,
@@ -296,7 +331,10 @@ export class OrdersService {
     }, 0);
   }
 
-  private validateDeliveryMethod(method: DeliveryMethod, settings: StoreSettings): void {
+  private validateDeliveryMethod(
+    method: DeliveryMethod,
+    settings: StoreSettings,
+  ): void {
     if (method === DeliveryMethod.DELIVERY && !settings.deliveryEnabled) {
       throw toBusinessException(OrderErrors.deliveryNotEnabled());
     }
@@ -308,7 +346,10 @@ export class OrdersService {
     }
   }
 
-  private validatePaymentMethod(method: PaymentMethod, settings: StoreSettings): void {
+  private validatePaymentMethod(
+    method: PaymentMethod,
+    settings: StoreSettings,
+  ): void {
     const enabled =
       (method === PaymentMethod.CASH && settings.cashEnabled) ||
       (method === PaymentMethod.TRANSFER && settings.transferEnabled) ||
@@ -326,7 +367,7 @@ export class OrdersService {
 
     try {
       const itemsDetail = (order.items as OrderItem[])
-        .map(i => `${i.quantity}x ${i.productName}`)
+        .map((i) => `${i.quantity}x ${i.productName}`)
         .join(', ');
 
       const payload = {
@@ -344,14 +385,14 @@ export class OrdersService {
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(5000),
       })
-      .then(async res => {
-        if (!res.ok) {
-          console.error('[N8N] Webhook responded with status:', res.status);
-        }
-      })
-      .catch(err => {
-        console.error('[N8N] Error notifying webhook:', err);
-      });
+        .then(async (res) => {
+          if (!res.ok) {
+            console.error('[N8N] Webhook responded with status:', res.status);
+          }
+        })
+        .catch((err) => {
+          console.error('[N8N] Error notifying webhook:', err);
+        });
     } catch (err) {
       console.error('[N8N] Error preparing webhook payload:', err);
     }

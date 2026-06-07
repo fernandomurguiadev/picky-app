@@ -45,7 +45,10 @@ export const OrderErrors = {
     message: `El método de pago "${method}" no está habilitado para esta tienda.`,
   }),
 
-  belowMinimumOrder: (minCents: number, actualCents: number): ErrorDefinition => ({
+  belowMinimumOrder: (
+    minCents: number,
+    actualCents: number,
+  ): ErrorDefinition => ({
     statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
     code: OrderErrorCodes.BELOW_MINIMUM_ORDER,
     message: `El subtotal ($${(actualCents / 100).toFixed(2)}) no alcanza el mínimo para envío ($${(minCents / 100).toFixed(2)}).`,
@@ -56,5 +59,11 @@ export const OrderErrors = {
     statusCode: HttpStatus.NOT_FOUND,
     code: OrderErrorCodes.TENANT_SETTINGS_NOT_FOUND,
     message: `No se encontró la configuración de la tienda ${tenantId}.`,
+  }),
+
+  productOutOfStock: (name: string): ErrorDefinition => ({
+    statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+    code: OrderErrorCodes.PRODUCT_OUT_OF_STOCK,
+    message: `El producto "${name}" no tiene stock disponible.`,
   }),
 };

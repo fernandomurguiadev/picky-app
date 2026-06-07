@@ -93,6 +93,10 @@ export class CreateProductDto {
   @IsOptional()
   isActive?: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  inStock?: boolean;
+
   @IsInt()
   @Min(0)
   @IsOptional()

@@ -75,6 +75,34 @@ export function useToggleProductStatus() {
   });
 }
 
+export function useToggleProductStock() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, inStock }: { id: string; inStock: boolean }) =>
+      apiBff.patch<{ data: Product }>(`/admin/products/${id}/stock`, { inStock }).then((r) => r.data.data),
+    onMutate: async ({ id, inStock }) => {
+      await qc.cancelQueries({ queryKey: productKeys.lists() });
+      const snapshots: Array<{ key: readonly unknown[]; data: unknown }> = [];
+      qc.getQueriesData<PaginatedResponse<Product>>({ queryKey: productKeys.lists() }).forEach(
+        ([key, old]) => {
+          snapshots.push({ key, data: old });
+          if (old) {
+            qc.setQueryData(key, {
+              ...old,
+              data: old.data.map((p) => (p.id === id ? { ...p, inStock } : p)),
+            });
+          }
+        }
+      );
+      return { snapshots };
+    },
+    onError: (_err, _vars, ctx) => {
+      ctx?.snapshots.forEach(({ key, data }) => qc.setQueryData(key, data));
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: productKeys.lists() }),
+  });
+}
+
 export function useDeleteProduct() {
   const qc = useQueryClient();
   return useMutation({

@@ -23,8 +23,12 @@ import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
 import { ReorderProductsDto } from './dto/reorder-products.dto.js';
-import { PaginationQueryDto, ProductsQueryDto } from './dto/pagination-query.dto.js';
+import {
+  PaginationQueryDto,
+  ProductsQueryDto,
+} from './dto/pagination-query.dto.js';
 import { ToggleProductStatusDto } from './dto/toggle-product-status.dto.js';
+import { ToggleProductStockDto } from './dto/toggle-product-stock.dto.js';
 
 // ─── Public store routes ───────────────────────────────────────────────────
 
@@ -66,7 +70,12 @@ export class StorefrontCatalogController {
   ) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
-    const { data, total } = await this.catalogService.getPublicProducts(slug, categoryId, page, limit);
+    const { data, total } = await this.catalogService.getPublicProducts(
+      slug,
+      categoryId,
+      page,
+      limit,
+    );
     return {
       data,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
@@ -89,7 +98,11 @@ export class AdminProductsController {
   ) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
-    const { data, total } = await this.catalogService.getAdminProducts(tenantId, query, runner);
+    const { data, total } = await this.catalogService.getAdminProducts(
+      tenantId,
+      query,
+      runner,
+    );
     return {
       data,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
@@ -140,7 +153,27 @@ export class AdminProductsController {
     @Body() dto: ToggleProductStatusDto,
     @RlsRunner() runner: QueryRunner,
   ) {
-    return this.catalogService.updateProductStatus(tenantId, id, dto.isActive, runner);
+    return this.catalogService.updateProductStatus(
+      tenantId,
+      id,
+      dto.isActive,
+      runner,
+    );
+  }
+
+  @Patch(':id/stock')
+  updateStock(
+    @TenantId() tenantId: string,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: ToggleProductStockDto,
+    @RlsRunner() runner: QueryRunner,
+  ) {
+    return this.catalogService.updateProductStock(
+      tenantId,
+      id,
+      dto.inStock,
+      runner,
+    );
   }
 
   @Delete(':id')

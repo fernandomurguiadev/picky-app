@@ -163,16 +163,22 @@ export function ProductDetailSheet({
       </div>
 
       <div className="border-t bg-background px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <QuantitySelector value={quantity} onChange={setQuantity} min={1} />
-          <Button
-            onClick={handleAddToCart}
-            disabled={!isValid}
-            className="min-w-44 bg-[var(--store-accent)] text-white hover:opacity-90"
-          >
-            Agregar {formatCurrency(total)}
-          </Button>
-        </div>
+        {product.inStock ? (
+          <div className="flex items-center justify-between gap-3">
+            <QuantitySelector value={quantity} onChange={setQuantity} min={1} />
+            <Button
+              onClick={handleAddToCart}
+              disabled={!isValid}
+              className="min-w-44 bg-[var(--store-accent)] text-white hover:opacity-90"
+            >
+              Agregar {formatCurrency(total)}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center rounded-xl bg-muted px-4 py-3">
+            <span className="text-sm font-medium text-muted-foreground">Sin stock — no disponible para compra</span>
+          </div>
+        )}
       </div>
     </div>
   );

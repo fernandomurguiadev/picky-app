@@ -39,7 +39,9 @@ export class CatalogService {
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   private async resolveTenantBySlug(slug: string): Promise<Tenant> {
-    const tenant = await this.tenantRepo.findOne({ where: { slug, isActive: true } });
+    const tenant = await this.tenantRepo.findOne({
+      where: { slug, isActive: true },
+    });
     if (!tenant) throw toBusinessException(CatalogErrors.tenantNotFound(slug));
     return tenant;
   }
@@ -56,16 +58,27 @@ export class CatalogService {
 
   // ─── Categories (admin) ───────────────────────────────────────────────────
 
-  async getAdminCategories(tenantId: string, runner?: QueryRunner): Promise<Category[]> {
-    const repo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
+  async getAdminCategories(
+    tenantId: string,
+    runner?: QueryRunner,
+  ): Promise<Category[]> {
+    const repo = runner
+      ? runner.manager.getRepository(Category)
+      : this.categoryRepo;
     return repo.find({
       where: { tenantId },
       order: { order: 'ASC', name: 'ASC' },
     });
   }
 
-  async createCategory(tenantId: string, dto: CreateCategoryDto, runner?: QueryRunner): Promise<Category> {
-    const repo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
+  async createCategory(
+    tenantId: string,
+    dto: CreateCategoryDto,
+    runner?: QueryRunner,
+  ): Promise<Category> {
+    const repo = runner
+      ? runner.manager.getRepository(Category)
+      : this.categoryRepo;
     const category = repo.create({
       tenantId,
       name: dto.name,
@@ -81,33 +94,53 @@ export class CatalogService {
     dto: UpdateCategoryDto,
     runner?: QueryRunner,
   ): Promise<Category> {
-    const repo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
+    const repo = runner
+      ? runner.manager.getRepository(Category)
+      : this.categoryRepo;
     const category = await repo.findOne({ where: { id, tenantId } });
-    if (!category) throw toBusinessException(CatalogErrors.categoryNotFound(id));
+    if (!category)
+      throw toBusinessException(CatalogErrors.categoryNotFound(id));
 
     Object.assign(category, dto);
     return repo.save(category);
   }
 
-  async deleteCategory(tenantId: string, id: string, runner?: QueryRunner): Promise<void> {
-    const categoryRepo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
-    const productRepo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+  async deleteCategory(
+    tenantId: string,
+    id: string,
+    runner?: QueryRunner,
+  ): Promise<void> {
+    const categoryRepo = runner
+      ? runner.manager.getRepository(Category)
+      : this.categoryRepo;
+    const productRepo = runner
+      ? runner.manager.getRepository(Product)
+      : this.productRepo;
 
     const category = await categoryRepo.findOne({ where: { id, tenantId } });
-    if (!category) throw toBusinessException(CatalogErrors.categoryNotFound(id));
+    if (!category)
+      throw toBusinessException(CatalogErrors.categoryNotFound(id));
 
     const activeCount = await productRepo.count({
       where: { categoryId: id, isActive: true },
     });
     if (activeCount > 0) {
-      throw toBusinessException(CatalogErrors.categoryHasActiveProducts(id, activeCount));
+      throw toBusinessException(
+        CatalogErrors.categoryHasActiveProducts(id, activeCount),
+      );
     }
 
     await categoryRepo.remove(category);
   }
 
-  async reorderCategories(tenantId: string, dto: ReorderCategoriesDto, runner?: QueryRunner): Promise<void> {
-    const repo = runner ? runner.manager.getRepository(Category) : this.categoryRepo;
+  async reorderCategories(
+    tenantId: string,
+    dto: ReorderCategoriesDto,
+    runner?: QueryRunner,
+  ): Promise<void> {
+    const repo = runner
+      ? runner.manager.getRepository(Category)
+      : this.categoryRepo;
     const categories = await repo.find({
       where: { id: In(dto.ids) },
       select: ['id', 'tenantId'],
@@ -120,7 +153,7 @@ export class CatalogService {
 
     if (runner) {
       for (let i = 0; i < dto.ids.length; i++) {
-        await runner.manager.update(Category, dto.ids[i]!, { order: i });
+        await runner.manager.update(Category, dto.ids[i], { order: i });
       }
     } else {
       const queryRunner = this.dataSource.createQueryRunner();
@@ -128,7 +161,7 @@ export class CatalogService {
       await queryRunner.startTransaction();
       try {
         for (let i = 0; i < dto.ids.length; i++) {
-          await queryRunner.manager.update(Category, dto.ids[i]!, { order: i });
+          await queryRunner.manager.update(Category, dto.ids[i], { order: i });
         }
         await queryRunner.commitTransaction();
       } catch (err) {
@@ -197,27 +230,34 @@ export class CatalogService {
       .orderBy('p.name', 'ASC');
 
     if (opts.categoryId) {
-      qb.andWhere('p.categoryId = :categoryId', { categoryId: opts.categoryId });
+      qb.andWhere('p.categoryId = :categoryId', {
+        categoryId: opts.categoryId,
+      });
     }
 
     const [total, data] = await Promise.all([
       qb.getCount(),
-      qb.clone().skip((page - 1) * limit).take(limit).getMany(),
+      qb
+        .clone()
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getMany(),
     ]);
 
     // Facets: categorías con resultados para este término (sin filtro de categoría)
     let categoryFacets: Array<{ categoryId: string; count: number }> = [];
     try {
-      const facetRows: Array<{ categoryId: string; count: string }> = await this.productRepo
-        .createQueryBuilder('fp')
-        .select('fp.categoryId', 'categoryId')
-        .addSelect('COUNT(*)', 'count')
-        .where('fp.tenantId = :tenantId', { tenantId: tenant.id })
-        .andWhere('fp.isActive = true')
-        .andWhere('fp.name ILIKE :searchQ', { searchQ: searchPattern })
-        .andWhere('fp.categoryId IS NOT NULL')
-        .groupBy('fp.categoryId')
-        .getRawMany();
+      const facetRows: Array<{ categoryId: string; count: string }> =
+        await this.productRepo
+          .createQueryBuilder('fp')
+          .select('fp.categoryId', 'categoryId')
+          .addSelect('COUNT(*)', 'count')
+          .where('fp.tenantId = :tenantId', { tenantId: tenant.id })
+          .andWhere('fp.isActive = true')
+          .andWhere('fp.name ILIKE :searchQ', { searchQ: searchPattern })
+          .andWhere('fp.categoryId IS NOT NULL')
+          .groupBy('fp.categoryId')
+          .getRawMany();
 
       categoryFacets = facetRows.map((r) => ({
         categoryId: r.categoryId,
@@ -227,7 +267,11 @@ export class CatalogService {
       // facets no críticos — no romper la búsqueda principal si fallan
     }
 
-    return { data, meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 }, categoryFacets };
+    return {
+      data,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 },
+      categoryFacets,
+    };
   }
 
   // ─── Products (admin) ─────────────────────────────────────────────────────
@@ -240,7 +284,9 @@ export class CatalogService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
 
-    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+    const repo = runner
+      ? runner.manager.getRepository(Product)
+      : this.productRepo;
     const qb = repo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.category', 'c')
@@ -253,21 +299,33 @@ export class CatalogService {
       .take(limit);
 
     if (query.categoryId) {
-      qb.andWhere('p.categoryId = :categoryId', { categoryId: query.categoryId });
+      qb.andWhere('p.categoryId = :categoryId', {
+        categoryId: query.categoryId,
+      });
     }
     if (query.isActive !== undefined) {
-      qb.andWhere('p.isActive = :isActive', { isActive: query.isActive === 'true' });
+      qb.andWhere('p.isActive = :isActive', {
+        isActive: query.isActive === 'true',
+      });
     }
     if (query.q) {
-      qb.andWhere('(p.name ILIKE :q OR p.description ILIKE :q)', { q: `%${query.q}%` });
+      qb.andWhere('(p.name ILIKE :q OR p.description ILIKE :q)', {
+        q: `%${query.q}%`,
+      });
     }
 
     const [data, total] = await qb.getManyAndCount();
     return { data, total };
   }
 
-  async getAdminProduct(tenantId: string, id: string, runner?: QueryRunner): Promise<Product> {
-    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+  async getAdminProduct(
+    tenantId: string,
+    id: string,
+    runner?: QueryRunner,
+  ): Promise<Product> {
+    const repo = runner
+      ? runner.manager.getRepository(Product)
+      : this.productRepo;
     const product = await repo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.category', 'c')
@@ -283,9 +341,15 @@ export class CatalogService {
     return product;
   }
 
-  async createProduct(tenantId: string, dto: CreateProductDto, runner?: QueryRunner): Promise<Product> {
+  async createProduct(
+    tenantId: string,
+    dto: CreateProductDto,
+    runner?: QueryRunner,
+  ): Promise<Product> {
     const manager = runner ? runner.manager : null;
-    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+    const repo = runner
+      ? runner.manager.getRepository(Product)
+      : this.productRepo;
 
     if (runner) {
       const product = manager!.create(Product, {
@@ -297,6 +361,7 @@ export class CatalogService {
         imageUrl: dto.imageUrl ?? null,
         isFeatured: dto.isFeatured ?? false,
         isActive: dto.isActive ?? true,
+        inStock: dto.inStock ?? true,
         order: dto.order ?? 0,
       });
       const saved = await manager!.save(product);
@@ -323,12 +388,17 @@ export class CatalogService {
           imageUrl: dto.imageUrl ?? null,
           isFeatured: dto.isFeatured ?? false,
           isActive: dto.isActive ?? true,
+          inStock: dto.inStock ?? true,
           order: dto.order ?? 0,
         });
         const saved = await queryRunner.manager.save(product);
 
         if (dto.optionGroups?.length) {
-          await this.saveOptionGroups(queryRunner.manager, saved.id, dto.optionGroups);
+          await this.saveOptionGroups(
+            queryRunner.manager,
+            saved.id,
+            dto.optionGroups,
+          );
         }
 
         const result = await queryRunner.manager.findOneOrFail(Product, {
@@ -352,7 +422,9 @@ export class CatalogService {
     dto: UpdateProductDto,
     runner?: QueryRunner,
   ): Promise<Product> {
-    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+    const repo = runner
+      ? runner.manager.getRepository(Product)
+      : this.productRepo;
     const product = await repo.findOne({ where: { id, tenantId } });
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
 
@@ -407,7 +479,9 @@ export class CatalogService {
     isActive: boolean,
     runner?: QueryRunner,
   ): Promise<{ id: string; isActive: boolean }> {
-    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+    const repo = runner
+      ? runner.manager.getRepository(Product)
+      : this.productRepo;
     const product = await repo.findOne({ where: { id, tenantId } });
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
 
@@ -415,9 +489,33 @@ export class CatalogService {
     return { id, isActive };
   }
 
-  async deleteProduct(tenantId: string, id: string, runner?: QueryRunner): Promise<void> {
-    const productRepo = runner ? runner.manager.getRepository(Product) : this.productRepo;
-    const orderRepo = runner ? runner.manager.getRepository(Order) : this.orderRepo;
+  async updateProductStock(
+    tenantId: string,
+    id: string,
+    inStock: boolean,
+    runner?: QueryRunner,
+  ): Promise<{ id: string; inStock: boolean }> {
+    const repo = runner
+      ? runner.manager.getRepository(Product)
+      : this.productRepo;
+    const product = await repo.findOne({ where: { id, tenantId } });
+    if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
+
+    await repo.update(id, { inStock });
+    return { id, inStock };
+  }
+
+  async deleteProduct(
+    tenantId: string,
+    id: string,
+    runner?: QueryRunner,
+  ): Promise<void> {
+    const productRepo = runner
+      ? runner.manager.getRepository(Product)
+      : this.productRepo;
+    const orderRepo = runner
+      ? runner.manager.getRepository(Order)
+      : this.orderRepo;
 
     const product = await productRepo.findOne({ where: { id, tenantId } });
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
@@ -438,8 +536,14 @@ export class CatalogService {
     await productRepo.remove(product);
   }
 
-  async reorderProducts(tenantId: string, dto: { ids: string[] }, runner?: QueryRunner): Promise<void> {
-    const repo = runner ? runner.manager.getRepository(Product) : this.productRepo;
+  async reorderProducts(
+    tenantId: string,
+    dto: { ids: string[] },
+    runner?: QueryRunner,
+  ): Promise<void> {
+    const repo = runner
+      ? runner.manager.getRepository(Product)
+      : this.productRepo;
     const products = await repo.find({
       where: { id: In(dto.ids) },
       select: ['id', 'tenantId'],
@@ -452,7 +556,7 @@ export class CatalogService {
 
     if (runner) {
       for (let i = 0; i < dto.ids.length; i++) {
-        await runner.manager.update(Product, dto.ids[i]!, { order: i });
+        await runner.manager.update(Product, dto.ids[i], { order: i });
       }
     } else {
       const queryRunner = this.dataSource.createQueryRunner();
@@ -460,7 +564,7 @@ export class CatalogService {
       await queryRunner.startTransaction();
       try {
         for (let i = 0; i < dto.ids.length; i++) {
-          await queryRunner.manager.update(Product, dto.ids[i]!, { order: i });
+          await queryRunner.manager.update(Product, dto.ids[i], { order: i });
         }
         await queryRunner.commitTransaction();
       } catch (err) {
@@ -477,7 +581,20 @@ export class CatalogService {
   private async saveOptionGroups(
     manager: DataSource['manager'],
     productId: string,
-    groups: Array<{ name: string; type: string; isRequired?: boolean; minSelections?: number; maxSelections?: number; order?: number; items: Array<{ name: string; priceModifier: number; isDefault?: boolean; order?: number }> }>,
+    groups: Array<{
+      name: string;
+      type: string;
+      isRequired?: boolean;
+      minSelections?: number;
+      maxSelections?: number;
+      order?: number;
+      items: Array<{
+        name: string;
+        priceModifier: number;
+        isDefault?: boolean;
+        order?: number;
+      }>;
+    }>,
   ): Promise<void> {
     for (const g of groups) {
       const group = manager.create(OptionGroup, {
