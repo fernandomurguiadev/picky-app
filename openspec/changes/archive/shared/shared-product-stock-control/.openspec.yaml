@@ -1,0 +1,38 @@
+name: shared-product-stock-control
+project_id: shared
+version: "1.0.0"
+status: done
+created_at: "2026-06-07"
+scope:
+  - api/src/modules/catalog/entities/product.entity.ts
+  - api/src/modules/catalog/dto/create-product.dto.ts
+  - api/src/modules/catalog/dto/update-product.dto.ts
+  - api/src/modules/catalog/dto/toggle-product-stock.dto.ts
+  - api/src/modules/catalog/catalog.service.ts
+  - api/src/modules/catalog/products.controller.ts
+  - api/src/modules/orders/orders.service.ts
+  - api/src/migrations/1780845183167-Migration.ts
+  - app/src/lib/types/catalog.ts
+  - app/src/lib/hooks/admin/use-products.ts
+  - app/src/app/(admin)/admin/catalog/products/page.tsx
+  - app/src/components/admin/product-form/index.tsx
+  - app/src/components/store/product-card/index.tsx
+  - app/src/components/store/product-detail-sheet/index.tsx
+description: >
+  Toggle binario inStock en productos. Permite marcar productos como agotados
+  sin sacarlos del catálogo. Badge "Sin stock" en storefront, botón de compra
+  deshabilitado en ProductCard y ProductDetailSheet. Validación en orders.service
+  para evitar bypass por API directa.
+artifacts:
+  exploration:
+    status: done
+    path: exploration.md
+  proposal:
+    status: done
+    path: proposal.md
+  design:
+    status: done
+    path: design.md
+  tasks:
+    status: done
+    path: tasks.md
