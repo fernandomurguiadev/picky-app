@@ -73,4 +73,13 @@ export const CatalogErrors = {
       message: 'Uno o más IDs no pertenecen a tu tenant.',
     };
   },
+
+  productStockManagedByQuantity(id: string): ErrorDefinition {
+    return {
+      statusCode: HttpStatus.CONFLICT,
+      code: CatalogErrorCodes.PRODUCT_STOCK_MANAGED_BY_QUANTITY,
+      message: `El stock del producto ${id} se gestiona por cantidad y no puede modificarse manualmente.`,
+      details: { id },
+    };
+  },
 };

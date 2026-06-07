@@ -38,6 +38,7 @@ const schema = z.object({
   isFeatured: z.boolean(),
   isActive: z.boolean(),
   inStock: z.boolean(),
+  stockQuantity: z.number().int().min(0).nullable(),
   optionGroups: z.array(
     z.object({
       id: z.string().optional(),
@@ -83,6 +84,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     isFeatured: p.isFeatured,
     isActive: p.isActive,
     inStock: p.inStock,
+    stockQuantity: p.stockQuantity ?? null,
     optionGroups: (p.optionGroups ?? []).map((og) => ({
       id: og.id,
       name: og.name,
@@ -110,6 +112,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     isFeatured: false,
     isActive: true,
     inStock: true,
+    stockQuantity: null,
     optionGroups: [],
   };
 
@@ -142,6 +145,8 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
   const isActive = watch("isActive");
   const isFeatured = watch("isFeatured");
   const inStock = watch("inStock");
+  const stockQuantity = watch("stockQuantity");
+  const isQuantityControlled = stockQuantity !== null;
 
   // Autosave en localStorage cada 30s (solo para nuevo producto)
   const saveToLocalStorage = useCallback(() => {
@@ -339,19 +344,74 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
                 onCheckedChange={(v) => setValue("isActive", v, { shouldDirty: true })}
               />
             </div>
-            <div className="flex items-center justify-between border-t border-border pt-4">
+            {!isQuantityControlled && (
+              <div className="flex items-center justify-between border-t border-border pt-4">
+                <div>
+                  <p className="text-sm font-medium">Disponible (en stock)</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Si está desactivado, el producto se muestra con la etiqueta "Sin stock" y no se puede comprar.
+                  </p>
+                </div>
+                <Switch
+                  id="p-instock"
+                  checked={inStock}
+                  onCheckedChange={(v) => setValue("inStock", v, { shouldDirty: true })}
+                />
+              </div>
+            )}
+          </section>
+
+          {/* Sección 6: Control de stock por cantidad */}
+          <section className="rounded-xl border border-border p-6 mb-6 space-y-4">
+            <h2 className="font-semibold">Control de stock</h2>
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium">Disponible (en stock)</p>
+                <p className="text-sm font-medium">Controlar por cantidad</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Si está desactivado, el producto se muestra con la etiqueta "Sin stock" y no se puede comprar.
+                  El sistema descuenta automáticamente unidades al recibir pedidos.
                 </p>
               </div>
               <Switch
-                id="p-instock"
-                checked={inStock}
-                onCheckedChange={(v) => setValue("inStock", v, { shouldDirty: true })}
+                id="p-stock-controlled"
+                checked={isQuantityControlled}
+                onCheckedChange={(v) => {
+                  if (v) {
+                    setValue("stockQuantity", 0, { shouldDirty: true });
+                    setValue("inStock", false, { shouldDirty: true });
+                  } else {
+                    setValue("stockQuantity", null, { shouldDirty: true });
+                    setValue("inStock", true, { shouldDirty: true });
+                  }
+                }}
               />
             </div>
+            {isQuantityControlled && (
+              <div className="border-t border-border pt-4 space-y-2">
+                <Label htmlFor="p-stock-qty">Cantidad inicial en stock</Label>
+                <Input
+                  id="p-stock-qty"
+                  type="number"
+                  min={0}
+                  step={1}
+                  className="w-36"
+                  placeholder="0"
+                  {...register("stockQuantity", {
+                    setValueAs: (v) =>
+                      v === "" || v === null || v === undefined
+                        ? null
+                        : Number.isNaN(Number(v))
+                        ? null
+                        : parseInt(v as string, 10),
+                  })}
+                />
+                {errors.stockQuantity && (
+                  <p className="text-sm text-destructive">{errors.stockQuantity.message}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  La disponibilidad se deriva automáticamente de la cantidad.
+                </p>
+              </div>
+            )}
           </section>
 
           {/* Sticky footer */}

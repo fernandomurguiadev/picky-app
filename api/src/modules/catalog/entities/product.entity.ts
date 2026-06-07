@@ -49,6 +49,9 @@ export class Product {
   @Column({ type: 'boolean', default: true })
   inStock!: boolean;
 
+  @Column({ type: 'integer', nullable: true, default: null })
+  stockQuantity!: number | null;
+
   @Column({ type: 'integer', default: 0 })
   order!: number;
 

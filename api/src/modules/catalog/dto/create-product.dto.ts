@@ -100,6 +100,11 @@ export class CreateProductDto {
   @IsInt()
   @Min(0)
   @IsOptional()
+  stockQuantity?: number;
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
   order?: number;
 
   @IsArray()

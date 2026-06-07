@@ -43,6 +43,7 @@ export interface Product {
   isFeatured: boolean;
   isActive: boolean;
   inStock: boolean;
+  stockQuantity: number | null;
   order: number;
   createdAt: string;
   updatedAt: string;
@@ -98,5 +99,6 @@ export interface ProductFormData {
   isFeatured: boolean;
   isActive: boolean;
   inStock: boolean;
+  stockQuantity: number | null;
   optionGroups: OptionGroupFormData[];
 }
