@@ -1,15 +1,14 @@
 change: inventory-stock-ledger
-phase: ready
+phase: apply
 artifact_store: openspec
 artifacts:
   exploration: true
   proposal: true
-  specs: true
-  design: true
+  specs: false
+  design: false
   tasks: true
 tasks_progress:
-  completed: []
-  pending:
+  completed:
     - "1.1 stock-movement.entity.ts"
     - "1.2 product.entity.ts stockQuantity"
     - "1.3 migration:generate"
@@ -33,5 +32,6 @@ tasks_progress:
     - "6.3 inventory/page.tsx"
     - "6.4 product-form stock section"
     - "6.5 products/page.tsx badge"
+  pending:
     - "7.1-7.6 verificacion"
-last_updated: 2026-06-07T17:30:00Z
+last_updated: 2026-06-07T14:30:00-03:00
