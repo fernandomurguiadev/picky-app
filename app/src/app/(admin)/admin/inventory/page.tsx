@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { SkeletonLoader } from "@/components/shared/skeleton-loader";
 import { EmptyState } from "@/components/shared/empty-state";
+import { SearchBar } from "@/components/shared/search-bar";
 import { toast } from "@/components/shared/toast";
 import {
   useStockProducts,
@@ -294,6 +295,25 @@ function AddMovementDialog({
 export default function InventoryPage() {
   const { data: products, isLoading } = useStockProducts();
   const [movementTarget, setMovementTarget] = useState<Product | null>(null);
+  const [categoryId, setCategoryId] = useState<string>("all");
+  const [search, setSearch] = useState("");
+
+  // Categorías únicas presentes en los productos con stock
+  const categories = products
+    ? Array.from(
+        new Map(
+          products
+            .filter((p) => p.category)
+            .map((p) => [p.category!.id, p.category!])
+        ).values()
+      ).sort((a, b) => a.name.localeCompare(b.name))
+    : [];
+
+  const filtered = products?.filter((p) => {
+    const matchCat = categoryId === "all" || p.category?.id === categoryId;
+    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
+    return matchCat && matchSearch;
+  }) ?? [];
 
   return (
     <div>
@@ -304,10 +324,36 @@ export default function InventoryPage() {
             Inventario
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Productos con control de stock por cantidad.
+            {products?.length ?? 0} productos con control de stock.
           </p>
         </div>
       </div>
+
+      {/* Filtros */}
+      {!isLoading && products && products.length > 0 && (
+        <div className="flex flex-col sm:flex-row gap-3 mb-6">
+          <div className="flex-1">
+            <SearchBar
+              defaultValue={search}
+              onChange={setSearch}
+              placeholder="Buscar producto..."
+            />
+          </div>
+          <Select value={categoryId} onValueChange={setCategoryId}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue placeholder="Categoría" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las categorías</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {isLoading && <SkeletonLoader rows={5} columns={1} />}
 
@@ -320,9 +366,16 @@ export default function InventoryPage() {
         />
       )}
 
-      {!isLoading && products && products.length > 0 && (
+      {!isLoading && products && products.length > 0 && filtered.length === 0 && (
+        <EmptyState
+          title="Sin resultados"
+          description="No hay productos que coincidan con los filtros aplicados."
+        />
+      )}
+
+      {!isLoading && filtered.length > 0 && (
         <div className="space-y-2.5">
-          {products.map((product) => (
+          {filtered.map((product) => (
             <ProductStockRow
               key={product.id}
               product={product}
