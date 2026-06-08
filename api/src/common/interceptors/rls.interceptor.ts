@@ -2,6 +2,7 @@ import {
   CallHandler,
   ExecutionContext,
   Injectable,
+  Logger,
   NestInterceptor,
   ForbiddenException,
 } from '@nestjs/common';
@@ -25,6 +26,8 @@ interface RequestWithRls extends Request {
 
 @Injectable()
 export class RlsInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(RlsInterceptor.name);
+
   constructor(
     private readonly dataSource: DataSource,
     private readonly reflector: Reflector,
@@ -67,14 +70,20 @@ export class RlsInterceptor implements NestInterceptor {
           mergeMap(async (result) => {
             try {
               await queryRunner.commitTransaction();
+            } catch (err) {
+              this.logger.error('[RlsInterceptor] commitTransaction falló', err);
+              throw err;
             } finally {
               await queryRunner.release();
             }
             return result;
           }),
           catchError(async (error) => {
+            this.logger.error('[RlsInterceptor] error en handler, haciendo rollback', error);
             try {
               await queryRunner.rollbackTransaction();
+            } catch {
+              // Ignoramos si la transacción no había arrancado o ya se había confirmado
             } finally {
               await queryRunner.release();
             }

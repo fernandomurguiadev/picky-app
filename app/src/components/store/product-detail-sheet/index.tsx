@@ -122,26 +122,26 @@ export function ProductDetailSheet({
   };
 
   const content = (
-    <div className="flex h-full flex-col">
-      <div className="w-full overflow-hidden bg-muted">
+    <div className="flex flex-1 min-h-0 flex-col">
+      <div className="relative w-full aspect-[4/3] overflow-hidden bg-muted shrink-0">
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
             alt={product.name}
-            width={800}
-            height={600}
-            className="w-full aspect-[4/3] object-cover"
+            fill
+            className="object-contain"
             sizes="(max-width: 768px) 100vw, 40vw"
             priority
           />
         ) : (
-          <div className="flex aspect-[4/3] w-full items-center justify-center text-5xl text-muted-foreground">
+          <div className="flex h-full w-full items-center justify-center text-5xl text-muted-foreground">
             🍽️
           </div>
         )}
       </div>
 
-      <div className="flex-1 space-y-5 overflow-y-auto px-4 py-4">
+      {/* Info del producto — siempre visible */}
+      <div className="shrink-0 px-4 pt-4 pb-2">
         <div className="rounded-xl bg-[var(--color-primary)] p-4 text-[var(--color-primary-foreground)] space-y-2 shadow-xs">
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-xl font-bold leading-tight">{product.name}</h2>
@@ -155,7 +155,10 @@ export function ProductDetailSheet({
             </p>
           )}
         </div>
+      </div>
 
+      {/* Opcionales — scrollean si hay muchos */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
         <VariantSelector
           optionGroups={product.optionGroups ?? []}
           value={selectedOptions}
@@ -203,7 +206,7 @@ export function ProductDetailSheet({
         <Drawer.Root open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
           <Drawer.Portal>
             <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-            <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 flex max-h-[92vh] flex-col rounded-t-[28px] bg-background outline-none">
+            <Drawer.Content className={`fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-[28px] bg-background outline-none ${product.optionGroups?.length ? "max-h-[92vh]" : "max-h-[88vh]"}`}>
               <Drawer.Title className="sr-only">{product.name}</Drawer.Title>
               <Drawer.Description className="sr-only">
                 Detalle del producto {product.name} de la tienda {slug}

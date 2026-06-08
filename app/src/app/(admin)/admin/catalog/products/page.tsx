@@ -348,7 +348,6 @@ export default function ProductsPage() {
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="flex-1">
           <SearchBar
-            key={search}
             defaultValue={search}
             onChange={handleSearchChange}
             placeholder="Buscar productos..."

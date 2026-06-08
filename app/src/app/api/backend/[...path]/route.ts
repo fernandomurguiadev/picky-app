@@ -43,11 +43,16 @@ async function handler(
     body: body ?? undefined,
   });
 
-  const responseData = await backendRes.arrayBuffer();
+  // 101, 204, 205, 304 are null-body statuses — the Response constructor
+  // throws if you pass a body (even an empty ArrayBuffer) for these codes.
+  const isNullBody = [101, 204, 205, 304].includes(backendRes.status);
 
-  const responseHeaders: HeadersInit = {
-    "Content-Type": backendRes.headers.get("content-type") ?? "application/json",
-  };
+  const responseHeaders: HeadersInit = {};
+
+  if (!isNullBody) {
+    responseHeaders["Content-Type"] =
+      backendRes.headers.get("content-type") ?? "application/json";
+  }
 
   // Forward Set-Cookie if the backend sets cookies (e.g. rotating/updating refresh tokens during tenant switch)
   const setCookie = backendRes.headers.get("set-cookie");
@@ -55,6 +60,14 @@ async function handler(
     responseHeaders["Set-Cookie"] = setCookie;
   }
 
+  if (isNullBody) {
+    return new NextResponse(null, {
+      status: backendRes.status,
+      headers: responseHeaders,
+    });
+  }
+
+  const responseData = await backendRes.arrayBuffer();
   return new NextResponse(responseData, {
     status: backendRes.status,
     headers: responseHeaders,

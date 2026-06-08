@@ -19,6 +19,7 @@ import { OrdersModule } from './modules/orders/orders.module.js';
 import { UploadModule } from './modules/upload/upload.module.js';
 import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { InventoryModule } from './modules/inventory/inventory.module.js';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -26,6 +27,46 @@ import { InventoryModule } from './modules/inventory/inventory.module.js';
       isGlobal: true,
       validate: validateEnv,
       load: [databaseConfig, jwtConfig],
+    }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport:
+          process.env['NODE_ENV'] !== 'production'
+            ? {
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  singleLine: true,
+                },
+              }
+            : {
+                targets: [
+                  {
+                    target: 'pino/file',
+                    level: 'info',
+                    options: { destination: 1 }, // stdout
+                  },
+                  {
+                    target: 'pino-roll',
+                    level: 'info',
+                    options: {
+                      file: './logs/picky-api.log',
+                      frequency: 'daily',
+                      mkdir: true,
+                      limit: { count: 30 },
+                    },
+                  },
+                ],
+              },
+        autoLogging: true,
+        serializers: {
+          req: (req) => ({
+            id: req.id,
+            method: req.method,
+            url: req.url,
+          }),
+        },
+      },
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

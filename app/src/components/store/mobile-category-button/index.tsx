@@ -23,13 +23,17 @@ export function MobileCategoryButton({ categories }: MobileCategoryButtonProps) 
 
   const handleScroll = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
-    const el = document.getElementById(id);
-    if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 130;
-      window.scrollTo({ top: y, behavior: "smooth" });
-    }
     setActiveId(id);
     setOpen(false);
+    // Vaul locks body scroll while the drawer is open; scrolling after the
+    // close animation (≈300 ms) ensures the lock is released first.
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.scrollY - 130;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    }, 300);
   };
 
   return (

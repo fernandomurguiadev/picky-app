@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, EntityManager, In, Repository, QueryRunner } from 'typeorm';
 
@@ -20,6 +20,8 @@ import type { ProductsQueryDto } from './dto/pagination-query.dto.js';
 
 @Injectable()
 export class CatalogService {
+  private readonly logger = new Logger(CatalogService.name);
+
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepo: Repository<Category>,
@@ -548,13 +550,21 @@ export class CatalogService {
     }
 
     const manager = runner ? runner.manager : this.dataSource.manager;
+    this.logger.debug(`[deleteProduct] Borrando stock_movements para product=${id}`);
     await manager.query(
       `DELETE FROM "stock_movements" WHERE "productId" = $1 AND "tenantId" = $2`,
       [id, tenantId],
-    ).catch(() => {
-      // Tabla puede no existir todavía si la migración aún no corrió
+    ).catch((err: unknown) => {
+      this.logger.warn(`[deleteProduct] No se pudieron borrar stock_movements: ${String(err)}`);
     });
-    await productRepo.delete({ id, tenantId });
+    this.logger.debug(`[deleteProduct] Borrando product=${id}`);
+    try {
+      await productRepo.delete({ id, tenantId });
+      this.logger.debug(`[deleteProduct] product=${id} eliminado OK`);
+    } catch (err) {
+      this.logger.error(`[deleteProduct] Error al borrar product=${id}`, err);
+      throw err;
+    }
   }
 
   async reorderProducts(
