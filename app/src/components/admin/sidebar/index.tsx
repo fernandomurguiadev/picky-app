@@ -16,21 +16,26 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import { useMyTenants, useSwitchTenant } from "@/lib/hooks/admin/use-tenant-switcher";
+import { useStoreSettings } from "@/lib/hooks/admin/use-store-settings";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/catalog/categories", label: "Categorías", icon: Tag },
-  { href: "/admin/catalog/products", label: "Productos", icon: Package },
-  { href: "/admin/inventory", label: "Inventario", icon: Warehouse },
-  { href: "/admin/orders", label: "Pedidos", icon: ShoppingBag },
-  { href: "/admin/settings/info", label: "Configuración", icon: Settings },
-];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const activeTenantId = useAuthStore((s) => s.tenantId);
+  const { data: settings } = useStoreSettings();
+  const isServices = settings?.storeType === "services";
+
+  const navItems = [
+    { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin/catalog/categories", label: "Categorías", icon: Tag },
+    { href: "/admin/catalog/products", label: isServices ? "Servicios" : "Productos", icon: Package },
+    ...(!isServices ? [
+      { href: "/admin/inventory", label: "Inventario", icon: Warehouse },
+      { href: "/admin/orders", label: "Pedidos", icon: ShoppingBag },
+    ] : []),
+    { href: "/admin/settings/info", label: "Configuración", icon: Settings },
+  ];
 
   // Consulta de Tenants vinculados al usuario logueado
   const { data: myTenants = [], isLoading } = useMyTenants();

@@ -20,6 +20,13 @@ export class StoreSettings {
   @Column({ type: 'uuid', unique: true })
   tenantId!: string;
 
+  // Modelo de Negocio
+  @Column({ type: 'varchar', length: 20, default: 'retail' })
+  storeType!: 'retail' | 'services';
+
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  customCtaText!: string | null;
+
   @Column({ type: 'text', nullable: true })
   description!: string | null;
 

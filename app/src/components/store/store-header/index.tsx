@@ -47,9 +47,11 @@ export function StoreHeader({ store, isOpen, todaySchedule, categories = [] }: S
 
           <div className="flex shrink-0 items-center gap-3">
             <StoreStatusBadge isOpen={isOpen} todaySchedule={todaySchedule} />
-            <CartDrawer>
-              <CartBadge />
-            </CartDrawer>
+            {store.storeType !== "services" && (
+              <CartDrawer>
+                <CartBadge />
+              </CartDrawer>
+            )}
           </div>
         </div>
       </div>

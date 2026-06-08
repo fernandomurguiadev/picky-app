@@ -13,6 +13,15 @@ import { Type } from 'class-transformer';
 import { DayScheduleDto } from './day-schedule.dto.js';
 
 export class UpdateStoreSettingsDto {
+  // Modelo de Negocio
+  @IsOptional()
+  @IsIn(['retail', 'services'])
+  storeType?: 'retail' | 'services';
+
+  @IsOptional()
+  @IsString()
+  customCtaText?: string | null;
+
   // Info básica
   @IsOptional()
   @IsString()

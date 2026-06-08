@@ -15,18 +15,20 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/shared/toast";
 import { cn, tosCents } from "@/lib/utils";
-import { 
-  Store, 
-  FolderHeart, 
-  PackagePlus, 
-  CalendarClock, 
-  ArrowRight, 
-  ArrowLeft, 
+import {
+  Store,
+  FolderHeart,
+  PackagePlus,
+  CalendarClock,
+  ArrowRight,
+  ArrowLeft,
   CheckCircle2,
   Sparkles,
   Plus,
   HelpCircle,
-  Loader2
+  Loader2,
+  ShoppingCart,
+  MessageCircle,
 } from "lucide-react";
 
 import { StorePreview } from "@/components/admin/store-preview";
@@ -61,7 +63,8 @@ export default function OnboardingPage() {
   const createCategoryMutation = useCreateCategory();
   const createProductMutation = useCreateProduct();
 
-  // Step 1 State: Profile
+  // Step 1 State: Tipo de tienda + Profile
+  const [storeType, setStoreType] = useState<"retail" | "services">("retail");
   const [logoUrl, setLogoUrl] = useState("");
   const [description, setDescription] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#0f172a"); // Slate/Negro premium por defecto
@@ -108,6 +111,7 @@ export default function OnboardingPage() {
         primaryColor: primaryColor,
         accentColor: accentColor,
         backgroundColor: backgroundColor,
+        storeType,
       });
       toast.success("¡Identidad de marca configurada!");
       nextStep();
@@ -158,7 +162,7 @@ export default function OnboardingPage() {
         isFeatured: true,
         optionGroups: [],
       });
-      toast.success("¡Primer producto publicado con éxito!");
+      toast.success(storeType === "services" ? "¡Primer servicio publicado!" : "¡Primer producto publicado con éxito!");
       nextStep();
     } catch {
       toast.error("Fallo al dar de alta el producto.");
@@ -315,7 +319,47 @@ export default function OnboardingPage() {
         {currentStep === 1 && (
           <form noValidate onSubmit={handleStep1Submit} className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-1">
-              <h3 className="font-bold text-lg tracking-tight">Identidad Visual</h3>
+              <h3 className="font-bold text-lg tracking-tight">Tipo de negocio</h3>
+              <p className="text-xs text-muted-foreground">¿Cómo opera tu comercio?</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setStoreType("retail")}
+                className={cn(
+                  "flex flex-col items-center gap-2 rounded-xl border-2 p-4 text-center transition-all",
+                  storeType === "retail" ? "border-primary bg-primary/5" : "border-border hover:border-border/80"
+                )}
+              >
+                <div className={cn("flex h-9 w-9 items-center justify-center rounded-full", storeType === "retail" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                  <ShoppingCart className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Productos</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Carrito y checkout</p>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setStoreType("services")}
+                className={cn(
+                  "flex flex-col items-center gap-2 rounded-xl border-2 p-4 text-center transition-all",
+                  storeType === "services" ? "border-primary bg-primary/5" : "border-border hover:border-border/80"
+                )}
+              >
+                <div className={cn("flex h-9 w-9 items-center justify-center rounded-full", storeType === "services" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                  <MessageCircle className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">Servicios</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Consultas por WhatsApp</p>
+                </div>
+              </button>
+            </div>
+
+            <div className="border-t border-border/40 pt-4 space-y-1">
+              <h3 className="font-bold text-base tracking-tight">Identidad Visual</h3>
               <p className="text-xs text-muted-foreground">Subí el logo y contanos de qué se trata tu local.</p>
             </div>
 
@@ -381,7 +425,11 @@ export default function OnboardingPage() {
           <form noValidate onSubmit={handleStep2Submit} className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-1">
               <h3 className="font-bold text-lg tracking-tight">Tu primer Categoría</h3>
-              <p className="text-xs text-muted-foreground">Sirve para agrupar tus productos. Ej: Hamburguesas, Bebidas.</p>
+              <p className="text-xs text-muted-foreground">
+                {storeType === "services"
+                  ? "Sirve para agrupar tus servicios. Ej: Cortes, Coloraciones."
+                  : "Sirve para agrupar tus productos. Ej: Hamburguesas, Bebidas."}
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -390,7 +438,7 @@ export default function OnboardingPage() {
                 id="catName"
                 required
                 autoFocus
-                placeholder="Ej: Hamburguesas Clásicas"
+                placeholder={storeType === "services" ? "Ej: Cortes de Cabello" : "Ej: Hamburguesas Clásicas"}
                 value={catName}
                 onChange={(e) => setCatName(e.target.value)}
                 className="rounded-xl bg-accent/30"
@@ -410,20 +458,26 @@ export default function OnboardingPage() {
           </form>
         )}
 
-        {/* STEP 3: First Product */}
+        {/* STEP 3: First Product / Service */}
         {currentStep === 3 && (
           <form noValidate onSubmit={handleStep3Submit} className="space-y-5 animate-in fade-in duration-300">
             <div className="space-y-1">
-              <h3 className="font-bold text-lg tracking-tight">Cargá tu primer Producto</h3>
-              <p className="text-xs text-muted-foreground">Comencemos con tu plato o producto estrella ⭐.</p>
+              <h3 className="font-bold text-lg tracking-tight">
+                {storeType === "services" ? "Cargá tu primer Servicio" : "Cargá tu primer Producto"}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {storeType === "services" ? "Comencemos con tu servicio principal ⭐." : "Comencemos con tu plato o producto estrella ⭐."}
+              </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="prodName" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nombre del Producto</Label>
+              <Label htmlFor="prodName" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {storeType === "services" ? "Nombre del Servicio" : "Nombre del Producto"}
+              </Label>
               <Input
                 id="prodName"
                 required
-                placeholder="Ej: Burger Completa con papas"
+                placeholder={storeType === "services" ? "Ej: Corte y peinado" : "Ej: Burger Completa con papas"}
                 value={prodName}
                 onChange={(e) => setProdName(e.target.value)}
                 className="rounded-xl bg-accent/30"
@@ -431,25 +485,32 @@ export default function OnboardingPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="prodPrice" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Precio de Venta ($)</Label>
+              <Label htmlFor="prodPrice" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {storeType === "services" ? "Precio (dejá 0 si es a consultar)" : "Precio de Venta ($)"}
+              </Label>
               <Input
                 id="prodPrice"
                 required
                 type="number"
                 min="0"
                 step="0.01"
-                placeholder="9500"
+                placeholder="0"
                 value={prodPrice}
                 onChange={(e) => setProdPrice(e.target.value)}
                 className="rounded-xl bg-accent/30"
               />
+              {storeType === "services" && (
+                <p className="text-[10px] text-muted-foreground">Si el precio es 0, no se mostrará en tu tienda.</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="prodDesc" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Detalle de ingredientes (Opcional)</Label>
+              <Label htmlFor="prodDesc" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {storeType === "services" ? "Descripción (Opcional)" : "Detalle de ingredientes (Opcional)"}
+              </Label>
               <Input
                 id="prodDesc"
-                placeholder="Ej: Doble medallón, cheddar, lechuga y tomate."
+                placeholder={storeType === "services" ? "Ej: Incluye lavado, corte y secado." : "Ej: Doble medallón, cheddar, lechuga y tomate."}
                 value={prodDesc}
                 onChange={(e) => setProdDesc(e.target.value)}
                 className="rounded-xl bg-accent/30"
@@ -457,13 +518,17 @@ export default function OnboardingPage() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Foto del Producto (Recomendado)</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {storeType === "services" ? "Foto del Servicio (Recomendado)" : "Foto del Producto (Recomendado)"}
+              </Label>
               <ImageUploader
                 value={prodImageUrl}
                 onChange={(url) => setProdImageUrl(url)}
                 onRemove={() => setProdImageUrl("")}
               />
-              <p className="text-[10px] text-muted-foreground font-medium leading-normal">Subí una foto atractiva. Los productos con fotos venden hasta 3 veces más.</p>
+              <p className="text-[10px] text-muted-foreground font-medium leading-normal">
+                {storeType === "services" ? "Una buena foto genera más consultas." : "Subí una foto atractiva. Los productos con fotos venden hasta 3 veces más."}
+              </p>
             </div>
 
             <div className="flex gap-3">

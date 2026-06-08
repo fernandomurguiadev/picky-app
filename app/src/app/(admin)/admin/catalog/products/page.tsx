@@ -38,6 +38,7 @@ import { SkeletonLoader } from "@/components/shared/skeleton-loader";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
 import { useCategories } from "@/lib/hooks/admin/use-categories";
+import { useStoreSettings } from "@/lib/hooks/admin/use-store-settings";
 import {
   useProducts,
   useToggleProductStatus,
@@ -200,6 +201,10 @@ function readSession<T>(key: string, parse: (v: string) => T | undefined): T | u
 
 export default function ProductsPage() {
   const queryClient = useQueryClient();
+  const { data: storeSettings } = useStoreSettings();
+  const isServices = storeSettings?.storeType === "services";
+  const itemLabel = isServices ? "servicio" : "producto";
+  const itemLabelPlural = isServices ? "servicios" : "productos";
   const [page, setPage] = useState<number>(() => {
     const n = readSession("picky-admin-products-page", (v) => {
       const parsed = Number(v);
@@ -330,16 +335,16 @@ export default function ProductsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Productos</h1>
+          <h1 className="text-2xl font-bold capitalize">{isServices ? "Servicios" : "Productos"}</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {data?.meta.total ?? 0} productos
+            {data?.meta.total ?? 0} {itemLabelPlural}
             {canReorder ? " · arrastrá para reordenar." : " · seleccioná una categoría para reordenar."}
           </p>
         </div>
         <Button asChild>
           <Link href="/admin/catalog/products/new">
             <Plus className="h-4 w-4 mr-2" />
-            Nuevo producto
+            Nuevo {itemLabel}
           </Link>
         </Button>
       </div>
@@ -350,7 +355,7 @@ export default function ProductsPage() {
           <SearchBar
             defaultValue={search}
             onChange={handleSearchChange}
-            placeholder="Buscar productos..."
+            placeholder={`Buscar ${itemLabelPlural}...`}
           />
         </div>
         <Select
@@ -393,9 +398,9 @@ export default function ProductsPage() {
 
       {!showSkeleton && data?.data.length === 0 && (
         <EmptyState
-          title="Sin productos"
-          description="Creá tu primer producto para empezar a vender."
-          actionLabel="Crear producto"
+          title={`Sin ${itemLabelPlural}`}
+          description={isServices ? `Creá tu primer servicio para que tus clientes puedan consultarte.` : `Creá tu primer producto para empezar a vender.`}
+          actionLabel={`Crear ${itemLabel}`}
           onAction={() => (window.location.href = "/admin/catalog/products/new")}
         />
       )}

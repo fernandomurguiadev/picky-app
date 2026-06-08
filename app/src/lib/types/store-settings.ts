@@ -36,6 +36,8 @@ export interface StoreSettings {
   transferAlias: string | null;
   cardEnabled: boolean;
   isManualOpen: boolean | null;
+  storeType: 'retail' | 'services';
+  customCtaText: string | null;
   createdAt: string;
   updatedAt: string;
   tenant?: Tenant;

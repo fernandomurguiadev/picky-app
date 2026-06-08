@@ -17,6 +17,8 @@ import { VariantSelector } from "@/components/store/variant-selector";
 import { ConfirmModal } from "@/components/shared/confirm-modal";
 import { formatCurrency } from "@/lib/utils";
 import { useCartStore } from "@/lib/stores/cart.store";
+import { useStoreConfig } from "@/components/store/store-config-provider";
+import { ServiceActionButton } from "@/components/store/actions/service-action-button";
 import type { Product } from "@/lib/types/catalog";
 import type { SelectedOption } from "@/lib/types/store";
 
@@ -33,6 +35,10 @@ export function ProductDetailSheet({
   open,
   onClose,
 }: ProductDetailSheetProps) {
+  const { storeType, customCtaText, whatsapp } = useStoreConfig();
+  const isServices = storeType === "services";
+  const showPrice = !(isServices && product.price === 0);
+
   const addItem = useCartStore((state) => state.addItem);
   const setTenantId = useCartStore((state) => state.setTenantId);
   const clearCart = useCartStore((state) => state.clearCart);
@@ -145,9 +151,11 @@ export function ProductDetailSheet({
         <div className="rounded-xl bg-[var(--color-primary)] p-4 text-[var(--color-primary-foreground)] space-y-2 shadow-xs">
           <div className="flex items-start justify-between gap-4">
             <h2 className="text-xl font-bold leading-tight">{product.name}</h2>
-            <span className="shrink-0 text-lg font-semibold bg-white/15 dark:bg-black/15 px-3 py-1 rounded-lg backdrop-blur-xs">
-              {formatCurrency(product.price)}
-            </span>
+            {showPrice && (
+              <span className="shrink-0 text-lg font-semibold bg-white/15 dark:bg-black/15 px-3 py-1 rounded-lg backdrop-blur-xs">
+                {formatCurrency(product.price)}
+              </span>
+            )}
           </div>
           {product.description && (
             <p className="text-sm leading-relaxed opacity-90 text-[var(--color-primary-foreground)]/90">
@@ -157,18 +165,26 @@ export function ProductDetailSheet({
         </div>
       </div>
 
-      {/* Opcionales — scrollean si hay muchos */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
-        <VariantSelector
-          optionGroups={product.optionGroups ?? []}
-          value={selectedOptions}
-          onChange={setSelectedOptions}
-          onValidityChange={setIsValid}
-        />
-      </div>
+      {/* Opcionales — solo en modo retail */}
+      {!isServices && (
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 py-3">
+          <VariantSelector
+            optionGroups={product.optionGroups ?? []}
+            value={selectedOptions}
+            onChange={setSelectedOptions}
+            onValidityChange={setIsValid}
+          />
+        </div>
+      )}
 
       <div className="border-t bg-background px-4 py-3">
-        {product.inStock ? (
+        {isServices ? (
+          <ServiceActionButton
+            serviceName={product.name}
+            whatsappNumber={whatsapp}
+            ctaText={customCtaText}
+          />
+        ) : product.inStock ? (
           <div className="flex items-center justify-between gap-3">
             <QuantitySelector value={quantity} onChange={setQuantity} min={1} />
             <Button
@@ -206,7 +222,7 @@ export function ProductDetailSheet({
         <Drawer.Root open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
           <Drawer.Portal>
             <Drawer.Overlay className="fixed inset-0 z-50 bg-black/40" />
-            <Drawer.Content className={`fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-[28px] bg-background outline-none ${product.optionGroups?.length ? "max-h-[92vh]" : "max-h-[88vh]"}`}>
+            <Drawer.Content className={`fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-[28px] bg-background outline-none ${!isServices && product.optionGroups?.length ? "max-h-[92vh]" : "max-h-[88vh]"}`}>
               <Drawer.Title className="sr-only">{product.name}</Drawer.Title>
               <Drawer.Description className="sr-only">
                 Detalle del producto {product.name} de la tienda {slug}

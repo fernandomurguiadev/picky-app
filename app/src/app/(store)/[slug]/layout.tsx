@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { StoreHeader } from "@/components/store/store-header";
 import { CartDrawer } from "@/components/store/cart-drawer";
 import { FloatingCartBanner } from "@/components/store/floating-cart-banner";
+import { StoreConfigProvider } from "@/components/store/store-config-provider";
 import { getContrastColor, safeHex } from "@/lib/utils/color";
 import type { StorePublicData, StoreStatus, CardStyle } from "@/lib/types/store";
 import type { Category } from "@/lib/types/catalog";
@@ -198,8 +199,14 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
     ` : ""}
   `.trim();
 
+  const isServices = store.storeType === "services";
+
   return (
-    <>
+    <StoreConfigProvider
+      storeType={store.storeType ?? "retail"}
+      customCtaText={store.customCtaText ?? null}
+      whatsapp={store.whatsapp ?? null}
+    >
       <style dangerouslySetInnerHTML={{ __html: themeCss }} />
       <div
         data-store
@@ -236,11 +243,12 @@ export default async function StoreLayout({ children, params }: StoreLayoutProps
           Powered by PickyApp
         </footer>
 
-        {/* Floating Cart Banner for Mobile wrapped in the Drawer logic */}
-        <CartDrawer>
-          <FloatingCartBanner />
-        </CartDrawer>
+        {!isServices && (
+          <CartDrawer>
+            <FloatingCartBanner />
+          </CartDrawer>
+        )}
       </div>
-    </>
+    </StoreConfigProvider>
   );
 }

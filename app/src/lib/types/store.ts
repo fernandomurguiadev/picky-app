@@ -41,6 +41,8 @@ export interface StorePublicData {
   transferEnabled: boolean;
   cardEnabled: boolean;
   transferAlias: string | null;
+  storeType: 'retail' | 'services';
+  customCtaText: string | null;
 }
 
 export interface Shift {

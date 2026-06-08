@@ -137,6 +137,8 @@ export class TenantsService {
       transferEnabled: settings?.transferEnabled ?? false,
       cardEnabled: settings?.cardEnabled ?? false,
       transferAlias: settings?.transferAlias ?? null,
+      storeType: (settings?.storeType ?? 'retail') as 'retail' | 'services',
+      customCtaText: settings?.customCtaText ?? null,
     };
   }
 

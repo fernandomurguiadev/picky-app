@@ -22,6 +22,7 @@ import { ImageUploader } from "@/components/shared/image-uploader";
 import { OptionGroupEditor } from "@/components/admin/option-group-editor";
 import { useCategories } from "@/lib/hooks/admin/use-categories";
 import { useCreateProduct, useUpdateProduct } from "@/lib/hooks/admin/use-products";
+import { useStoreSettings } from "@/lib/hooks/admin/use-store-settings";
 import { toast } from "@/components/shared/toast";
 import { fromCents, tosCents } from "@/lib/utils";
 import type { Product, ProductFormData } from "@/lib/types/catalog";
@@ -72,6 +73,8 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct();
   const { data: categories } = useCategories();
+  const { data: storeSettings } = useStoreSettings();
+  const isServices = storeSettings?.storeType === "services";
 
   const [saveIndicator, setSaveIndicator] = useState<"idle" | "saving" | "saved">("idle");
   const [isImageUploading, setIsImageUploading] = useState(false);
@@ -326,25 +329,27 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
             </div>
           </section>
 
-          {/* Sección 4: Variantes */}
-          <section className="rounded-xl border border-border p-6 mb-6 space-y-4">
-            <div>
-              <h2 className="font-semibold text-lg">Variantes y opciones</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Agregá grupos de opciones (tamaños, extras, bebidas, etc.)
-              </p>
-            </div>
-            <OptionGroupEditor />
-          </section>
+          {/* Sección 4: Variantes — solo en modo retail */}
+          {!isServices && (
+            <section className="rounded-xl border border-border p-6 mb-6 space-y-4">
+              <div>
+                <h2 className="font-semibold text-lg">Variantes y opciones</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Agregá grupos de opciones (tamaños, extras, bebidas, etc.)
+                </p>
+              </div>
+              <OptionGroupEditor />
+            </section>
+          )}
 
           {/* Sección 5: Estado */}
           <section className="rounded-xl border border-border p-6 mb-6 space-y-4">
-            <h2 className="font-semibold">Publicar producto</h2>
+            <h2 className="font-semibold">{isServices ? "Publicar servicio" : "Publicar producto"}</h2>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Visible en la tienda</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Los productos inactivos no se muestran en la carta.
+                  {isServices ? "Los servicios inactivos no se muestran en la tienda." : "Los productos inactivos no se muestran en la carta."}
                 </p>
               </div>
               <Switch
@@ -356,9 +361,11 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
             {!isQuantityControlled && (
               <div className="flex items-center justify-between border-t border-border pt-4">
                 <div>
-                  <p className="text-sm font-medium">Disponible (en stock)</p>
+                  <p className="text-sm font-medium">{isServices ? "Disponible" : "Disponible (en stock)"}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Si está desactivado, el producto se muestra con la etiqueta "Sin stock" y no se puede comprar.
+                    {isServices
+                      ? "Si está desactivado, el servicio se muestra como no disponible."
+                      : "Si está desactivado, el producto se muestra con la etiqueta \"Sin stock\" y no se puede comprar."}
                   </p>
                 </div>
                 <Switch
@@ -370,58 +377,60 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
             )}
           </section>
 
-          {/* Sección 6: Control de stock por cantidad */}
-          <section className="rounded-xl border border-border p-6 mb-6 space-y-4">
-            <h2 className="font-semibold">Control de stock</h2>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Controlar por cantidad</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  El sistema descuenta automáticamente unidades al recibir pedidos.
-                </p>
-              </div>
-              <Switch
-                id="p-stock-controlled"
-                checked={isQuantityControlled}
-                onCheckedChange={(v) => {
-                  if (v) {
-                    setValue("stockQuantity", 0, { shouldDirty: true });
-                    setValue("inStock", false, { shouldDirty: true });
-                  } else {
-                    setValue("stockQuantity", null, { shouldDirty: true });
-                    setValue("inStock", true, { shouldDirty: true });
-                  }
-                }}
-              />
-            </div>
-            {isQuantityControlled && (
-              <div className="border-t border-border pt-4 space-y-2">
-                <Label htmlFor="p-stock-qty">Cantidad inicial en stock</Label>
-                <Input
-                  id="p-stock-qty"
-                  type="number"
-                  min={0}
-                  step={1}
-                  className="w-36"
-                  placeholder="0"
-                  {...register("stockQuantity", {
-                    setValueAs: (v) =>
-                      v === "" || v === null || v === undefined
-                        ? null
-                        : Number.isNaN(Number(v))
-                        ? null
-                        : parseInt(v as string, 10),
-                  })}
+          {/* Sección 6: Control de stock por cantidad — solo en modo retail */}
+          {!isServices && (
+            <section className="rounded-xl border border-border p-6 mb-6 space-y-4">
+              <h2 className="font-semibold">Control de stock</h2>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Controlar por cantidad</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    El sistema descuenta automáticamente unidades al recibir pedidos.
+                  </p>
+                </div>
+                <Switch
+                  id="p-stock-controlled"
+                  checked={isQuantityControlled}
+                  onCheckedChange={(v) => {
+                    if (v) {
+                      setValue("stockQuantity", 0, { shouldDirty: true });
+                      setValue("inStock", false, { shouldDirty: true });
+                    } else {
+                      setValue("stockQuantity", null, { shouldDirty: true });
+                      setValue("inStock", true, { shouldDirty: true });
+                    }
+                  }}
                 />
-                {errors.stockQuantity && (
-                  <p className="text-sm text-destructive">{errors.stockQuantity.message}</p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  La disponibilidad se deriva automáticamente de la cantidad.
-                </p>
               </div>
-            )}
-          </section>
+              {isQuantityControlled && (
+                <div className="border-t border-border pt-4 space-y-2">
+                  <Label htmlFor="p-stock-qty">Cantidad inicial en stock</Label>
+                  <Input
+                    id="p-stock-qty"
+                    type="number"
+                    min={0}
+                    step={1}
+                    className="w-36"
+                    placeholder="0"
+                    {...register("stockQuantity", {
+                      setValueAs: (v) =>
+                        v === "" || v === null || v === undefined
+                          ? null
+                          : Number.isNaN(Number(v))
+                          ? null
+                          : parseInt(v as string, 10),
+                    })}
+                  />
+                  {errors.stockQuantity && (
+                    <p className="text-sm text-destructive">{errors.stockQuantity.message}</p>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    La disponibilidad se deriva automáticamente de la cantidad.
+                  </p>
+                </div>
+              )}
+            </section>
+          )}
 
           {/* Sticky footer */}
           <div className="fixed bottom-0 left-0 right-0 z-10 border-t border-border bg-background/95 backdrop-blur-sm px-6 py-4">

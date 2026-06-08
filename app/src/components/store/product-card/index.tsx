@@ -5,7 +5,9 @@ import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { ProductDetailSheet } from "@/components/store/product-detail-sheet";
+import { ServiceActionButton } from "@/components/store/actions/service-action-button";
 import { useCartStore } from "@/lib/stores/cart.store";
+import { useStoreConfig } from "@/components/store/store-config-provider";
 import type { Product } from "@/lib/types/catalog";
 import type { GridLayout } from "@/lib/types/store";
 
@@ -17,6 +19,9 @@ interface ProductCardProps {
 
 export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { storeType, customCtaText, whatsapp } = useStoreConfig();
+  const isServices = storeType === "services";
+
   const cartQuantity = useCartStore((state) =>
     state.items
       .filter((i) => i.productId === product.id)
@@ -24,6 +29,7 @@ export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardPro
   );
 
   const outOfStock = !product.inStock;
+  const showPrice = !(isServices && product.price === 0);
   const handleOpen = () => setSheetOpen(true);
 
   if (layout === 'list') {
@@ -54,7 +60,7 @@ export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardPro
                 🍽️
               </div>
             )}
-            {cartQuantity > 0 && !outOfStock && (
+            {!isServices && cartQuantity > 0 && !outOfStock && (
               <div
                 className="absolute right-1.5 top-1.5 z-10 flex min-w-[1.25rem] items-center justify-center bg-[var(--store-accent)] px-1 py-0.5 text-[10px] font-bold leading-none text-[var(--store-accent-foreground)] shadow-md ring-2 ring-[var(--color-background)]"
                 style={{ borderRadius: "var(--radius)" }}
@@ -82,18 +88,30 @@ export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardPro
                   {product.description}
                 </p>
               )}
-              <p className={`font-extrabold text-sm pt-0.5${outOfStock ? " opacity-50" : ""}`}>
-                {formatCurrency(product.price)}
-              </p>
+              {showPrice && (
+                <p className={`font-extrabold text-sm pt-0.5${outOfStock ? " opacity-50" : ""}`}>
+                  {formatCurrency(product.price)}
+                </p>
+              )}
             </div>
-            <button
-              disabled={outOfStock}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--store-accent)] text-[var(--store-accent-foreground)] transition-opacity hover:opacity-90 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
-              onClick={(e) => { e.stopPropagation(); if (!outOfStock) handleOpen(); }}
-              aria-label={outOfStock ? `${product.name} sin stock` : `Agregar ${product.name} al carrito`}
-            >
-              <ShoppingCart className="h-4 w-4" />
-            </button>
+            {isServices ? (
+              <ServiceActionButton
+                serviceName={product.name}
+                whatsappNumber={whatsapp}
+                ctaText={customCtaText}
+                size="sm"
+                className="h-9 w-9 shrink-0"
+              />
+            ) : (
+              <button
+                disabled={outOfStock}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--store-accent)] text-[var(--store-accent-foreground)] transition-opacity hover:opacity-90 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                onClick={(e) => { e.stopPropagation(); if (!outOfStock) handleOpen(); }}
+                aria-label={outOfStock ? `${product.name} sin stock` : `Agregar ${product.name} al carrito`}
+              >
+                <ShoppingCart className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -134,7 +152,7 @@ export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardPro
             </div>
           )}
 
-          {cartQuantity > 0 && !outOfStock && (
+          {!isServices && cartQuantity > 0 && !outOfStock && (
             <div
               className="absolute right-2 top-2 z-10 flex min-w-[1.375rem] items-center justify-center bg-[var(--store-accent)] px-1.5 py-0.5 text-[10px] font-bold leading-none text-[var(--store-accent-foreground)] shadow-md ring-2 ring-[var(--color-background)]"
               style={{ borderRadius: "var(--radius)" }}
@@ -162,17 +180,31 @@ export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardPro
             </p>
           )}
           <div className="mt-auto flex items-center justify-between pt-2">
-            <span className={`font-extrabold text-sm${outOfStock ? " opacity-50" : ""}`}>
-              {formatCurrency(product.price)}
-            </span>
-            <button
-              disabled={outOfStock}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--store-accent)] text-[var(--store-accent-foreground)] transition-opacity hover:opacity-90 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
-              onClick={(e) => { e.stopPropagation(); if (!outOfStock) handleOpen(); }}
-              aria-label={outOfStock ? `${product.name} sin stock` : `Agregar ${product.name} al carrito`}
-            >
-              <ShoppingCart className="h-4 w-4" />
-            </button>
+            {showPrice ? (
+              <span className={`font-extrabold text-sm${outOfStock ? " opacity-50" : ""}`}>
+                {formatCurrency(product.price)}
+              </span>
+            ) : (
+              <span />
+            )}
+            {isServices ? (
+              <ServiceActionButton
+                serviceName={product.name}
+                whatsappNumber={whatsapp}
+                ctaText={customCtaText}
+                size="sm"
+                className="h-8 w-8"
+              />
+            ) : (
+              <button
+                disabled={outOfStock}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--store-accent)] text-[var(--store-accent-foreground)] transition-opacity hover:opacity-90 shadow-sm disabled:opacity-30 disabled:cursor-not-allowed"
+                onClick={(e) => { e.stopPropagation(); if (!outOfStock) handleOpen(); }}
+                aria-label={outOfStock ? `${product.name} sin stock` : `Agregar ${product.name} al carrito`}
+              >
+                <ShoppingCart className="h-4 w-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>

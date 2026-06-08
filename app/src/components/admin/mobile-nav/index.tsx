@@ -11,18 +11,23 @@ import {
   Warehouse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/admin/dashboard", label: "Dash", icon: LayoutDashboard },
-  { href: "/admin/catalog/categories", label: "Cats", icon: Tag },
-  { href: "/admin/catalog/products", label: "Prods", icon: Package },
-  { href: "/admin/inventory", label: "Stock", icon: Warehouse },
-  { href: "/admin/orders", label: "Pedidos", icon: ShoppingBag },
-  { href: "/admin/settings/info", label: "Config", icon: Settings },
-];
+import { useStoreSettings } from "@/lib/hooks/admin/use-store-settings";
 
 export function AdminMobileNav() {
   const pathname = usePathname();
+  const { data: settings } = useStoreSettings();
+  const isServices = settings?.storeType === "services";
+
+  const navItems = [
+    { href: "/admin/dashboard", label: "Dash", icon: LayoutDashboard },
+    { href: "/admin/catalog/categories", label: "Cats", icon: Tag },
+    { href: "/admin/catalog/products", label: isServices ? "Servs" : "Prods", icon: Package },
+    ...(!isServices ? [
+      { href: "/admin/inventory", label: "Stock", icon: Warehouse },
+      { href: "/admin/orders", label: "Pedidos", icon: ShoppingBag },
+    ] : []),
+    { href: "/admin/settings/info", label: "Config", icon: Settings },
+  ];
 
   // No renderizar en el onboarding ya que ahí no necesitamos navegar
   if (pathname === "/admin/onboarding") {
