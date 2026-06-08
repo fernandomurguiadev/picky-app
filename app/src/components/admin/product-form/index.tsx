@@ -35,6 +35,7 @@ const schema = z.object({
   categoryId: z.string().uuid("Seleccioná una categoría"),
   price: z.number().min(0.01, "El precio debe ser mayor a 0"),
   imageUrl: z.string().nullable(),
+  imagePublicId: z.string().nullable(),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
   inStock: z.boolean(),
@@ -73,6 +74,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
   const { data: categories } = useCategories();
 
   const [saveIndicator, setSaveIndicator] = useState<"idle" | "saving" | "saved">("idle");
+  const [isImageUploading, setIsImageUploading] = useState(false);
   const autosaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const buildProductValues = (p: Product): ProductFormData => ({
@@ -81,6 +83,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     categoryId: p.categoryId || p.category?.id || "",
     price: fromCents(p.price),
     imageUrl: p.imageUrl ?? null,
+    imagePublicId: p.imagePublicId ?? null,
     isFeatured: p.isFeatured,
     isActive: p.isActive,
     inStock: p.inStock,
@@ -109,6 +112,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     categoryId: "",
     price: 0,
     imageUrl: null,
+    imagePublicId: null,
     isFeatured: false,
     isActive: true,
     inStock: true,
@@ -196,7 +200,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     }
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
+  const isPending = createMutation.isPending || updateMutation.isPending || isImageUploading;
 
   return (
     <FormProvider {...methods}>
@@ -284,7 +288,12 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
             <ImageUploader
               value={imageUrl ?? undefined}
               onChange={(url) => setValue("imageUrl", url, { shouldDirty: true })}
-              onRemove={() => setValue("imageUrl", null, { shouldDirty: true })}
+              onRemove={() => {
+                setValue("imageUrl", null, { shouldDirty: true });
+                setValue("imagePublicId", null, { shouldDirty: true });
+              }}
+              onPublicIdChange={(pid) => setValue("imagePublicId", pid, { shouldDirty: true })}
+              onUploadingChange={setIsImageUploading}
             />
           </section>
 
@@ -426,7 +435,13 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
                 Cancelar
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Guardando..." : isEdit ? "Guardar cambios" : "Crear producto"}
+                {isImageUploading
+                  ? "Esperando imagen..."
+                  : createMutation.isPending || updateMutation.isPending
+                  ? "Guardando..."
+                  : isEdit
+                  ? "Guardar cambios"
+                  : "Crear producto"}
               </Button>
             </div>
           </div>

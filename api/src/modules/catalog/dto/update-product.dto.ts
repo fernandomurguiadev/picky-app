@@ -88,6 +88,10 @@ export class UpdateProductDto {
   @IsOptional()
   imageUrl?: string | null;
 
+  @IsString()
+  @IsOptional()
+  imagePublicId?: string | null;
+
   @IsBoolean()
   @IsOptional()
   isFeatured?: boolean;

@@ -142,13 +142,7 @@ export default function CategoriesPage() {
       await deleteMutation.mutateAsync(deleting.id);
       toast.success("Categoría eliminada");
     } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      if (msg?.includes("productos")) {
-        toast.error("No se puede eliminar: la categoría tiene productos activos");
-      } else {
-        toast.error("Error al eliminar la categoría");
-      }
+      toast.error("Error al eliminar la categoría");
     } finally {
       setDeleting(null);
     }
@@ -221,7 +215,11 @@ export default function CategoriesPage() {
           if (!open) setDeleting(null);
         }}
         title="Eliminar categoría"
-        description={`¿Eliminás "${deleting?.name}"? Esta acción no se puede deshacer.`}
+        description={
+          deleting?.productCount
+            ? `La categoría "${deleting.name}" tiene ${deleting.productCount} producto${deleting.productCount !== 1 ? "s" : ""}. Al eliminarla, todos sus productos serán eliminados también. Esta acción es irreversible.`
+            : `¿Eliminás la categoría "${deleting?.name}"? Esta acción no se puede deshacer.`
+        }
         confirmLabel="Eliminar"
         variant="destructive"
         onConfirm={handleDeleteConfirm}

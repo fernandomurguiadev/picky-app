@@ -123,13 +123,22 @@ export class CatalogService {
     if (!category)
       throw toBusinessException(CatalogErrors.categoryNotFound(id));
 
-    const activeCount = await productRepo.count({
-      where: { categoryId: id, isActive: true },
+    const products = await productRepo.find({
+      where: { categoryId: id, tenantId },
+      select: ['id'],
     });
-    if (activeCount > 0) {
-      throw toBusinessException(
-        CatalogErrors.categoryHasActiveProducts(id, activeCount),
-      );
+
+    if (products.length > 0) {
+      const productIds = products.map((p) => p.id);
+      const manager = runner ? runner.manager : this.dataSource.manager;
+
+      // stock_movements tiene FK RESTRICT → hay que borrarlos antes que los productos
+      await manager.query(
+        `DELETE FROM "stock_movements" WHERE "productId" = ANY($1) AND "tenantId" = $2`,
+        [productIds, tenantId],
+      ).catch(() => {});
+
+      await productRepo.delete({ categoryId: id, tenantId });
     }
 
     await categoryRepo.remove(category);

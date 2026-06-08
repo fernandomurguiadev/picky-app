@@ -11,6 +11,8 @@ interface ImageUploaderProps {
   value?: string;
   onChange: (url: string) => void;
   onRemove?: () => void;
+  onPublicIdChange?: (publicId: string | null) => void;
+  onUploadingChange?: (uploading: boolean) => void;
   className?: string;
   maxSizeMB?: number;
   accept?: string;
@@ -24,6 +26,8 @@ export function ImageUploader({
   value,
   onChange,
   onRemove,
+  onPublicIdChange,
+  onUploadingChange,
   className,
   maxSizeMB = MAX_SIZE_MB,
   disabled = false,
@@ -60,6 +64,7 @@ export function ImageUploader({
       reader.readAsDataURL(file);
 
       setIsUploading(true);
+      onUploadingChange?.(true);
       setProgress(0);
 
       try {
@@ -74,24 +79,26 @@ export function ImageUploader({
         const formData = new FormData();
         formData.append("file", compressed, file.name);
 
-        const res = await apiBff.post<{ data: { url: string } }>("/upload/image", formData, {
+        const res = await apiBff.post<{ data: { url: string; publicId: string } }>("/upload/image", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
 
         const newUrl = res.data.data.url;
+        const newPublicId = res.data.data.publicId ?? null;
 
         // Si ya había una imagen que nosotros subimos en esta sesión, la borramos para no dejar basura
         if (value && uploadedUrls.includes(value)) {
-          const publicId = extractPublicId(value);
-          if (publicId) {
-            apiBff.delete(`/upload/image?publicId=${encodeURIComponent(publicId)}`).catch(console.error);
+          const oldPublicId = extractPublicId(value);
+          if (oldPublicId) {
+            apiBff.delete(`/upload/image?publicId=${encodeURIComponent(oldPublicId)}`).catch(console.error);
           }
         }
 
         setUploadedUrls((prev) => [...prev, newUrl]);
         onChange(newUrl);
+        onPublicIdChange?.(newPublicId);
         toast.success("Imagen subida correctamente");
       } catch (error) {
         console.error("Error al subir imagen:", error);
@@ -99,6 +106,7 @@ export function ImageUploader({
         setPreview(value ?? null);
       } finally {
         setIsUploading(false);
+        onUploadingChange?.(false);
         setProgress(0);
       }
     },
@@ -139,6 +147,7 @@ export function ImageUploader({
 
     setPreview(null);
     onRemove?.();
+    onPublicIdChange?.(null);
     if (inputRef.current) inputRef.current.value = "";
   };
 

@@ -85,6 +85,10 @@ export class CreateProductDto {
   @IsOptional()
   imageUrl?: string;
 
+  @IsString()
+  @IsOptional()
+  imagePublicId?: string;
+
   @IsBoolean()
   @IsOptional()
   isFeatured?: boolean;

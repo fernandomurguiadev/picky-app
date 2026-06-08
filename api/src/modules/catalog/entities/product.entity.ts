@@ -40,6 +40,9 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   imageUrl!: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  imagePublicId!: string | null;
+
   @Column({ type: 'boolean', default: false })
   isFeatured!: boolean;
 
