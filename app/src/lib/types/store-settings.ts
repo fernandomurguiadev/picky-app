@@ -38,6 +38,7 @@ export interface StoreSettings {
   isManualOpen: boolean | null;
   storeType: 'retail' | 'services';
   customCtaText: string | null;
+  storeName?: string;
   createdAt: string;
   updatedAt: string;
   tenant?: Tenant;

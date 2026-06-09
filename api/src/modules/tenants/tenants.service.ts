@@ -230,18 +230,24 @@ export class TenantsService {
     dto: UpdateStoreSettingsDto,
     runner?: QueryRunner,
   ): Promise<StoreSettingsResponse | null> {
+    const tenantRepo = runner
+      ? runner.manager.getRepository(Tenant)
+      : this.tenantRepo;
     const repo = runner
       ? runner.manager.getRepository(StoreSettings)
       : this.settingsRepo;
 
-    let settings = await repo.findOne({
-      where: { tenantId },
-    });
+    if (dto.storeName?.trim()) {
+      await tenantRepo.update({ id: tenantId }, { name: dto.storeName.trim() });
+    }
 
+    const { storeName: _, ...settingsDto } = dto;
+
+    let settings = await repo.findOne({ where: { tenantId } });
     if (!settings) {
-      settings = repo.create({ tenantId, ...dto });
+      settings = repo.create({ tenantId, ...settingsDto });
     } else {
-      Object.assign(settings, dto);
+      Object.assign(settings, settingsDto);
     }
 
     await repo.save(settings);

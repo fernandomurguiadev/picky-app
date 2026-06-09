@@ -13,6 +13,11 @@ import { Type } from 'class-transformer';
 import { DayScheduleDto } from './day-schedule.dto.js';
 
 export class UpdateStoreSettingsDto {
+  // Nombre del negocio (actualiza Tenant.name)
+  @IsOptional()
+  @IsString()
+  storeName?: string;
+
   // Modelo de Negocio
   @IsOptional()
   @IsIn(['retail', 'services'])
