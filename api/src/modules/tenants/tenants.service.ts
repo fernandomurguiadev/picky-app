@@ -17,7 +17,10 @@ export interface StoreStatusResult {
 }
 
 export type StoreSettingsResponse = Omit<StoreSettings, 'tenant'> & {
-  tenant: Pick<Tenant, 'id' | 'name' | 'slug' | 'isActive' | 'isOnboardingCompleted'> | null;
+  tenant: Pick<
+    Tenant,
+    'id' | 'name' | 'slug' | 'isActive' | 'isOnboardingCompleted'
+  > | null;
 };
 
 // ─── Helpers de timezone ──────────────────────────────────────────────────
@@ -137,7 +140,7 @@ export class TenantsService {
       transferEnabled: settings?.transferEnabled ?? false,
       cardEnabled: settings?.cardEnabled ?? false,
       transferAlias: settings?.transferAlias ?? null,
-      storeType: (settings?.storeType ?? 'retail') as 'retail' | 'services',
+      storeType: settings?.storeType ?? 'retail',
       customCtaText: settings?.customCtaText ?? null,
     };
   }
@@ -245,12 +248,13 @@ export class TenantsService {
     if (typeof dto.isOnboardingCompleted === 'boolean') {
       tenantUpdate.isOnboardingCompleted = dto.isOnboardingCompleted;
     }
-    
+
     if (Object.keys(tenantUpdate).length > 0) {
       await tenantRepo.update({ id: tenantId }, tenantUpdate);
     }
 
-    const { storeName: _1, isOnboardingCompleted: _2, ...settingsDto } = dto;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { storeName, isOnboardingCompleted, ...settingsDto } = dto;
 
     let settings = await repo.findOne({ where: { tenantId } });
     if (!settings) {
@@ -259,7 +263,7 @@ export class TenantsService {
       Object.assign(settings, settingsDto);
     }
 
-    await repo.save(settings!);
+    await repo.save(settings);
     return this.getMySettings(tenantId, runner);
   }
 
