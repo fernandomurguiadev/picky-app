@@ -27,9 +27,16 @@ export interface Category {
   imageUrl: string | null;
   order: number;
   isActive: boolean;
+  isGroupPricingEnabled: boolean;
+  groupPrice: number | null; // centavos
   createdAt: string;
   updatedAt: string;
   productCount?: number;
+}
+
+export interface UpdateCategoryResult {
+  category: Category;
+  updatedProductsCount: number;
 }
 
 export interface Product {
@@ -48,7 +55,7 @@ export interface Product {
   order: number;
   createdAt: string;
   updatedAt: string;
-  category?: Pick<Category, "id" | "name">;
+  category?: Pick<Category, "id" | "name" | "isGroupPricingEnabled" | "groupPrice">;
   optionGroups?: OptionGroup[];
 }
 

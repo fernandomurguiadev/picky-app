@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, EntityManager, In, Repository, QueryRunner } from 'typeorm';
+import {
+  DataSource,
+  EntityManager,
+  In,
+  Repository,
+  QueryRunner,
+} from 'typeorm';
 
 import { toBusinessException } from '../../common/errors/business.exception.js';
 import { Category } from './entities/category.entity.js';
@@ -86,6 +92,8 @@ export class CatalogService {
       name: dto.name,
       imageUrl: dto.imageUrl ?? null,
       isActive: dto.isActive ?? true,
+      isGroupPricingEnabled: dto.isGroupPricingEnabled ?? false,
+      groupPrice: dto.groupPrice ?? null,
     });
     return repo.save(category);
   }
@@ -95,16 +103,63 @@ export class CatalogService {
     id: string,
     dto: UpdateCategoryDto,
     runner?: QueryRunner,
-  ): Promise<Category> {
-    const repo = runner
-      ? runner.manager.getRepository(Category)
-      : this.categoryRepo;
-    const category = await repo.findOne({ where: { id, tenantId } });
-    if (!category)
-      throw toBusinessException(CatalogErrors.categoryNotFound(id));
+  ): Promise<{ category: Category; updatedProductsCount: number }> {
+    if (runner) {
+      const repo = runner.manager.getRepository(Category);
+      const category = await repo.findOne({ where: { id, tenantId } });
+      if (!category)
+        throw toBusinessException(CatalogErrors.categoryNotFound(id));
 
-    Object.assign(category, dto);
-    return repo.save(category);
+      Object.assign(category, dto);
+      const savedCategory = await repo.save(category);
+
+      let updatedProductsCount = 0;
+      if (
+        savedCategory.isGroupPricingEnabled &&
+        savedCategory.groupPrice !== null
+      ) {
+        const result = await runner.manager.update(
+          Product,
+          { categoryId: id, tenantId },
+          { price: savedCategory.groupPrice },
+        );
+        updatedProductsCount = result.affected ?? 0;
+      }
+      return { category: savedCategory, updatedProductsCount };
+    } else {
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+      try {
+        const repo = queryRunner.manager.getRepository(Category);
+        const category = await repo.findOne({ where: { id, tenantId } });
+        if (!category)
+          throw toBusinessException(CatalogErrors.categoryNotFound(id));
+
+        Object.assign(category, dto);
+        const savedCategory = await repo.save(category);
+
+        let updatedProductsCount = 0;
+        if (
+          savedCategory.isGroupPricingEnabled &&
+          savedCategory.groupPrice !== null
+        ) {
+          const result = await queryRunner.manager.update(
+            Product,
+            { categoryId: id, tenantId },
+            { price: savedCategory.groupPrice },
+          );
+          updatedProductsCount = result.affected ?? 0;
+        }
+        await queryRunner.commitTransaction();
+        return { category: savedCategory, updatedProductsCount };
+      } catch (err) {
+        await queryRunner.rollbackTransaction();
+        throw err;
+      } finally {
+        await queryRunner.release();
+      }
+    }
   }
 
   async deleteCategory(
@@ -133,10 +188,12 @@ export class CatalogService {
       const manager = runner ? runner.manager : this.dataSource.manager;
 
       // stock_movements tiene FK RESTRICT → hay que borrarlos antes que los productos
-      await manager.query(
-        `DELETE FROM "stock_movements" WHERE "productId" = ANY($1) AND "tenantId" = $2`,
-        [productIds, tenantId],
-      ).catch(() => {});
+      await manager
+        .query(
+          `DELETE FROM "stock_movements" WHERE "productId" = ANY($1) AND "tenantId" = $2`,
+          [productIds, tenantId],
+        )
+        .catch(() => {});
 
       await productRepo.delete({ categoryId: id, tenantId });
     }
@@ -361,17 +418,31 @@ export class CatalogService {
       : this.productRepo;
 
     if (runner) {
-      const order = dto.order ?? await this.getNextProductOrder(tenantId, dto.categoryId, manager!);
+      const category = await manager!.findOne(Category, {
+        where: { id: dto.categoryId },
+        select: ['isGroupPricingEnabled', 'groupPrice'],
+      });
+      const priceToUse =
+        category?.isGroupPricingEnabled && category.groupPrice !== null
+          ? category.groupPrice
+          : dto.price;
+
+      const order =
+        dto.order ??
+        (await this.getNextProductOrder(tenantId, dto.categoryId, manager!));
       const product = manager!.create(Product, {
         tenantId,
         categoryId: dto.categoryId,
         name: dto.name,
         description: dto.description ?? null,
-        price: dto.price,
+        price: priceToUse,
         imageUrl: dto.imageUrl ?? null,
         isFeatured: dto.isFeatured ?? false,
         isActive: dto.isActive ?? true,
-        inStock: dto.stockQuantity !== undefined && dto.stockQuantity !== null ? dto.stockQuantity > 0 : (dto.inStock ?? true),
+        inStock:
+          dto.stockQuantity !== undefined && dto.stockQuantity !== null
+            ? dto.stockQuantity > 0
+            : (dto.inStock ?? true),
         stockQuantity: dto.stockQuantity ?? null,
         order,
       });
@@ -390,17 +461,35 @@ export class CatalogService {
       await queryRunner.connect();
       await queryRunner.startTransaction();
       try {
-        const order = dto.order ?? await this.getNextProductOrder(tenantId, dto.categoryId, queryRunner.manager);
+        const category = await queryRunner.manager.findOne(Category, {
+          where: { id: dto.categoryId },
+          select: ['isGroupPricingEnabled', 'groupPrice'],
+        });
+        const priceToUse =
+          category?.isGroupPricingEnabled && category.groupPrice !== null
+            ? category.groupPrice
+            : dto.price;
+
+        const order =
+          dto.order ??
+          (await this.getNextProductOrder(
+            tenantId,
+            dto.categoryId,
+            queryRunner.manager,
+          ));
         const product = queryRunner.manager.create(Product, {
           tenantId,
           categoryId: dto.categoryId,
           name: dto.name,
           description: dto.description ?? null,
-          price: dto.price,
+          price: priceToUse,
           imageUrl: dto.imageUrl ?? null,
           isFeatured: dto.isFeatured ?? false,
           isActive: dto.isActive ?? true,
-          inStock: dto.stockQuantity !== undefined && dto.stockQuantity !== null ? dto.stockQuantity > 0 : (dto.inStock ?? true),
+          inStock:
+            dto.stockQuantity !== undefined && dto.stockQuantity !== null
+              ? dto.stockQuantity > 0
+              : (dto.inStock ?? true),
           stockQuantity: dto.stockQuantity ?? null,
           order,
         });
@@ -445,8 +534,21 @@ export class CatalogService {
       const { optionGroups, ...rest } = dto;
       const updateData: any = { ...rest };
       if (rest.stockQuantity !== undefined) {
-        updateData.inStock = rest.stockQuantity !== null ? rest.stockQuantity > 0 : (rest.inStock ?? product.inStock);
+        updateData.inStock =
+          rest.stockQuantity !== null
+            ? rest.stockQuantity > 0
+            : (rest.inStock ?? product.inStock);
       }
+
+      const catId = dto.categoryId ?? product.categoryId;
+      const category = await runner.manager.findOne(Category, {
+        where: { id: catId },
+        select: ['isGroupPricingEnabled', 'groupPrice'],
+      });
+      if (category?.isGroupPricingEnabled && category.groupPrice !== null) {
+        updateData.price = category.groupPrice;
+      }
+
       await runner.manager.update(Product, id, updateData);
 
       if (optionGroups !== undefined) {
@@ -468,8 +570,21 @@ export class CatalogService {
         const { optionGroups, ...rest } = dto;
         const updateData: any = { ...rest };
         if (rest.stockQuantity !== undefined) {
-          updateData.inStock = rest.stockQuantity !== null ? rest.stockQuantity > 0 : (rest.inStock ?? product.inStock);
+          updateData.inStock =
+            rest.stockQuantity !== null
+              ? rest.stockQuantity > 0
+              : (rest.inStock ?? product.inStock);
         }
+
+        const catId = dto.categoryId ?? product.categoryId;
+        const category = await queryRunner.manager.findOne(Category, {
+          where: { id: catId },
+          select: ['isGroupPricingEnabled', 'groupPrice'],
+        });
+        if (category?.isGroupPricingEnabled && category.groupPrice !== null) {
+          updateData.price = category.groupPrice;
+        }
+
         await queryRunner.manager.update(Product, id, updateData);
 
         if (optionGroups !== undefined) {
@@ -523,7 +638,9 @@ export class CatalogService {
     if (!product) throw toBusinessException(CatalogErrors.productNotFound(id));
 
     if (product.stockQuantity !== null) {
-      throw toBusinessException(CatalogErrors.productStockManagedByQuantity(id));
+      throw toBusinessException(
+        CatalogErrors.productStockManagedByQuantity(id),
+      );
     }
 
     await repo.update(id, { inStock });
@@ -559,13 +676,19 @@ export class CatalogService {
     }
 
     const manager = runner ? runner.manager : this.dataSource.manager;
-    this.logger.debug(`[deleteProduct] Borrando stock_movements para product=${id}`);
-    await manager.query(
-      `DELETE FROM "stock_movements" WHERE "productId" = $1 AND "tenantId" = $2`,
-      [id, tenantId],
-    ).catch((err: unknown) => {
-      this.logger.warn(`[deleteProduct] No se pudieron borrar stock_movements: ${String(err)}`);
-    });
+    this.logger.debug(
+      `[deleteProduct] Borrando stock_movements para product=${id}`,
+    );
+    await manager
+      .query(
+        `DELETE FROM "stock_movements" WHERE "productId" = $1 AND "tenantId" = $2`,
+        [id, tenantId],
+      )
+      .catch((err: unknown) => {
+        this.logger.warn(
+          `[deleteProduct] No se pudieron borrar stock_movements: ${String(err)}`,
+        );
+      });
     this.logger.debug(`[deleteProduct] Borrando product=${id}`);
     try {
       await productRepo.delete({ id, tenantId });

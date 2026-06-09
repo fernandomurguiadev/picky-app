@@ -24,7 +24,7 @@ import { useCategories } from "@/lib/hooks/admin/use-categories";
 import { useCreateProduct, useUpdateProduct } from "@/lib/hooks/admin/use-products";
 import { useStoreSettings } from "@/lib/hooks/admin/use-store-settings";
 import { toast } from "@/components/shared/toast";
-import { fromCents, tosCents } from "@/lib/utils";
+import { fromCents, tosCents, formatCurrency } from "@/lib/utils";
 import type { Product, ProductFormData } from "@/lib/types/catalog";
 
 const DRAFT_KEY = "picky-product-draft";
@@ -34,7 +34,7 @@ const schema = z.object({
   name: z.string().min(1, "El nombre es requerido").max(255),
   description: z.string().max(2000),
   categoryId: z.string().uuid("Seleccioná una categoría"),
-  price: z.number().min(0.01, "El precio debe ser mayor a 0"),
+  price: z.number().min(0, "El precio no puede ser negativo"),
   imageUrl: z.string().nullable(),
   imagePublicId: z.string().nullable(),
   isFeatured: z.boolean(),
@@ -154,6 +154,24 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
   const inStock = watch("inStock");
   const stockQuantity = watch("stockQuantity");
   const isQuantityControlled = stockQuantity !== null;
+  const categoryId = watch("categoryId");
+
+  const selectedCategory = categories?.find((c) => c.id === categoryId);
+  const isGroupPriced = selectedCategory?.isGroupPricingEnabled === true;
+
+  const originalCategoryId = isEdit ? (product?.categoryId || product?.category?.id) : null;
+  const originalCategory = categories?.find((c) => c.id === originalCategoryId);
+  const showPriceInheritedWarning =
+    isEdit &&
+    originalCategory?.isGroupPricingEnabled === true &&
+    !isGroupPriced &&
+    categoryId !== originalCategoryId;
+
+  useEffect(() => {
+    if (isGroupPriced && selectedCategory?.groupPrice != null) {
+      setValue("price", fromCents(selectedCategory.groupPrice), { shouldDirty: false });
+    }
+  }, [isGroupPriced, selectedCategory?.groupPrice, setValue]);
 
   // Autosave en localStorage cada 30s (solo para nuevo producto)
   const saveToLocalStorage = useCallback(() => {
@@ -303,8 +321,22 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
           {/* Sección 3: Precio */}
           <section className="rounded-xl border border-border p-6 mb-6 space-y-4">
             <h2 className="font-semibold text-lg">Precio</h2>
+
+            {isGroupPriced && selectedCategory?.groupPrice != null && (
+              <div className="rounded-lg bg-blue-50 border border-blue-200 px-4 py-3 text-sm text-blue-800">
+                El precio está fijado por la categoría <strong>{selectedCategory.name}</strong>:{" "}
+                <strong>{formatCurrency(selectedCategory.groupPrice)}</strong>. Para cambiarlo, editá el precio grupal de la categoría.
+              </div>
+            )}
+
+            {showPriceInheritedWarning && (
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+                Este producto conserva el precio de su categoría anterior. Revisá si debés actualizarlo.
+              </div>
+            )}
+
             <div className="space-y-1.5 max-w-xs">
-              <Label htmlFor="p-price">Precio (en pesos) *</Label>
+              <Label htmlFor="p-price">Precio (en pesos) {!isGroupPriced && "*"}</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                   $
@@ -316,6 +348,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
                   step={1}
                   className="pl-7"
                   placeholder="0"
+                  disabled={isGroupPriced}
                   aria-invalid={!!errors.price}
                   {...register("price", { valueAsNumber: true })}
                 />
@@ -323,9 +356,11 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
               {errors.price && (
                 <p className="text-sm text-destructive">{errors.price.message}</p>
               )}
-              <p className="text-xs text-muted-foreground">
-                Se guarda como {tosCents(watch("price") || 0)} centavos internamente.
-              </p>
+              {!isGroupPriced && (
+                <p className="text-xs text-muted-foreground">
+                  Se guarda como {tosCents(watch("price") || 0)} centavos internamente.
+                </p>
+              )}
             </div>
           </section>
 

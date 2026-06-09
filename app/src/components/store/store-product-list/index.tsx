@@ -4,6 +4,7 @@ import { useState } from "react";
 import { LayoutGrid, LayoutList, Rows3 } from "lucide-react";
 import { ProductCard } from "@/components/store/product-card";
 import { EmptyState } from "@/components/shared/empty-state";
+import { formatCurrency } from "@/lib/utils";
 import type { Product } from "@/lib/types/catalog";
 import type { Category } from "@/lib/types/catalog";
 import type { GridLayout } from "@/lib/types/store";
@@ -47,6 +48,8 @@ function ProductSection({
   layout,
   showToggle,
   onToggle,
+  hidePrice,
+  groupPrice,
 }: {
   label: string;
   products: Product[];
@@ -54,6 +57,8 @@ function ProductSection({
   layout: GridLayout;
   showToggle?: boolean;
   onToggle?: () => void;
+  hidePrice?: boolean;
+  groupPrice?: number | null;
 }) {
   return (
     <div>
@@ -73,9 +78,22 @@ function ProductSection({
           </button>
         )}
       </div>
+      {hidePrice && groupPrice != null && (
+        <div className="mb-3 rounded-lg bg-primary/10 border border-primary/20 px-4 py-2.5 text-center">
+          <span className="text-sm font-semibold text-primary">
+            Precio único · {formatCurrency(groupPrice)}
+          </span>
+        </div>
+      )}
       <div className={GRID_CLASS[layout]}>
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} slug={slug} layout={layout} />
+          <ProductCard
+            key={product.id}
+            product={product}
+            slug={slug}
+            layout={layout}
+            hidePrice={hidePrice ?? (product.category?.isGroupPricingEnabled === true)}
+          />
         ))}
       </div>
     </div>
@@ -132,6 +150,8 @@ export function StoreProductList({
                   products={products}
                   slug={slug}
                   layout={layout}
+                  hidePrice={category.isGroupPricingEnabled === true}
+                  groupPrice={category.groupPrice}
                 />
               </div>
             </section>

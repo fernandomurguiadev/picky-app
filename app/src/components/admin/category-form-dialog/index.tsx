@@ -17,13 +17,26 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useCreateCategory, useUpdateCategory } from "@/lib/hooks/admin/use-categories";
 import { toast } from "@/components/shared/toast";
+import { fromCents, tosCents } from "@/lib/utils";
 import type { Category } from "@/lib/types/catalog";
 
-const schema = z.object({
-  name: z.string().min(1, "El nombre es requerido").max(255),
-  imageUrl: z.string().nullable().optional(),
-  isActive: z.boolean(),
-});
+const schema = z
+  .object({
+    name: z.string().min(1, "El nombre es requerido").max(255),
+    imageUrl: z.string().nullable().optional(),
+    isActive: z.boolean(),
+    isGroupPricingEnabled: z.boolean(),
+    groupPrice: z.number().min(0, "El precio no puede ser negativo").nullable(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.isGroupPricingEnabled && (data.groupPrice === null || data.groupPrice === undefined)) {
+      ctx.addIssue({
+        code: "custom",
+        message: "El precio grupal es requerido",
+        path: ["groupPrice"],
+      });
+    }
+  });
 
 type FormValues = z.infer<typeof schema>;
 
@@ -56,6 +69,8 @@ export function CategoryFormDialog({
       name: "",
       imageUrl: null,
       isActive: true,
+      isGroupPricingEnabled: false,
+      groupPrice: null,
     },
   });
 
@@ -65,20 +80,33 @@ export function CategoryFormDialog({
         name: category?.name ?? "",
         imageUrl: category?.imageUrl ?? null,
         isActive: category?.isActive ?? true,
+        isGroupPricingEnabled: category?.isGroupPricingEnabled ?? false,
+        groupPrice: category?.groupPrice != null ? fromCents(category.groupPrice) : null,
       });
     }
   }, [open, category, reset]);
 
-  const imageUrl = watch("imageUrl");
   const isActive = watch("isActive");
+  const isGroupPricingEnabled = watch("isGroupPricingEnabled");
 
   const onSubmit = async (values: FormValues) => {
     try {
+      const payload = {
+        ...values,
+        groupPrice: values.isGroupPricingEnabled && values.groupPrice != null
+          ? tosCents(values.groupPrice)
+          : null,
+      };
+
       if (isEdit && category) {
-        await updateMutation.mutateAsync({ id: category.id, ...values });
-        toast.success("Categoría actualizada");
+        const result = await updateMutation.mutateAsync({ id: category.id, ...payload });
+        if (result.updatedProductsCount > 0) {
+          toast.success(`Categoría actualizada. Se sincronizaron ${result.updatedProductsCount} productos.`);
+        } else {
+          toast.success("Categoría actualizada");
+        }
       } else {
-        await createMutation.mutateAsync(values);
+        await createMutation.mutateAsync(payload);
         toast.success("Categoría creada");
       }
       onOpenChange(false);
@@ -115,6 +143,49 @@ export function CategoryFormDialog({
               checked={isActive}
               onCheckedChange={(v) => setValue("isActive", v, { shouldDirty: true })}
             />
+          </div>
+
+          <div className="rounded-lg border border-border p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Precio grupal</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Fija un único precio para todos los productos de esta categoría.
+                </p>
+              </div>
+              <Switch
+                id="cat-group-pricing"
+                checked={isGroupPricingEnabled}
+                onCheckedChange={(v) => {
+                  setValue("isGroupPricingEnabled", v, { shouldDirty: true });
+                  if (!v) setValue("groupPrice", null, { shouldDirty: true });
+                }}
+              />
+            </div>
+
+            {isGroupPricingEnabled && (
+              <div className="space-y-1.5">
+                <Label htmlFor="cat-group-price">Precio (en pesos) *</Label>
+                <div className="relative max-w-xs">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                    $
+                  </span>
+                  <Input
+                    id="cat-group-price"
+                    type="number"
+                    min={0}
+                    step={1}
+                    className="pl-7"
+                    placeholder="0"
+                    aria-invalid={!!errors.groupPrice}
+                    {...register("groupPrice", { valueAsNumber: true })}
+                  />
+                </div>
+                {errors.groupPrice && (
+                  <p className="text-sm text-destructive">{errors.groupPrice.message}</p>
+                )}
+              </div>
+            )}
           </div>
 
           <DialogFooter>

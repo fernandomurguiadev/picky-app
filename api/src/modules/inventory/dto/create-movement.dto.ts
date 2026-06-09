@@ -3,7 +3,8 @@ import { StockMovementType } from '../entities/stock-movement.entity.js';
 
 export class CreateStockMovementDto {
   @IsEnum(StockMovementType, {
-    message: 'El tipo de movimiento debe ser uno de: purchase_in, adjustment, waste',
+    message:
+      'El tipo de movimiento debe ser uno de: purchase_in, adjustment, waste',
   })
   type!: StockMovementType;
 

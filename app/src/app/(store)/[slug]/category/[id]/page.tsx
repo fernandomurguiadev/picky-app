@@ -3,6 +3,7 @@ import { CategoryNav } from "@/components/store/category-nav";
 import { ProductCard } from "@/components/store/product-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Pagination } from "@/components/shared/pagination";
+import { formatCurrency } from "@/lib/utils";
 import type { Category, PaginatedResponse, Product } from "@/lib/types/catalog";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
@@ -43,7 +44,17 @@ export default async function CategoryPage({
 
   return (
     <div className="pb-10">
-      <CategoryNav categories={categories} slug={slug} />
+      <CategoryNav categories={categories} />
+
+      {currentCategory?.isGroupPricingEnabled && currentCategory.groupPrice != null && (
+        <div className="mx-auto max-w-4xl px-4 pt-4">
+          <div className="rounded-lg bg-primary/10 border border-primary/20 px-4 py-3 text-center">
+            <span className="text-sm font-semibold text-primary">
+              Precio único · {formatCurrency(currentCategory.groupPrice)}
+            </span>
+          </div>
+        </div>
+      )}
 
       <section className="mx-auto max-w-4xl px-4 py-6">
         <div className="mb-5 flex items-end justify-between gap-4">
@@ -60,7 +71,12 @@ export default async function CategoryPage({
           <>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
               {productsJson.data.map((product) => (
-                <ProductCard key={product.id} product={product} slug={slug} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  slug={slug}
+                  hidePrice={currentCategory?.isGroupPricingEnabled === true}
+                />
               ))}
             </div>
             <div className="mt-8">

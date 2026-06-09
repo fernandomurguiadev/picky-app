@@ -71,7 +71,10 @@ export class RlsInterceptor implements NestInterceptor {
             try {
               await queryRunner.commitTransaction();
             } catch (err) {
-              this.logger.error('[RlsInterceptor] commitTransaction falló', err);
+              this.logger.error(
+                '[RlsInterceptor] commitTransaction falló',
+                err,
+              );
               throw err;
             } finally {
               await queryRunner.release();
@@ -79,7 +82,10 @@ export class RlsInterceptor implements NestInterceptor {
             return result;
           }),
           catchError(async (error) => {
-            this.logger.error('[RlsInterceptor] error en handler, haciendo rollback', error);
+            this.logger.error(
+              '[RlsInterceptor] error en handler, haciendo rollback',
+              error,
+            );
             try {
               await queryRunner.rollbackTransaction();
             } catch {

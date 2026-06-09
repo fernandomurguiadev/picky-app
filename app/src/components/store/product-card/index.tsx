@@ -15,9 +15,10 @@ interface ProductCardProps {
   product: Product;
   slug: string;
   layout?: GridLayout;
+  hidePrice?: boolean;
 }
 
-export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardProps) {
+export function ProductCard({ product, slug, layout = 'grid-2', hidePrice = false }: ProductCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const { storeType, customCtaText, whatsapp } = useStoreConfig();
   const isServices = storeType === "services";
@@ -29,7 +30,7 @@ export function ProductCard({ product, slug, layout = 'grid-2' }: ProductCardPro
   );
 
   const outOfStock = !product.inStock;
-  const showPrice = !(isServices && product.price === 0);
+  const showPrice = !hidePrice && !(isServices && product.price === 0);
   const handleOpen = () => setSheetOpen(true);
 
   if (layout === 'list') {

@@ -1,8 +1,15 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager, Not, IsNull } from 'typeorm';
 import { Product } from '../catalog/entities/product.entity.js';
-import { StockMovement, StockMovementType } from './entities/stock-movement.entity.js';
+import {
+  StockMovement,
+  StockMovementType,
+} from './entities/stock-movement.entity.js';
 import { CreateStockMovementDto } from './dto/create-movement.dto.js';
 import { PaginationQueryDto } from '../catalog/dto/pagination-query.dto.js';
 

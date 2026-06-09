@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException, UnprocessableEntityException, ConflictException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import {
-  Repository,
-  DataSource,
-} from 'typeorm';
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+  ConflictException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Order, StatusHistoryEntry } from './entities/order.entity.js';
 import { OrderItem } from './entities/order-item.entity.js';
 import { StoreSettings } from '../tenants/entities/store-settings.entity.js';
@@ -75,7 +77,11 @@ export class OrdersService {
             `Producto ${item.productId} no encontrado`,
           );
         }
-        if (!product.inStock || (product.stockQuantity !== null && product.stockQuantity < item.quantity)) {
+        if (
+          !product.inStock ||
+          (product.stockQuantity !== null &&
+            product.stockQuantity < item.quantity)
+        ) {
           throw toBusinessException(
             OrderErrors.productOutOfStock(product.name),
           );

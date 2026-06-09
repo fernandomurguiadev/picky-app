@@ -1,10 +1,12 @@
 import {
   IsBoolean,
+  IsDefined,
   IsInt,
   IsOptional,
   IsString,
   MaxLength,
   Min,
+  ValidateIf,
 } from 'class-validator';
 
 export class UpdateCategoryDto {
@@ -25,4 +27,17 @@ export class UpdateCategoryDto {
   @Min(0)
   @IsOptional()
   order?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isGroupPricingEnabled?: boolean;
+
+  @ValidateIf((o) => o.isGroupPricingEnabled === true)
+  @IsDefined({
+    message:
+      'El precio grupal es requerido cuando el precio grupal está habilitado',
+  })
+  @IsInt()
+  @Min(0)
+  groupPrice?: number | null;
 }

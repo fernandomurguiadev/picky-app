@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiBff } from "@/lib/api/axios";
-import type { Category } from "@/lib/types/catalog";
+import type { Category, UpdateCategoryResult } from "@/lib/types/catalog";
 
 // ── Query keys ───────────────────────────────────────────────────────────────
 
@@ -36,14 +36,22 @@ export function useCreateCategory() {
   });
 }
 
+export interface UpdateCategoryDto {
+  id: string;
+  name?: string;
+  imageUrl?: string | null;
+  isActive?: boolean;
+  isGroupPricingEnabled?: boolean;
+  groupPrice?: number | null;
+}
+
 export function useUpdateCategory() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      id,
-      ...dto
-    }: { id: string; name?: string; imageUrl?: string | null; isActive?: boolean }) =>
-      apiBff.put<{ data: Category }>(`/admin/categories/${id}`, dto).then((r) => r.data.data),
+    mutationFn: ({ id, ...dto }: UpdateCategoryDto) =>
+      apiBff
+        .put<{ data: UpdateCategoryResult }>(`/admin/categories/${id}`, dto)
+        .then((r) => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: categoryKeys.list() }),
   });
 }
