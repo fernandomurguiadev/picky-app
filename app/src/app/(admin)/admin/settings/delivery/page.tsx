@@ -104,7 +104,9 @@ export default function SettingsDeliveryPage() {
         {deliveryEnabled && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-4 border-l-2 border-primary/30">
             <div className="space-y-1.5">
-              <Label htmlFor="del-cost">Costo de envío ($)</Label>
+              <Label htmlFor="del-cost">
+                {settings?.storeType === "services" ? "Costo por traslado ($)" : "Costo de envío ($)"}
+              </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">$</span>
                 <Input
@@ -117,7 +119,9 @@ export default function SettingsDeliveryPage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="del-min">Pedido mínimo ($)</Label>
+              <Label htmlFor="del-min">
+                {settings?.storeType === "services" ? "Servicio mínimo ($)" : "Pedido mínimo ($)"}
+              </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">$</span>
                 <Input

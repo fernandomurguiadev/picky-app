@@ -403,7 +403,7 @@ function DeliveryStep({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="d-address" className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" /> Dirección de entrega
+              <MapPin className="h-3.5 w-3.5" /> {store.storeType === "services" ? "Dirección para el servicio" : "Dirección de entrega"}
             </Label>
             <Input
               id="d-address"
@@ -488,8 +488,8 @@ function DeliveryStep({
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-800/40 dark:bg-amber-900/20">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="text-amber-800 dark:text-amber-300">
-            El monto mínimo para delivery es{" "}
-            <strong>{formatCurrency(minOrder)}</strong>. Tu pedido es de{" "}
+            El monto mínimo para {store.storeType === "services" ? "brindar el servicio a domicilio" : "delivery"} es{" "}
+            <strong>{formatCurrency(minOrder)}</strong>. {store.storeType === "services" ? "El servicio actual suma" : "Tu pedido es de"}{" "}
             {formatCurrency(cartSubtotal)}.
           </p>
         </div>
@@ -610,7 +610,7 @@ function PaymentStep({
         </div>
         {deliveryCost > 0 && (
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Envío</span>
+            <span className="text-muted-foreground">{store.storeType === "services" ? "Traslado" : "Envío"}</span>
             <span>{formatCurrency(deliveryCost)}</span>
           </div>
         )}
