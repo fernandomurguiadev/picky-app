@@ -13,6 +13,7 @@ import { SkeletonLoader } from "@/components/shared/skeleton-loader";
 import { useStoreSettings, useUpdateStoreSettings } from "@/lib/hooks/admin/use-store-settings";
 import { toast } from "@/components/shared/toast";
 import { fromCents, tosCents } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 const schema = z.object({
   deliveryEnabled: z.boolean(),
@@ -25,6 +26,8 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function SettingsDeliveryPage() {
+  const t = useTranslations("settings.delivery");
+  const tCommon = useTranslations("common");
   const { data: settings, isLoading } = useStoreSettings();
   const updateMutation = useUpdateStoreSettings();
 
@@ -69,9 +72,9 @@ export default function SettingsDeliveryPage() {
         takeawayEnabled: values.takeawayEnabled,
         inStoreEnabled: values.inStoreEnabled,
       });
-      toast.success("Configuración de entrega guardada");
+      toast.success(t("success"));
     } catch {
-      toast.error("Error al guardar");
+      toast.error(t("error"));
     }
   };
 
@@ -81,18 +84,18 @@ export default function SettingsDeliveryPage() {
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <section className="rounded-xl border border-border p-6 space-y-5">
         <h2 className="font-semibold">
-          {settings?.storeType === "services" ? "Modalidades de atención" : "Métodos de entrega"}
+          {settings?.storeType === "services" ? t("titleServices") : t("titleRetail")}
         </h2>
 
         <div className="flex items-center justify-between">
           <div>
             <p className="font-medium">
-              {settings?.storeType === "services" ? "A domicilio" : "Delivery"}
+              {settings?.storeType === "services" ? t("deliveryServices") : t("deliveryRetail")}
             </p>
             <p className="text-sm text-muted-foreground">
               {settings?.storeType === "services" 
-                ? "Te acercás al domicilio del cliente para brindar el servicio." 
-                : "Enviás el pedido al domicilio del cliente."}
+                ? t("deliveryDescServices") 
+                : t("deliveryDescRetail")}
             </p>
           </div>
           <Switch
@@ -105,7 +108,7 @@ export default function SettingsDeliveryPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pl-4 border-l-2 border-primary/30">
             <div className="space-y-1.5">
               <Label htmlFor="del-cost">
-                {settings?.storeType === "services" ? "Costo por traslado ($)" : "Costo de envío ($)"}
+                {settings?.storeType === "services" ? t("costServices") : t("costRetail")}
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">$</span>
@@ -120,7 +123,7 @@ export default function SettingsDeliveryPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="del-min">
-                {settings?.storeType === "services" ? "Servicio mínimo ($)" : "Pedido mínimo ($)"}
+                {settings?.storeType === "services" ? t("minServices") : t("minRetail")}
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">$</span>
@@ -141,12 +144,12 @@ export default function SettingsDeliveryPage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="font-medium">
-              {settings?.storeType === "services" ? "Atención presencial (Local/Consultorio)" : "Takeaway / Retiro en local"}
+              {settings?.storeType === "services" ? t("takeawayServices") : t("takeawayRetail")}
             </p>
             <p className="text-sm text-muted-foreground">
               {settings?.storeType === "services" 
-                ? "El cliente asiste a tu establecimiento." 
-                : "El cliente pasa a retirar el pedido."}
+                ? t("takeawayDescServices") 
+                : t("takeawayDescRetail")}
             </p>
           </div>
           <Switch
@@ -160,12 +163,12 @@ export default function SettingsDeliveryPage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="font-medium">
-              {settings?.storeType === "services" ? "Atención Virtual / Online" : "Consumir en el local"}
+              {settings?.storeType === "services" ? t("inStoreServices") : t("inStoreRetail")}
             </p>
             <p className="text-sm text-muted-foreground">
               {settings?.storeType === "services"
-                ? "El servicio se brinda de forma remota o por videollamada."
-                : "El cliente consume en el lugar."}
+                ? t("inStoreDescServices")
+                : t("inStoreDescRetail")}
             </p>
           </div>
           <Switch
@@ -177,7 +180,7 @@ export default function SettingsDeliveryPage() {
 
       <div className="flex justify-end">
         <Button type="submit" disabled={updateMutation.isPending || !isDirty}>
-          {updateMutation.isPending ? "Guardando..." : "Guardar cambios"}
+          {updateMutation.isPending ? tCommon("loading") : tCommon("save")}
         </Button>
       </div>
     </form>

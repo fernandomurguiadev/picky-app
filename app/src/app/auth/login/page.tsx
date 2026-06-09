@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/shared/toast";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import type { UserRole } from "@/lib/stores/auth.store";
+import { useTranslations } from "next-intl";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -46,6 +47,9 @@ function LoginContent() {
     resolver: zodResolver(loginSchema),
   });
 
+  const t = useTranslations("auth");
+  const tErrors = useTranslations("errors");
+
   const onSubmit = async (values: LoginFormValues) => {
     try {
       const res = await fetch("/api/auth/login", {
@@ -60,10 +64,10 @@ function LoginContent() {
       if (!res.ok) {
         const code = data?.error?.code;
         if (code === "INVALID_CREDENTIALS" || res.status === 401) {
-          setError("email", { message: "Email o contraseña incorrectos" });
+          setError("email", { message: tErrors("invalidCredentials") });
           setError("password", { message: "" });
         } else {
-          toast.error(data?.error?.message ?? "Error al iniciar sesión");
+          toast.error(data?.error?.message ?? tErrors("generic"));
         }
         return;
       }
@@ -85,7 +89,7 @@ function LoginContent() {
 
       router.replace(returnUrl);
     } catch {
-      toast.error("No se pudo conectar con el servidor");
+      toast.error(tErrors("serverError"));
     }
   };
 
@@ -106,7 +110,7 @@ function LoginContent() {
       const data = await res.json();
 
       if (!res.ok) {
-        toast.error(data?.error?.message ?? "Error al seleccionar el comercio");
+        toast.error(data?.error?.message ?? tErrors("generic"));
         return;
       }
 
@@ -118,7 +122,7 @@ function LoginContent() {
 
       router.replace(returnUrl);
     } catch {
-      toast.error("No se pudo conectar con el servidor");
+      toast.error(tErrors("serverError"));
     } finally {
       setSelectingTenantId(null);
     }
@@ -134,15 +138,15 @@ function LoginContent() {
           // ==========================================
           <>
             <div className="space-y-1 text-center">
-              <h1 className="text-2xl font-bold tracking-tight">Iniciar sesión</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{t("loginTitle")}</h1>
               <p className="text-sm text-muted-foreground">
-                Ingresá a tu panel de administración
+                {t("loginSubtitle")}
               </p>
             </div>
 
             {reason === "session_expired" && (
               <div className="rounded-md bg-yellow-50 border border-yellow-200 px-4 py-3 text-sm text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800 dark:text-yellow-400 animate-in slide-in-from-top-1">
-                Tu sesión expiró. Volvé a iniciar sesión.
+                {tErrors("sessionExpired")}
               </div>
             )}
 
@@ -152,12 +156,12 @@ function LoginContent() {
               className="space-y-4"
             >
               <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t("emailLabel")}</Label>
                 <Input
                   id="email"
                   type="email"
                   autoComplete="email"
-                  placeholder="tu@email.com"
+                  placeholder={t("emailPlaceholder")}
                   aria-invalid={!!errors.email}
                   {...register("email")}
                 />
@@ -167,13 +171,13 @@ function LoginContent() {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="password">Contraseña</Label>
+                <Label htmlFor="password">{t("passwordLabel")}</Label>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
-                    placeholder="••••••••"
+                    placeholder={t("passwordPlaceholder")}
                     className="pr-10"
                     aria-invalid={!!errors.password}
                     {...register("password")}
@@ -201,23 +205,23 @@ function LoginContent() {
                   href="/auth/forgot-password"
                   className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
                 >
-                  ¿Olvidaste tu contraseña?
+                  {t("forgotPasswordLink")}
                 </Link>
               </div>
 
               <Button type="submit" className="w-full" disabled={isSubmitting}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Ingresar
+                {t("submitLogin")}
               </Button>
             </form>
 
             <p className="text-center text-sm text-muted-foreground">
-              ¿No tenés cuenta?{" "}
+              {t("dontHaveAccount")}{" "}
               <Link
                 href="/auth/register"
                 className="font-medium text-foreground underline-offset-4 hover:underline"
               >
-                Registrarte
+                {t("signUp")}
               </Link>
             </p>
           </>
@@ -230,9 +234,9 @@ function LoginContent() {
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                 <Store className="h-6 w-6" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight">Elegí qué comercio administrar</h2>
+              <h2 className="text-2xl font-bold tracking-tight">{t("selectStoreTitle")}</h2>
               <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                Tu cuenta posee accesos activos en múltiples tiendas. Seleccioná una:
+                {t("selectStoreSubtitle")}
               </p>
             </div>
 
@@ -287,7 +291,7 @@ function LoginContent() {
                 disabled={selectingTenantId !== null}
                 className="flex items-center justify-center w-full gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline py-2"
               >
-                <ArrowLeft className="h-3 w-3" /> Volver al inicio de sesión
+                <ArrowLeft className="h-3 w-3" /> {t("backToLogin")}
               </button>
             </div>
           </div>

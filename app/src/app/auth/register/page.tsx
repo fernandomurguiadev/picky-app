@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/shared/toast";
 import { useAuthStore } from "@/lib/stores/auth.store";
 import type { UserRole } from "@/lib/stores/auth.store";
+import { useTranslations } from "next-intl";
 
 const registerSchema = z.object({
   businessName: z
@@ -26,11 +27,12 @@ const registerSchema = z.object({
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 function PasswordStrengthIndicator({ password }: { password: string }) {
+  const t = useTranslations("auth");
   const checks = [
-    { label: "8+ caracteres", ok: password.length >= 8 },
-    { label: "Mayúsculas y minúsculas", ok: /[a-z]/.test(password) && /[A-Z]/.test(password) },
-    { label: "Números", ok: /\d/.test(password) },
-    { label: "Caracteres especiales", ok: /[^a-zA-Z0-9]/.test(password) },
+    { label: t("passwordStrengthLength"), ok: password.length >= 8 },
+    { label: t("passwordStrengthCase"), ok: /[a-z]/.test(password) && /[A-Z]/.test(password) },
+    { label: t("passwordStrengthNumber"), ok: /\d/.test(password) },
+    { label: t("passwordStrengthSpecial"), ok: /[^a-zA-Z0-9]/.test(password) },
   ];
 
   if (!password) return null;
@@ -68,6 +70,10 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
 
+  const t = useTranslations("auth");
+  const tCommon = useTranslations("common");
+  const tErrors = useTranslations("errors");
+
   const onSubmit = async (values: RegisterFormValues) => {
     try {
       const res = await fetch("/api/auth/register", {
@@ -82,9 +88,9 @@ export default function RegisterPage() {
       if (!res.ok) {
         const code = data?.error?.code;
         if (code === "EMAIL_ALREADY_EXISTS" || res.status === 409) {
-          setError("email", { message: "Este email ya está registrado" });
+          setError("email", { message: t("emailAlreadyExists") });
         } else {
-          toast.error(data?.error?.message ?? "Error al registrarse");
+          toast.error(data?.error?.message ?? tErrors("generic"));
         }
         return;
       }
@@ -95,10 +101,10 @@ export default function RegisterPage() {
         role: data.role as UserRole,
       });
 
-      toast.success("¡Cuenta creada! Bienvenido a PickyApp.");
+      toast.success(t("registerSuccess"));
       router.replace("/admin/dashboard");
     } catch {
-      toast.error("No se pudo conectar con el servidor");
+      toast.error(tErrors("serverError"));
     }
   };
 
@@ -106,9 +112,9 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12">
       <div className="w-full max-w-sm space-y-6 rounded-xl bg-card p-8 shadow-sm border border-border">
         <div className="space-y-1 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Crear cuenta</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("registerTitle")}</h1>
           <p className="text-sm text-muted-foreground">
-            Registrá tu comercio en PickyApp
+            {t("registerSubtitle")}
           </p>
         </div>
 
@@ -118,12 +124,12 @@ export default function RegisterPage() {
           className="space-y-4"
         >
           <div className="space-y-1.5">
-            <Label htmlFor="businessName">Nombre del comercio</Label>
+            <Label htmlFor="businessName">{t("businessNameLabel")}</Label>
             <Input
               id="businessName"
               type="text"
               autoComplete="organization"
-              placeholder="Ej: Almacén Don Juan"
+              placeholder={t("businessNamePlaceholder")}
               aria-invalid={!!errors.businessName}
               {...register("businessName")}
             />
@@ -133,12 +139,12 @@ export default function RegisterPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("emailLabel")}</Label>
             <Input
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="tu@email.com"
+              placeholder={t("emailPlaceholder")}
               aria-invalid={!!errors.email}
               {...register("email")}
             />
@@ -149,26 +155,26 @@ export default function RegisterPage() {
 
           <div className="space-y-1.5">
             <Label htmlFor="phone">
-              Teléfono{" "}
-              <span className="text-muted-foreground font-normal">(opcional)</span>
+              {t("phoneLabel")}{" "}
+              <span className="text-muted-foreground font-normal">({tCommon("optional").toLowerCase()})</span>
             </Label>
             <Input
               id="phone"
               type="tel"
               autoComplete="tel"
-              placeholder="+54 9 11 0000-0000"
+              placeholder={t("phonePlaceholder")}
               {...register("phone")}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password">Contraseña</Label>
+            <Label htmlFor="password">{t("passwordLabel")}</Label>
             <div className="relative">
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
-                placeholder="••••••••"
+                placeholder={t("passwordPlaceholder")}
                 className="pr-10"
                 aria-invalid={!!errors.password}
                 {...register("password", {
@@ -196,17 +202,17 @@ export default function RegisterPage() {
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Crear cuenta
+            {t("submitRegister")}
           </Button>
         </form>
 
         <p className="text-center text-sm text-muted-foreground">
-          ¿Ya tenés cuenta?{" "}
+          {t("alreadyHaveAccount")}{" "}
           <Link
             href="/auth/login"
             className="font-medium text-foreground underline-offset-4 hover:underline"
           >
-            Iniciar sesión
+            {t("signIn")}
           </Link>
         </p>
       </div>

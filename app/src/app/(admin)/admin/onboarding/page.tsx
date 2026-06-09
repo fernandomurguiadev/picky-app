@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useStoreSettings, useUpdateStoreSettings } from "@/lib/hooks/admin/use-store-settings";
 
 import { useCreateCategory } from "@/lib/hooks/admin/use-categories";
@@ -33,6 +34,8 @@ import { BrandColorSelector } from "@/components/admin/brand-color-selector";
 const TOTAL_STEPS = 5;
 
 export default function OnboardingPage() {
+  const t = useTranslations("onboarding");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,7 +101,7 @@ export default function OnboardingPage() {
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!storeName.trim()) {
-      toast.error("Ingresá el nombre del negocio");
+      toast.error(t("toasts.nameRequired"));
       return;
     }
     setIsSubmitting(true);
@@ -110,7 +113,7 @@ export default function OnboardingPage() {
       } as Parameters<typeof updateSettingsMutation.mutateAsync>[0]);
       nextStep();
     } catch {
-      toast.error("Error al guardar los datos del negocio.");
+      toast.error(t("toasts.businessError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -127,10 +130,10 @@ export default function OnboardingPage() {
         accentColor,
         backgroundColor,
       });
-      toast.success("¡Identidad de marca configurada!");
+      toast.success(t("toasts.brandSuccess"));
       nextStep();
     } catch {
-      toast.error("Ocurrió un error al actualizar el perfil.");
+      toast.error(t("toasts.brandError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -140,17 +143,17 @@ export default function OnboardingPage() {
   const handleStep3Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!catName.trim()) {
-      toast.error("Ingresá el nombre de la categoría");
+      toast.error(t("toasts.categoryRequired"));
       return;
     }
     setIsSubmitting(true);
     try {
       const category = await createCategoryMutation.mutateAsync({ name: catName, isActive: true });
       setCreatedCategoryId(category.id);
-      toast.success("Categoría creada");
+      toast.success(t("toasts.categorySuccess"));
       nextStep();
     } catch {
-      toast.error("No pudimos crear la categoría.");
+      toast.error(t("toasts.categoryError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -160,7 +163,7 @@ export default function OnboardingPage() {
   const handleStep4Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prodName.trim() || !prodPrice) {
-      toast.error("El nombre y el precio son obligatorios");
+      toast.error(t("toasts.productRequired"));
       return;
     }
     setIsSubmitting(true);
@@ -175,10 +178,10 @@ export default function OnboardingPage() {
         isFeatured: true,
         optionGroups: [],
       });
-      toast.success(storeType === "services" ? "¡Primer servicio publicado!" : "¡Primer producto publicado!");
+      toast.success(storeType === "services" ? t("toasts.serviceSuccess") : t("toasts.productSuccess"));
       nextStep();
     } catch {
-      toast.error("Fallo al publicar.");
+      toast.error(t("toasts.productError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -199,12 +202,12 @@ export default function OnboardingPage() {
           const config = schedule[day];
           if (config.isOpen) {
             if (!config.open || !config.close) {
-              toast.error(`Ingresá el horario de ${dayLabels[day]}`);
+              toast.error(t("toasts.scheduleRequired", { day: dayLabels[day] }));
               setIsSubmitting(false);
               return;
             }
             if (config.open >= config.close) {
-              toast.error(`${dayLabels[day]}: el cierre debe ser posterior a la apertura.`);
+              toast.error(t("toasts.scheduleInvalid", { day: dayLabels[day] }));
               setIsSubmitting(false);
               return;
             }
@@ -221,17 +224,17 @@ export default function OnboardingPage() {
           schedule: finalSchedule as unknown as Parameters<typeof updateSettingsMutation.mutateAsync>[0]["schedule"],
           isOnboardingCompleted: true,
         });
-        toast.success("Horarios guardados");
+        toast.success(t("toasts.scheduleSuccess"));
       } else {
         await updateSettingsMutation.mutateAsync({
           isOnboardingCompleted: true,
         });
       }
 
-      toast.success("¡Configuración completada!", "Redirigiendo al dashboard...");
+      toast.success(t("toasts.finishTitle"), t("toasts.finishDesc"));
       setTimeout(() => router.replace("/admin/dashboard"), 1500);
     } catch {
-      toast.error("Error guardando horarios, pero ya podés ir al Dashboard.");
+      toast.error(t("toasts.finishError"));
       router.replace("/admin/dashboard");
     } finally {
       setIsSubmitting(false);
@@ -239,11 +242,11 @@ export default function OnboardingPage() {
   };
 
   const stepsConfig = [
-    { id: 1, label: "Negocio", icon: <Store className="h-4 w-4" /> },
-    { id: 2, label: "Tu Marca", icon: <Sparkles className="h-4 w-4" /> },
-    { id: 3, label: "Categoría", icon: <FolderHeart className="h-4 w-4" /> },
-    { id: 4, label: storeType === "services" ? "Servicio" : "Producto", icon: <PackagePlus className="h-4 w-4" /> },
-    { id: 5, label: "Horarios", icon: <CalendarClock className="h-4 w-4" /> },
+    { id: 1, label: t("steps.business"), icon: <Store className="h-4 w-4" /> },
+    { id: 2, label: t("steps.brand"), icon: <Sparkles className="h-4 w-4" /> },
+    { id: 3, label: t("steps.category"), icon: <FolderHeart className="h-4 w-4" /> },
+    { id: 4, label: storeType === "services" ? t("steps.service") : t("steps.product"), icon: <PackagePlus className="h-4 w-4" /> },
+    { id: 5, label: t("steps.schedule"), icon: <CalendarClock className="h-4 w-4" /> },
   ];
 
   const isLoading = !settings;
@@ -254,10 +257,10 @@ export default function OnboardingPage() {
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <div className="space-y-1">
           <p className="text-sm font-semibold text-foreground">
-            {isOnboardingCompleted ? "Accediendo a tu panel..." : "Cargando configuración..."}
+            {isOnboardingCompleted ? t("loading.accessing") : t("loading.loading")}
           </p>
           <p className="text-xs text-muted-foreground">
-            {isOnboardingCompleted ? "Ya configuraste tu catálogo. Redirigiendo..." : "Verificando el estado de tu comercio..."}
+            {isOnboardingCompleted ? t("loading.completed") : t("loading.checking")}
           </p>
         </div>
       </div>
@@ -273,10 +276,10 @@ export default function OnboardingPage() {
           <Sparkles className="h-6 w-6" />
         </div>
         <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
-          Configurá tu comercio
+          {t("title")}
         </h1>
         <p className="text-sm text-muted-foreground mt-1 font-medium max-w-xs mx-auto">
-          Te guiamos en 5 simples pasos para abrir las puertas de tu local online.
+          {t("subtitle")}
         </p>
       </div>
 
@@ -318,20 +321,20 @@ export default function OnboardingPage() {
         {currentStep === 1 && (
           <form noValidate onSubmit={handleStep1Submit} className="space-y-5 animate-in fade-in duration-300">
             <div className="space-y-1">
-              <h3 className="font-bold text-lg tracking-tight">Tu negocio</h3>
-              <p className="text-xs text-muted-foreground">Nombre, descripción y tipo de comercio.</p>
+              <h3 className="font-bold text-lg tracking-tight">{t("step1.title")}</h3>
+              <p className="text-xs text-muted-foreground">{t("step1.subtitle")}</p>
             </div>
 
             {/* Nombre del negocio */}
             <div className="space-y-2">
               <Label htmlFor="storeName" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Nombre del negocio
+                {t("step1.nameLabel")}
               </Label>
               <Input
                 id="storeName"
                 required
                 autoFocus
-                placeholder="Ej: La Burguesía, Estudio Nómade..."
+                placeholder={t("step1.namePlaceholder")}
                 value={storeName}
                 onChange={(e) => setStoreName(e.target.value)}
                 className="rounded-xl bg-accent/30"
@@ -341,12 +344,12 @@ export default function OnboardingPage() {
             {/* Descripción */}
             <div className="space-y-2">
               <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Descripción <span className="font-normal normal-case tracking-normal">(opcional)</span>
+                {t("step1.descLabel")} <span className="font-normal normal-case tracking-normal">({tCommon("optional").toLowerCase()})</span>
               </Label>
               <textarea
                 id="description"
                 rows={3}
-                placeholder="Describí tu negocio en pocas palabras..."
+                placeholder={t("step1.descPlaceholder")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full rounded-xl border border-input bg-accent/30 px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/50 resize-none"
@@ -355,7 +358,7 @@ export default function OnboardingPage() {
 
             {/* Tipo de negocio */}
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Tipo de negocio</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("step1.typeLabel")}</Label>
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
@@ -369,8 +372,8 @@ export default function OnboardingPage() {
                     <ShoppingCart className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm">Productos</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">Carrito y checkout</p>
+                    <p className="font-semibold text-sm">{t("step1.typeProducts")}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{t("step1.typeProductsDesc")}</p>
                   </div>
                 </button>
 
@@ -386,8 +389,8 @@ export default function OnboardingPage() {
                     <MessageCircle className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm">Servicios</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">Consultas por WhatsApp</p>
+                    <p className="font-semibold text-sm">{t("step1.typeServices")}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">{t("step1.typeServicesDesc")}</p>
                   </div>
                 </button>
               </div>
@@ -395,12 +398,12 @@ export default function OnboardingPage() {
 
             <div className={cn("rounded-xl border p-3 text-xs leading-relaxed", "border-primary/20 bg-primary/5 text-foreground/70")}>
               {storeType === "retail"
-                ? "Tus clientes van a poder agregar productos al carrito y completar un pedido con entrega o retiro."
-                : "Tus clientes van a ver tus servicios y te van a contactar directamente por WhatsApp para consultarte o pedir turno."}
+                ? t("step1.infoRetail")
+                : t("step1.infoServices")}
             </div>
 
             <Button type="submit" className="w-full rounded-xl font-bold shadow-md" disabled={isSubmitting}>
-              {isSubmitting ? "Guardando..." : "Continuar"}
+              {isSubmitting ? t("actions.saving") : t("actions.continue")}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
@@ -410,12 +413,12 @@ export default function OnboardingPage() {
         {currentStep === 2 && (
           <form noValidate onSubmit={handleStep2Submit} className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-1">
-              <h3 className="font-bold text-lg tracking-tight">Identidad Visual</h3>
-              <p className="text-xs text-muted-foreground">Subí el logo y elegí los colores de tu marca.</p>
+              <h3 className="font-bold text-lg tracking-tight">{t("step2.title")}</h3>
+              <p className="text-xs text-muted-foreground">{t("step2.subtitle")}</p>
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Logo de la tienda</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("step2.logoLabel")}</Label>
               <ImageUploader
                 value={logoUrl}
                 onChange={(url) => setLogoUrl(url)}
@@ -424,11 +427,11 @@ export default function OnboardingPage() {
             </div>
 
             <div className="space-y-3 pt-1">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Colores de Marca</Label>
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("step2.colorsLabel")}</Label>
               <div className="md:hidden p-3 rounded-xl bg-accent/30 border border-border/40 text-[10px] text-muted-foreground leading-relaxed space-y-1 select-none">
-                <p>💡 <strong>Primario:</strong> Encabezados y tarjetas.</p>
-                <p>🛍️ <strong>Secundario:</strong> Botones de acción.</p>
-                <p>🎨 <strong>Fondo:</strong> Atmósfera general del catálogo.</p>
+                <p>{t("step2.primaryTip")}</p>
+                <p>{t("step2.secondaryTip")}</p>
+                <p>{t("step2.bgTip")}</p>
               </div>
               <BrandColorSelector
                 primaryColor={primaryColor}
@@ -441,7 +444,7 @@ export default function OnboardingPage() {
             </div>
 
             <div className="space-y-2.5 pt-1 border-t border-border/30">
-              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Vista previa</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">{t("step2.previewLabel")}</Label>
               <StorePreview
                 primaryColor={primaryColor}
                 accentColor={accentColor}
@@ -453,10 +456,10 @@ export default function OnboardingPage() {
             <div className="flex gap-3">
               <Button type="button" variant="ghost" className="rounded-xl text-muted-foreground" onClick={prevStep}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Atrás
+                {t("actions.back")}
               </Button>
               <Button type="submit" className="flex-1 rounded-xl font-bold shadow-md" disabled={isSubmitting}>
-                {isSubmitting ? "Guardando..." : "Guardar y Continuar"}
+                {isSubmitting ? t("actions.saving") : t("actions.saveContinue")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -467,21 +470,21 @@ export default function OnboardingPage() {
         {currentStep === 3 && (
           <form noValidate onSubmit={handleStep3Submit} className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-1">
-              <h3 className="font-bold text-lg tracking-tight">Tu primera Categoría</h3>
+              <h3 className="font-bold text-lg tracking-tight">{t("step3.title")}</h3>
               <p className="text-xs text-muted-foreground">
                 {storeType === "services"
-                  ? "Agrupa tus servicios por tipo. Ej: Cortes, Coloraciones."
-                  : "Agrupa tus productos. Ej: Hamburguesas, Bebidas."}
+                  ? t("step3.subtitleServices")
+                  : t("step3.subtitleRetail")}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="catName" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nombre de la categoría</Label>
+              <Label htmlFor="catName" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t("step3.nameLabel")}</Label>
               <Input
                 id="catName"
                 required
                 autoFocus
-                placeholder={storeType === "services" ? "Ej: Cortes de Cabello" : "Ej: Hamburguesas Clásicas"}
+                placeholder={storeType === "services" ? t("step3.namePlaceholderServices") : t("step3.namePlaceholderRetail")}
                 value={catName}
                 onChange={(e) => setCatName(e.target.value)}
                 className="rounded-xl bg-accent/30"
@@ -491,10 +494,10 @@ export default function OnboardingPage() {
             <div className="flex gap-3">
               <Button type="button" variant="ghost" className="rounded-xl text-muted-foreground" onClick={prevStep}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Atrás
+                {t("actions.back")}
               </Button>
               <Button type="submit" className="flex-1 rounded-xl font-bold" disabled={isSubmitting}>
-                {isSubmitting ? "Creando..." : "Crear y Continuar"}
+                {isSubmitting ? t("actions.creating") : t("actions.createContinue")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -506,22 +509,22 @@ export default function OnboardingPage() {
           <form noValidate onSubmit={handleStep4Submit} className="space-y-5 animate-in fade-in duration-300">
             <div className="space-y-1">
               <h3 className="font-bold text-lg tracking-tight">
-                {storeType === "services" ? "Tu primer Servicio" : "Tu primer Producto"}
+                {storeType === "services" ? t("step4.titleServices") : t("step4.titleRetail")}
               </h3>
               <p className="text-xs text-muted-foreground">
-                {storeType === "services" ? "El servicio estrella de tu negocio ⭐." : "Tu plato o producto estrella ⭐."}
+                {storeType === "services" ? t("step4.subtitleServices") : t("step4.subtitleRetail")}
               </p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="prodName" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {storeType === "services" ? "Nombre del Servicio" : "Nombre del Producto"}
+                {storeType === "services" ? t("step4.nameLabelServices") : t("step4.nameLabelRetail")}
               </Label>
               <Input
                 id="prodName"
                 required
                 autoFocus
-                placeholder={storeType === "services" ? "Ej: Corte y peinado" : "Ej: Burger Completa con papas"}
+                placeholder={storeType === "services" ? t("step4.namePlaceholderServices") : t("step4.namePlaceholderRetail")}
                 value={prodName}
                 onChange={(e) => setProdName(e.target.value)}
                 className="rounded-xl bg-accent/30"
@@ -530,7 +533,7 @@ export default function OnboardingPage() {
 
             <div className="space-y-2">
               <Label htmlFor="prodPrice" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {storeType === "services" ? "Precio (0 si es a consultar)" : "Precio de Venta ($)"}
+                {storeType === "services" ? t("step4.priceLabelServices") : t("step4.priceLabelRetail")}
               </Label>
               <Input
                 id="prodPrice"
@@ -544,17 +547,17 @@ export default function OnboardingPage() {
                 className="rounded-xl bg-accent/30"
               />
               {storeType === "services" && (
-                <p className="text-[10px] text-muted-foreground">Precio 0 no se muestra en la tienda.</p>
+                <p className="text-[10px] text-muted-foreground">{t("step4.priceZeroTip")}</p>
               )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="prodDesc" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {storeType === "services" ? "Descripción (Opcional)" : "Ingredientes / Detalle (Opcional)"}
+                {storeType === "services" ? t("step4.descLabelServices") : t("step4.descLabelRetail")}
               </Label>
               <Input
                 id="prodDesc"
-                placeholder={storeType === "services" ? "Ej: Incluye lavado, corte y secado." : "Ej: Doble medallón, cheddar, lechuga y tomate."}
+                placeholder={storeType === "services" ? t("step4.descPlaceholderServices") : t("step4.descPlaceholderRetail")}
                 value={prodDesc}
                 onChange={(e) => setProdDesc(e.target.value)}
                 className="rounded-xl bg-accent/30"
@@ -563,7 +566,7 @@ export default function OnboardingPage() {
 
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {storeType === "services" ? "Foto (Recomendado)" : "Foto del Producto (Recomendado)"}
+                {storeType === "services" ? t("step4.photoLabelServices") : t("step4.photoLabelRetail")}
               </Label>
               <ImageUploader
                 value={prodImageUrl}
@@ -572,18 +575,18 @@ export default function OnboardingPage() {
               />
               <p className="text-[10px] text-muted-foreground font-medium leading-normal">
                 {storeType === "services"
-                  ? "Una buena foto genera más consultas."
-                  : "Los productos con foto venden hasta 3 veces más."}
+                  ? t("step4.photoTipServices")
+                  : t("step4.photoTipRetail")}
               </p>
             </div>
 
             <div className="flex gap-3">
               <Button type="button" variant="ghost" className="rounded-xl text-muted-foreground" onClick={prevStep}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Atrás
+                {t("actions.back")}
               </Button>
               <Button type="submit" className="flex-1 rounded-xl font-bold" disabled={isSubmitting}>
-                {isSubmitting ? "Publicando..." : "Publicar y Continuar"}
+                {isSubmitting ? t("actions.publishing") : t("actions.publishContinue")}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
@@ -594,8 +597,8 @@ export default function OnboardingPage() {
         {currentStep === 5 && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-1">
-              <h3 className="font-bold text-lg tracking-tight">Horarios de Atención</h3>
-              <p className="text-xs text-muted-foreground">Configurá los días y horarios de apertura del local.</p>
+              <h3 className="font-bold text-lg tracking-tight">{t("step5.title")}</h3>
+              <p className="text-xs text-muted-foreground">{t("step5.subtitle")}</p>
             </div>
 
             <div className="space-y-2.5 max-h-[290px] overflow-y-auto overflow-x-hidden pr-2.5 select-none scrollbar-thin">
@@ -646,7 +649,7 @@ export default function OnboardingPage() {
                         className="h-9 sm:h-8 flex-1 sm:flex-none w-full sm:w-[125px] min-w-0 px-2 py-1 text-xs rounded-lg text-center shadow-inner font-medium [color-scheme:dark] border-border/60 focus:border-primary/50"
                         disabled={!item.isOpen}
                       />
-                      <span className="text-[10px] text-muted-foreground/80 font-extrabold uppercase px-1.5 shrink-0 tracking-wider select-none">a</span>
+                      <span className="text-[10px] text-muted-foreground/80 font-extrabold uppercase px-1.5 shrink-0 tracking-wider select-none">{t("step5.to")}</span>
                       <Input
                         type="time"
                         value={item.close}
@@ -666,14 +669,14 @@ export default function OnboardingPage() {
               <div className="flex gap-3">
                 <Button type="button" variant="ghost" className="rounded-xl text-muted-foreground" onClick={prevStep} disabled={isSubmitting}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Atrás
+                  {t("actions.back")}
                 </Button>
                 <Button
                   onClick={() => handleStep5Complete(false)}
                   className="flex-1 rounded-xl font-bold shadow-md"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Finalizando..." : "Finalizar 🚀"}
+                  {isSubmitting ? t("actions.finishing") : t("actions.finish")}
                 </Button>
               </div>
               <Button
@@ -682,7 +685,7 @@ export default function OnboardingPage() {
                 className="w-full rounded-xl text-[11px] text-muted-foreground/60 hover:text-foreground font-medium h-8"
                 disabled={isSubmitting}
               >
-                Saltear horarios por ahora
+                {t("step5.skip")}
               </Button>
             </div>
           </div>

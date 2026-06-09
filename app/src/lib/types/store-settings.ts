@@ -39,6 +39,7 @@ export interface StoreSettings {
   storeType: 'retail' | 'services';
   customCtaText: string | null;
   storeName?: string;
+  isOnboardingCompleted?: boolean;
   createdAt: string;
   updatedAt: string;
   tenant?: Tenant;

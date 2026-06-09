@@ -63,7 +63,19 @@
     "signUp": "Registrate",
     "logoutLabel": "Cerrar sesión",
     "forgotPasswordSent": "Revisá tu email para el enlace de recuperación",
-    "passwordResetSuccess": "Contraseña actualizada correctamente"
+    "passwordResetSuccess": "Contraseña actualizada correctamente",
+    "selectStoreTitle": "Elegí qué comercio administrar",
+    "selectStoreSubtitle": "Tu cuenta posee accesos activos en múltiples tiendas. Seleccioná una:",
+    "businessNameLabel": "Nombre del comercio",
+    "businessNamePlaceholder": "Ej: Almacén Don Juan",
+    "phoneLabel": "Teléfono",
+    "phonePlaceholder": "+54 9 11 0000-0000",
+    "registerSuccess": "¡Cuenta creada! Bienvenido a PickyApp.",
+    "passwordStrengthLength": "8+ caracteres",
+    "passwordStrengthCase": "Mayúsculas y minúsculas",
+    "passwordStrengthNumber": "Números",
+    "passwordStrengthSpecial": "Caracteres especiales",
+    "emailAlreadyExists": "Este email ya está registrado"
   },
   "navigation": {
     "home": "Inicio",
@@ -138,12 +150,54 @@
     "total": "Total"
   },
   "dashboard": {
-    "title": "Panel de control",
+    "title": "Dashboard",
+    "subtitle": "Información general del rendimiento de tu comercio.",
     "welcome": "Bienvenido",
     "totalOrders": "Pedidos totales",
     "revenue": "Ingresos",
     "activeProducts": "Productos activos",
-    "pendingOrders": "Pedidos pendientes"
+    "pendingOrders": "Pedidos pendientes",
+    "hourlyChartTitleServices": "Solicitudes por Hora",
+    "hourlyChartTitleRetail": "Pedidos por Hora",
+    "hourlyChartSubtitle": "Distribución de actividad durante el día de hoy",
+    "live": "En vivo",
+    "sol": "sol.",
+    "ped": "ped.",
+    "goToKanbanServices": "Ir al Kanban de Solicitudes",
+    "goToKanbanRetail": "Ir al Kanban de Pedidos",
+    "storeStatusTitle": "Estado actual de la tienda",
+    "forcedOpenServices": "Forzado MANUALMENTE para recibir solicitudes",
+    "forcedOpenRetail": "Forzado MANUALMENTE para recibir pedidos",
+    "forcedClosedServices": "Cerrado MANUALMENTE. No recibirás solicitudes",
+    "forcedClosedRetail": "Cerrado MANUALMENTE. No recibirás pedidos",
+    "autoOperating": "Operando automáticamente bajo tus Horarios",
+    "mode": "Modo",
+    "modeAuto": "🔄 Automático (Horarios)",
+    "modeOpen": "🟢 Abierto manual",
+    "modeClosed": "🔴 Cerrado manual",
+    "metricsDevTitle": "Métricas en desarrollo",
+    "metricsDevDesc": "Actualmente el módulo de estadísticas está optimizado para ventas físicas. Próximamente habilitaremos un panel exclusivo para analizar las solicitudes y el rendimiento de tus servicios.",
+    "topProducts": "Lo más vendido hoy",
+    "noSales": "Sin ventas registradas aún",
+    "errorTitle": "Error al cargar datos",
+    "errorDesc": "No logramos recuperar las estadísticas de tu negocio en este momento.",
+    "retry": "Reintentar",
+    "metrics": {
+      "ordersTodayServices": "Solicitudes de Hoy",
+      "ordersTodayRetail": "Pedidos de Hoy",
+      "ordersSubtextServices": "Solicitudes no canceladas",
+      "ordersSubtextRetail": "Pedidos no cancelados",
+      "revenueToday": "Ingresos de Hoy",
+      "revenueSubtextServices": "Total facturado por servicios",
+      "revenueSubtextRetail": "Total facturado entregado",
+      "ticketAverageServices": "Valor Promedio",
+      "ticketAverageRetail": "Ticket Promedio",
+      "ticketSubtextServices": "Valor medio por servicio",
+      "ticketSubtextRetail": "Valor medio por ticket",
+      "pendingLabel": "Pendientes",
+      "pendingSubtextServices": "Solicitudes en espera",
+      "pendingSubtextRetail": "Pedidos en preparación/espera"
+    }
   },
   "admin": {
     "products": {
@@ -162,6 +216,251 @@
       "edit": "Editar categoría",
       "delete": "Eliminar categoría",
       "deleteConfirm": "¿Estás seguro que querés eliminar esta categoría?"
+    }
+  },
+  "settings": {
+    "delivery": {
+      "success": "Configuración de entrega guardada",
+      "error": "Error al guardar",
+      "titleServices": "Modalidades de atención",
+      "titleRetail": "Métodos de entrega",
+      "deliveryServices": "A domicilio",
+      "deliveryRetail": "Delivery",
+      "deliveryDescServices": "Te acercás al domicilio del cliente para brindar el servicio.",
+      "deliveryDescRetail": "Enviás el pedido al domicilio del cliente.",
+      "costServices": "Costo por traslado ($)",
+      "costRetail": "Costo de envío ($)",
+      "minServices": "Servicio mínimo ($)",
+      "minRetail": "Pedido mínimo ($)",
+      "takeawayServices": "Atención presencial (Local/Consultorio)",
+      "takeawayRetail": "Takeaway / Retiro en local",
+      "takeawayDescServices": "El cliente asiste a tu establecimiento.",
+      "takeawayDescRetail": "El cliente pasa a retirar el pedido.",
+      "inStoreServices": "Atención Virtual / Online",
+      "inStoreRetail": "Consumir en el local",
+      "inStoreDescServices": "El servicio se brinda de forma remota o por videollamada.",
+      "inStoreDescRetail": "El cliente consume en el lugar."
+    },
+    "businessModel": {
+      "success": "Modelo de negocio actualizado",
+      "error": "Error al guardar",
+      "title": "Tipo de tienda",
+      "subtitle": "Definí cómo opera tu negocio. Esto cambia la experiencia completa de tu tienda.",
+      "retailTitle": "Retail / Productos",
+      "retailDesc": "Carrito de compras, variantes, checkout completo.",
+      "servicesTitle": "Servicios",
+      "servicesDesc": "Sin carrito. Los clientes consultan directo por WhatsApp.",
+      "cannotChange": "No es posible cambiar el tipo de tienda una vez finalizada la configuración inicial, ya que afectaría tus catálogos y métricas.",
+      "ctaTitle": "Texto del botón de acción",
+      "ctaSubtitle": "Reemplaza 'Agregar al carrito' en toda la tienda. Máx. 30 caracteres.",
+      "ctaLabel": "Texto del CTA",
+      "ctaPlaceholder": "Consultar, Pedir Turno..."
+    }
+  },
+  "onboarding": {
+    "toasts": {
+      "nameRequired": "Ingresá el nombre del negocio",
+      "businessError": "Error al guardar los datos del negocio.",
+      "brandSuccess": "¡Identidad de marca configurada!",
+      "brandError": "Ocurrió un error al actualizar el perfil.",
+      "categoryRequired": "Ingresá el nombre de la categoría",
+      "categorySuccess": "Categoría creada",
+      "categoryError": "No pudimos crear la categoría.",
+      "productRequired": "El nombre y el precio son obligatorios",
+      "serviceSuccess": "¡Primer servicio publicado!",
+      "productSuccess": "¡Primer producto publicado!",
+      "productError": "Fallo al publicar.",
+      "scheduleRequired": "Ingresá el horario de {day}",
+      "scheduleInvalid": "{day}: el cierre debe ser posterior a la apertura.",
+      "scheduleSuccess": "Horarios guardados",
+      "finishTitle": "¡Configuración completada!",
+      "finishDesc": "Redirigiendo al dashboard...",
+      "finishError": "Error guardando horarios, pero ya podés ir al Dashboard."
+    },
+    "loading": {
+      "accessing": "Accediendo a tu panel...",
+      "loading": "Cargando configuración...",
+      "completed": "Ya configuraste tu catálogo. Redirigiendo...",
+      "checking": "Verificando el estado de tu comercio..."
+    },
+    "title": "Configurá tu comercio",
+    "subtitle": "Te guiamos en 5 simples pasos para abrir las puertas de tu local online.",
+    "steps": {
+      "business": "Negocio",
+      "brand": "Tu Marca",
+      "category": "Categoría",
+      "service": "Servicio",
+      "product": "Producto",
+      "schedule": "Horarios"
+    },
+    "step1": {
+      "title": "Tu negocio",
+      "subtitle": "Nombre, descripción y tipo de comercio.",
+      "nameLabel": "Nombre del negocio",
+      "namePlaceholder": "Ej: La Burguesía, Estudio Nómade...",
+      "descLabel": "Descripción",
+      "descPlaceholder": "Describí tu negocio en pocas palabras...",
+      "typeLabel": "Tipo de negocio",
+      "typeProducts": "Productos",
+      "typeProductsDesc": "Carrito y checkout",
+      "typeServices": "Servicios",
+      "typeServicesDesc": "Consultas por WhatsApp",
+      "infoRetail": "Tus clientes van a poder agregar productos al carrito y completar un pedido con entrega o retiro.",
+      "infoServices": "Tus clientes van a ver tus servicios y te van a contactar directamente por WhatsApp para consultarte o pedir turno."
+    },
+    "step2": {
+      "title": "Identidad Visual",
+      "subtitle": "Subí el logo y elegí los colores de tu marca.",
+      "logoLabel": "Logo de la tienda",
+      "colorsLabel": "Colores de Marca",
+      "primaryTip": "💡 Primario: Encabezados y tarjetas.",
+      "secondaryTip": "🛍️ Secundario: Botones de acción.",
+      "bgTip": "🎨 Fondo: Atmósfera general del catálogo.",
+      "previewLabel": "Vista previa"
+    },
+    "step3": {
+      "title": "Tu primera Categoría",
+      "subtitleServices": "Agrupa tus servicios por tipo. Ej: Cortes, Coloraciones.",
+      "subtitleRetail": "Agrupa tus productos. Ej: Hamburguesas, Bebidas.",
+      "nameLabel": "Nombre de la categoría",
+      "namePlaceholderServices": "Ej: Cortes de Cabello",
+      "namePlaceholderRetail": "Ej: Hamburguesas Clásicas"
+    },
+    "step4": {
+      "titleServices": "Tu primer Servicio",
+      "titleRetail": "Tu primer Producto",
+      "subtitleServices": "El servicio estrella de tu negocio ⭐.",
+      "subtitleRetail": "Tu plato o producto estrella ⭐.",
+      "nameLabelServices": "Nombre del Servicio",
+      "nameLabelRetail": "Nombre del Producto",
+      "namePlaceholderServices": "Ej: Corte y peinado",
+      "namePlaceholderRetail": "Ej: Burger Completa con papas",
+      "priceLabelServices": "Precio (0 si es a consultar)",
+      "priceLabelRetail": "Precio de Venta ($)",
+      "priceZeroTip": "Precio 0 no se muestra en la tienda.",
+      "descLabelServices": "Descripción (Opcional)",
+      "descLabelRetail": "Ingredientes / Detalle (Opcional)",
+      "descPlaceholderServices": "Ej: Incluye lavado, corte y secado.",
+      "descPlaceholderRetail": "Ej: Doble medallón, cheddar, lechuga y tomate.",
+      "photoLabelServices": "Foto (Recomendado)",
+      "photoLabelRetail": "Foto del Producto (Recomendado)",
+      "photoTipServices": "Una buena foto genera más consultas.",
+      "photoTipRetail": "Los productos con foto venden hasta 3 veces más."
+    },
+    "step5": {
+      "title": "Horarios de Atención",
+      "subtitle": "Configurá los días y horarios de apertura del local.",
+      "skip": "Saltear horarios por ahora",
+      "to": "a"
+    },
+    "actions": {
+      "continue": "Continuar",
+      "back": "Atrás",
+      "saveContinue": "Guardar y Continuar",
+      "createContinue": "Crear y Continuar",
+      "publishContinue": "Publicar y Continuar",
+      "finish": "Finalizar 🚀",
+      "saving": "Guardando...",
+      "creating": "Creando...",
+      "publishing": "Publicando...",
+      "finishing": "Finalizando..."
+    }
+  },
+  "storefront": {
+    "defaultName": "Nuestra Tienda",
+    "defaultDesc": "Explorá nuestro catálogo digital, seleccioná tus productos favoritos y confirmá tu pedido directamente por WhatsApp.",
+    "welcome": "Bienvenidos a",
+    "deliveryServices": "A domicilio disponible",
+    "deliveryRetail": "Reparto disponible",
+    "takeawayServices": "Atención presencial",
+    "takeawayRetail": "Retiro en Local",
+    "onlineServices": "Atención Online"
+  },
+  "checkout": {
+    "validation": {
+      "notesMax": "Máximo 300 caracteres",
+      "nameTooLong": "Nombre demasiado largo",
+      "nameMin": "El nombre debe tener al menos 2 caracteres",
+      "phoneMin": "Ingresá un teléfono válido",
+      "phoneInvalid": "Teléfono inválido",
+      "addressRequired": "Ingresá la dirección de entrega",
+      "paymentRequired": "Seleccioná un método de pago"
+    },
+    "steps": {
+      "order": "Tu pedido",
+      "delivery": "Entrega",
+      "payment": "Pago"
+    },
+    "order": {
+      "title": "Detalle del pedido",
+      "subtotal": "Subtotal",
+      "notesLabel": "Notas",
+      "notesOptional": "(opcional)",
+      "notesPlaceholder": "Alergias, aclaraciones del pedido...",
+      "continue": "Continuar"
+    },
+    "delivery": {
+      "methodLabel": "Método de entrega",
+      "methods": {
+        "deliveryServices": "A domicilio",
+        "deliveryRetail": "Delivery",
+        "takeawayServices": "Atención presencial",
+        "takeawayRetail": "Retiro en local",
+        "inStoreServices": "Atención Virtual",
+        "inStoreRetail": "En el local"
+      },
+      "fields": {
+        "fullName": "Nombre completo",
+        "namePlaceholder": "Ej: María García",
+        "phone": "Teléfono",
+        "phonePlaceholder": "Ej: +54 9 11 1234-5678",
+        "addressServices": "Dirección para el servicio",
+        "addressRetail": "Dirección de entrega",
+        "addressPlaceholder": "Calle, número, piso/depto...",
+        "nameOptional": "Nombre",
+        "nameOptionalPlaceholder": "Ej: María",
+        "tableOptional": "Número de mesa",
+        "tablePlaceholder": "Ej: 5",
+        "optionalMark": "(opcional)"
+      },
+      "minOrder": {
+        "serviceAlert": "El monto mínimo para brindar el servicio a domicilio es",
+        "retailAlert": "El monto mínimo para delivery es",
+        "serviceCurrent": "El servicio actual suma",
+        "retailCurrent": "Tu pedido es de"
+      },
+      "back": "Volver",
+      "continue": "Continuar"
+    },
+    "payment": {
+      "methodLabel": "Método de pago",
+      "noMethods": "No hay métodos de pago activos.",
+      "methods": {
+        "cash": "Efectivo",
+        "transfer": "Transferencia",
+        "card": "Tarjeta"
+      },
+      "summary": {
+        "subtotal": "Subtotal",
+        "transfer": "Traslado",
+        "shipping": "Envío",
+        "total": "Total"
+      },
+      "back": "Volver",
+      "submitting": "Enviando...",
+      "confirm": "Confirmar pedido"
+    },
+    "success": {
+      "errorTitle": "Error al procesar el pedido. Intentá nuevamente.",
+      "title": "¡Pedido generado correctamente!",
+      "orderNumber": "Número de pedido:",
+      "instructions": "Para finalizar, envianos un mensaje por WhatsApp para que podamos confirmar tu pedido y asignarlo a tu número.",
+      "whatsappError": "No se pudo generar el enlace de WhatsApp.",
+      "confirmWhatsapp": "Confirmar por WhatsApp"
+    },
+    "page": {
+      "title": "Checkout",
+      "itemsInCart": "{count} productos en tu carrito"
     }
   },
   "landing": {

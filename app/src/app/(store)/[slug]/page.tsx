@@ -5,6 +5,7 @@ import type { Category, Product } from "@/lib/types/catalog";
 import type { StorePublicData } from "@/lib/types/store";
 import { MOBILE_COLS_TO_LAYOUT } from "@/lib/types/store";
 import { MapPin, Truck, ShoppingBag } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
 
@@ -14,6 +15,7 @@ interface StorePageProps {
 
 export default async function StorePage({ params }: StorePageProps) {
   const { slug } = await params;
+  const t = await getTranslations("storefront");
 
   const [categoriesRes, featuredRes, storeRes] = await Promise.all([
     fetch(`${BACKEND_URL}/api/v1/stores/${slug}/categories`, {
@@ -49,8 +51,8 @@ export default async function StorePage({ params }: StorePageProps) {
     productsByCategory[cat.id] = categoriesProductsData[index]?.data ?? [];
   });
 
-  const storeName = store?.name ?? "Nuestra Tienda";
-  const storeDescription = store?.description || "Explorá nuestro catálogo digital, seleccioná tus productos favoritos y confirmá tu pedido directamente por WhatsApp.";
+  const storeName = store?.name ?? t("defaultName");
+  const storeDescription = store?.description || t("defaultDesc");
 
   return (
     <div className="pb-10">
@@ -90,7 +92,7 @@ export default async function StorePage({ params }: StorePageProps) {
                 <div className="relative z-10 space-y-4">
                   <div className="space-y-1.5">
                     <p className="text-[10px] sm:text-xs font-extrabold tracking-[0.25em] uppercase text-[var(--color-primary)]/80 drop-shadow-sm">
-                      Bienvenidos a
+                      {t("welcome")}
                     </p>
                     <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground">
                       {storeName}
@@ -111,19 +113,19 @@ export default async function StorePage({ params }: StorePageProps) {
                     {store?.deliveryEnabled && (
                       <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 shadow-sm">
                         <Truck className="w-3 h-3 shrink-0" />
-                        <span>{store.storeType === "services" ? "A domicilio disponible" : "Reparto disponible"}</span>
+                        <span>{store.storeType === "services" ? t("deliveryServices") : t("deliveryRetail")}</span>
                       </div>
                     )}
                     {store?.takeawayEnabled && (
                       <div className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 px-3 py-1 text-[11px] font-bold text-[var(--color-primary)]/90 shadow-sm">
                         <ShoppingBag className="w-3 h-3 shrink-0" />
-                        <span>{store.storeType === "services" ? "Atención presencial" : "Retiro en Local"}</span>
+                        <span>{store.storeType === "services" ? t("takeawayServices") : t("takeawayRetail")}</span>
                       </div>
                     )}
                     {store?.inStoreEnabled && store.storeType === "services" && (
                       <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 px-3 py-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 shadow-sm">
                         <MapPin className="w-3 h-3 shrink-0" />
-                        <span>Atención Online</span>
+                        <span>{t("onlineServices")}</span>
                       </div>
                     )}
                   </div>

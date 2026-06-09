@@ -27,6 +27,7 @@ import { useCartStore } from "@/lib/stores/cart.store";
 import { formatCurrency } from "@/lib/utils";
 import { toast } from "@/components/shared/toast";
 import type { StorePublicData } from "@/lib/types/store";
+import { useTranslations } from "next-intl";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,16 +41,16 @@ interface CartItemDisplay {
 
 // ─── Schemas ─────────────────────────────────────────────────────────────────
 
-const notesSchema = z.object({
-  notes: z.string().max(300, "Máximo 300 caracteres").optional(),
+const getNotesSchema = (t: any) => z.object({
+  notes: z.string().max(300, t("validation.notesMax")).optional(),
 });
 
 const PHONE_REGEX = /^\+?[\d\s\-()]+$/;
 
-const deliverySchema = z
+const getDeliverySchema = (t: any) => z
   .object({
     deliveryMethod: z.enum(["delivery", "takeaway", "in_store"]),
-    name: z.string().max(80, "Nombre demasiado largo").optional(),
+    name: z.string().max(80, t("validation.nameTooLong")).optional(),
     phone: z.string().optional(),
     deliveryAddress: z.string().max(200).optional(),
     tableNumber: z.string().max(20).optional(),
@@ -59,20 +60,20 @@ const deliverySchema = z
       if (!data.name || data.name.trim().length < 2) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "El nombre debe tener al menos 2 caracteres",
+          message: t("validation.nameMin"),
           path: ["name"],
         });
       }
       if (!data.phone || data.phone.trim().length < 8) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Ingresá un teléfono válido",
+          message: t("validation.phoneMin"),
           path: ["phone"],
         });
       } else if (!PHONE_REGEX.test(data.phone)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Teléfono inválido",
+          message: t("validation.phoneInvalid"),
           path: ["phone"],
         });
       }
@@ -80,30 +81,32 @@ const deliverySchema = z
     if (data.deliveryMethod === "delivery" && !data.deliveryAddress?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Ingresá la dirección de entrega",
+        message: t("validation.addressRequired"),
         path: ["deliveryAddress"],
       });
     }
   });
 
-const paymentSchema = z.object({
-  paymentMethod: z.string().min(1, "Seleccioná un método de pago"),
+const getPaymentSchema = (t: any) => z.object({
+  paymentMethod: z.string().min(1, t("validation.paymentRequired")),
 });
 
-type NotesData = z.infer<typeof notesSchema>;
-type DeliveryData = z.infer<typeof deliverySchema>;
-type PaymentData = z.infer<typeof paymentSchema>;
+type NotesData = z.infer<ReturnType<typeof getNotesSchema>>;
+type DeliveryData = z.infer<ReturnType<typeof getDeliverySchema>>;
+type PaymentData = z.infer<ReturnType<typeof getPaymentSchema>>;
 type CheckoutStep = "order" | "delivery" | "payment" | "success";
 
 // ─── Step Indicator ───────────────────────────────────────────────────────────
 
-const STEPS = [
-  { key: "order" as CheckoutStep, label: "Tu pedido" },
-  { key: "delivery" as CheckoutStep, label: "Entrega" },
-  { key: "payment" as CheckoutStep, label: "Pago" },
-];
+// ─── Step Indicator ───────────────────────────────────────────────────────────
 
-function StepIndicator({ step }: { step: CheckoutStep }) {
+function StepIndicator({ step, t }: { step: CheckoutStep, t: any }) {
+  const STEPS = [
+    { key: "order" as CheckoutStep, label: t("steps.order") },
+    { key: "delivery" as CheckoutStep, label: t("steps.delivery") },
+    { key: "payment" as CheckoutStep, label: t("steps.payment") },
+  ];
+
   const activeIndex = STEPS.findIndex((s) => s.key === step);
 
   return (
@@ -132,14 +135,14 @@ function StepIndicator({ step }: { step: CheckoutStep }) {
           >
             {s.label}
           </span>
-          {i < STEPS.length - 1 && (
-            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-          )}
+              {i < STEPS.length - 1 && (
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              )}
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
-  );
-}
+      );
+    }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -160,11 +163,13 @@ function OrderStep({
   cartSubtotal,
   onNext,
   defaultValues,
+  t,
 }: {
   items: CartItemDisplay[];
   cartSubtotal: number;
   onNext: (data: NotesData) => void;
   defaultValues?: NotesData;
+  t: any;
 }) {
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
@@ -173,7 +178,7 @@ function OrderStep({
     handleSubmit,
     formState: { errors },
   } = useForm<NotesData>({
-    resolver: zodResolver(notesSchema),
+    resolver: zodResolver(getNotesSchema(t)),
     defaultValues,
   });
 
@@ -183,7 +188,7 @@ function OrderStep({
       <div className="rounded-xl border bg-muted/30 overflow-hidden">
         <div className="flex items-center gap-2 px-4 pt-4 pb-3 text-sm font-medium">
           <ShoppingBag className="h-4 w-4 text-[var(--color-primary)]" />
-          Detalle del pedido
+          {t("order.title")}
         </div>
         <Separator />
         <ul className="max-h-52 overflow-y-auto px-4 py-3 space-y-2">
@@ -235,7 +240,7 @@ function OrderStep({
         </ul>
         <Separator />
         <div className="flex items-center justify-between px-4 py-3">
-          <span className="text-sm font-semibold">Subtotal</span>
+          <span className="text-sm font-semibold">{t("order.subtotal")}</span>
           <span className="text-sm font-bold text-[var(--color-primary)]">
             {formatCurrency(cartSubtotal)}
           </span>
@@ -245,12 +250,12 @@ function OrderStep({
       {/* Notas */}
       <div className="space-y-1.5">
         <Label htmlFor="checkout-notes">
-          Notas{" "}
-          <span className="text-muted-foreground font-normal">(opcional)</span>
+          {t("order.notesLabel")}{" "}
+          <span className="text-muted-foreground font-normal">{t("order.notesOptional")}</span>
         </Label>
         <textarea
           id="checkout-notes"
-          placeholder="Alergias, aclaraciones del pedido..."
+          placeholder={t("order.notesPlaceholder")}
           rows={3}
           {...register("notes")}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] resize-none"
@@ -262,7 +267,7 @@ function OrderStep({
         type="submit"
         className="w-full gap-2 bg-[var(--store-accent)] text-white hover:opacity-90 py-5"
       >
-        Continuar
+        {t("order.continue")}
         <ChevronRight className="h-4 w-4" />
       </Button>
     </form>
@@ -277,12 +282,14 @@ function DeliveryStep({
   onBack,
   onNext,
   defaultValues,
+  t,
 }: {
   store: StorePublicData;
   cartSubtotal: number;
   onBack: () => void;
   onNext: (data: DeliveryData) => void;
   defaultValues?: Partial<DeliveryData>;
+  t: any;
 }) {
   const {
     register,
@@ -290,7 +297,7 @@ function DeliveryStep({
     watch,
     formState: { errors },
   } = useForm<DeliveryData>({
-    resolver: zodResolver(deliverySchema),
+    resolver: zodResolver(getDeliverySchema(t)),
     defaultValues: {
       deliveryMethod: store.deliveryEnabled
         ? "delivery"
@@ -306,7 +313,7 @@ function DeliveryStep({
   const deliveryMethods = [
     {
       key: "delivery" as const,
-      label: store.storeType === "services" ? "A domicilio" : "Delivery",
+      label: store.storeType === "services" ? t("delivery.methods.deliveryServices") : t("delivery.methods.deliveryRetail"),
       icon: Truck,
       enabled: store.deliveryEnabled,
       extra:
@@ -316,13 +323,13 @@ function DeliveryStep({
     },
     {
       key: "takeaway" as const,
-      label: store.storeType === "services" ? "Atención presencial" : "Retiro en local",
+      label: store.storeType === "services" ? t("delivery.methods.takeawayServices") : t("delivery.methods.takeawayRetail"),
       icon: ShoppingBag,
       enabled: store.takeawayEnabled,
     },
     {
       key: "in_store" as const,
-      label: store.storeType === "services" ? "Atención Virtual" : "En el local",
+      label: store.storeType === "services" ? t("delivery.methods.inStoreServices") : t("delivery.methods.inStoreRetail"),
       icon: Store,
       enabled: store.inStoreEnabled,
     },
@@ -338,7 +345,7 @@ function DeliveryStep({
       <div className="space-y-3">
         <Label className="flex items-center gap-2 text-sm font-semibold">
           <MapPin className="h-4 w-4 text-[var(--color-primary)]" />
-          Método de entrega
+          {t("delivery.methodLabel")}
         </Label>
         <div className="grid gap-2">
           {deliveryMethods.map((method) => {
@@ -376,11 +383,11 @@ function DeliveryStep({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="d-name" className="flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5" /> Nombre completo
+              <User className="h-3.5 w-3.5" /> {t("delivery.fields.fullName")}
             </Label>
             <Input
               id="d-name"
-              placeholder="Ej: María García"
+              placeholder={t("delivery.fields.namePlaceholder")}
               autoComplete="name"
               {...register("name")}
               className={errors.name ? "border-destructive" : ""}
@@ -389,12 +396,12 @@ function DeliveryStep({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="d-phone" className="flex items-center gap-1.5">
-              <Phone className="h-3.5 w-3.5" /> Teléfono
+              <Phone className="h-3.5 w-3.5" /> {t("delivery.fields.phone")}
             </Label>
             <Input
               id="d-phone"
               type="tel"
-              placeholder="Ej: +54 9 11 1234-5678"
+              placeholder={t("delivery.fields.phonePlaceholder")}
               autoComplete="tel"
               {...register("phone")}
               className={errors.phone ? "border-destructive" : ""}
@@ -403,11 +410,11 @@ function DeliveryStep({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="d-address" className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" /> {store.storeType === "services" ? "Dirección para el servicio" : "Dirección de entrega"}
+              <MapPin className="h-3.5 w-3.5" /> {store.storeType === "services" ? t("delivery.fields.addressServices") : t("delivery.fields.addressRetail")}
             </Label>
             <Input
               id="d-address"
-              placeholder="Calle, número, piso/depto..."
+              placeholder={t("delivery.fields.addressPlaceholder")}
               autoComplete="street-address"
               {...register("deliveryAddress")}
               className={errors.deliveryAddress ? "border-destructive" : ""}
@@ -422,11 +429,11 @@ function DeliveryStep({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="t-name" className="flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5" /> Nombre completo
+              <User className="h-3.5 w-3.5" /> {t("delivery.fields.fullName")}
             </Label>
             <Input
               id="t-name"
-              placeholder="Ej: María García"
+              placeholder={t("delivery.fields.namePlaceholder")}
               autoComplete="name"
               {...register("name")}
               className={errors.name ? "border-destructive" : ""}
@@ -435,12 +442,12 @@ function DeliveryStep({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="t-phone" className="flex items-center gap-1.5">
-              <Phone className="h-3.5 w-3.5" /> Teléfono
+              <Phone className="h-3.5 w-3.5" /> {t("delivery.fields.phone")}
             </Label>
             <Input
               id="t-phone"
               type="tel"
-              placeholder="Ej: +54 9 11 1234-5678"
+              placeholder={t("delivery.fields.phonePlaceholder")}
               autoComplete="tel"
               {...register("phone")}
               className={errors.phone ? "border-destructive" : ""}
@@ -455,28 +462,28 @@ function DeliveryStep({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="i-name">
-              Nombre{" "}
+              {t("delivery.fields.nameOptional")}{" "}
               <span className="font-normal text-muted-foreground">
-                (opcional)
+                {t("delivery.fields.optionalMark")}
               </span>
             </Label>
             <Input
               id="i-name"
-              placeholder="Ej: María"
+              placeholder={t("delivery.fields.nameOptionalPlaceholder")}
               autoComplete="name"
               {...register("name")}
             />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="i-table">
-              Número de mesa{" "}
+              {t("delivery.fields.tableOptional")}{" "}
               <span className="font-normal text-muted-foreground">
-                (opcional)
+                {t("delivery.fields.optionalMark")}
               </span>
             </Label>
             <Input
               id="i-table"
-              placeholder="Ej: 5"
+              placeholder={t("delivery.fields.tablePlaceholder")}
               {...register("tableNumber")}
             />
           </div>
@@ -488,8 +495,8 @@ function DeliveryStep({
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-800/40 dark:bg-amber-900/20">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
           <p className="text-amber-800 dark:text-amber-300">
-            El monto mínimo para {store.storeType === "services" ? "brindar el servicio a domicilio" : "delivery"} es{" "}
-            <strong>{formatCurrency(minOrder)}</strong>. {store.storeType === "services" ? "El servicio actual suma" : "Tu pedido es de"}{" "}
+            {store.storeType === "services" ? t("delivery.minOrder.serviceAlert") : t("delivery.minOrder.retailAlert")}{" "}
+            <strong>{formatCurrency(minOrder)}</strong>. {store.storeType === "services" ? t("delivery.minOrder.serviceCurrent") : t("delivery.minOrder.retailCurrent")}{" "}
             {formatCurrency(cartSubtotal)}.
           </p>
         </div>
@@ -503,14 +510,14 @@ function DeliveryStep({
           className="gap-2"
         >
           <ChevronLeft className="h-4 w-4" />
-          Volver
+          {t("delivery.back")}
         </Button>
         <Button
           type="submit"
           disabled={isBelowMinimum}
           className="flex-1 gap-2 bg-[var(--store-accent)] text-white hover:opacity-90 py-5 disabled:opacity-50"
         >
-          Continuar
+          {t("delivery.continue")}
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -528,6 +535,7 @@ function PaymentStep({
   onSubmit,
   isSubmitting,
   defaultValues,
+  t,
 }: {
   store: StorePublicData;
   cartSubtotal: number;
@@ -536,6 +544,7 @@ function PaymentStep({
   onSubmit: (data: PaymentData) => void;
   isSubmitting: boolean;
   defaultValues?: PaymentData;
+  t: any;
 }) {
   const {
     register,
@@ -543,7 +552,7 @@ function PaymentStep({
     watch,
     formState: { errors },
   } = useForm<PaymentData>({
-    resolver: zodResolver(paymentSchema),
+    resolver: zodResolver(getPaymentSchema(t)),
     defaultValues,
   });
 
@@ -554,15 +563,15 @@ function PaymentStep({
   const total = cartSubtotal + deliveryCost;
 
   const paymentMethods = [
-    { key: "cash", label: "Efectivo", enabled: store.cashEnabled },
+    { key: "cash", label: t("payment.methods.cash"), enabled: store.cashEnabled },
     {
       key: "transfer",
       label: store.transferAlias
-        ? `Transferencia (${store.transferAlias})`
-        : "Transferencia",
+        ? `${t("payment.methods.transfer")} (${store.transferAlias})`
+        : t("payment.methods.transfer"),
       enabled: store.transferEnabled,
     },
-    { key: "card", label: "Tarjeta", enabled: store.cardEnabled },
+    { key: "card", label: t("payment.methods.card"), enabled: store.cardEnabled },
   ].filter((m) => m.enabled);
 
   return (
@@ -571,11 +580,11 @@ function PaymentStep({
       <div className="space-y-3">
         <Label className="flex items-center gap-2 text-sm font-semibold">
           <CreditCard className="h-4 w-4 text-[var(--color-primary)]" />
-          Método de pago
+          {t("payment.methodLabel")}
         </Label>
         {paymentMethods.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            No hay métodos de pago activos.
+            {t("payment.noMethods")}
           </p>
         ) : (
           <div className="grid gap-2">
@@ -605,18 +614,18 @@ function PaymentStep({
       {/* Resumen de totales */}
       <div className="rounded-xl border bg-muted/30 p-4 space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Subtotal</span>
+          <span className="text-muted-foreground">{t("payment.summary.subtotal")}</span>
           <span>{formatCurrency(cartSubtotal)}</span>
         </div>
         {deliveryCost > 0 && (
           <div className="flex justify-between">
-            <span className="text-muted-foreground">{store.storeType === "services" ? "Traslado" : "Envío"}</span>
+            <span className="text-muted-foreground">{store.storeType === "services" ? t("payment.summary.transfer") : t("payment.summary.shipping")}</span>
             <span>{formatCurrency(deliveryCost)}</span>
           </div>
         )}
         <Separator />
         <div className="flex justify-between font-bold text-base">
-          <span>Total</span>
+          <span>{t("payment.summary.total")}</span>
           <span className="text-[var(--color-primary)]">
             {formatCurrency(total)}
           </span>
@@ -631,7 +640,7 @@ function PaymentStep({
           className="gap-2"
         >
           <ChevronLeft className="h-4 w-4" />
-          Volver
+          {t("payment.back")}
         </Button>
         <Button
           type="submit"
@@ -643,7 +652,7 @@ function PaymentStep({
           ) : (
             <CheckCircle className="h-4 w-4" />
           )}
-          <span>{isSubmitting ? "Enviando..." : "Confirmar pedido"}</span>
+          <span>{isSubmitting ? t("payment.submitting") : t("payment.confirm")}</span>
         </Button>
       </div>
     </form>
@@ -660,6 +669,7 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
+  const t = useTranslations("checkout");
 
   const { items, subtotal } = useCartStore();
   const cartSubtotal = subtotal();
@@ -739,7 +749,7 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
       setStep("success");
       useCartStore.getState().clearCart();
     } catch {
-      toast.error("Error al procesar el pedido. Intentá nuevamente.");
+      toast.error(t("success.errorTitle"));
     } finally {
       setIsSubmitting(false);
     }
@@ -752,10 +762,10 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
           <CheckCircle className="h-10 w-10 text-green-500 dark:text-green-400" />
         </div>
         <h1 className="mb-2 text-2xl font-bold tracking-tight">
-          ¡Pedido generado correctamente!
+          {t("success.title")}
         </h1>
         <p className="mb-6 text-muted-foreground">
-          Número de pedido:{" "}
+          {t("success.orderNumber")}{" "}
           <strong className="text-foreground">
             {createdOrder?.orderNumber ?? "..."}
           </strong>
@@ -763,8 +773,7 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
 
         <div className="rounded-xl border bg-muted/30 p-6 mb-8 text-sm">
           <p className="mb-4">
-            Para finalizar, envianos un mensaje por WhatsApp para que podamos
-            confirmar tu pedido y asignarlo a tu número.
+            {t("success.instructions")}
           </p>
           <Button
             type="button"
@@ -777,11 +786,11 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
                   "noopener,noreferrer"
                 );
               } else {
-                toast.error("No se pudo generar el enlace de WhatsApp.");
+                toast.error(t("success.whatsappError"));
               }
             }}
           >
-            Confirmar por WhatsApp
+            {t("success.confirmWhatsapp")}
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
@@ -793,15 +802,15 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
     <div className="mx-auto max-w-lg px-4 py-8">
       {/* Header */}
       <div className="mb-8 space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Checkout</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{t("page.title")}</h1>
         <p className="text-sm text-muted-foreground">
-          {items.reduce((s, i) => s + i.quantity, 0)} productos en tu carrito
+          {t("page.itemsInCart", { count: items.reduce((s, i) => s + i.quantity, 0) })}
         </p>
       </div>
 
       {/* Indicador de paso */}
       <div className="mb-8">
-        <StepIndicator step={step} />
+        <StepIndicator step={step} t={t} />
       </div>
 
       {/* Resumen compacto del carrito (pasos 2 y 3) */}
@@ -824,6 +833,7 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
           cartSubtotal={cartSubtotal}
           onNext={handleNotesNext}
           defaultValues={notesData ?? undefined}
+          t={t}
         />
       )}
       {step === "delivery" && (
@@ -833,6 +843,7 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
           onBack={() => setStep("order")}
           onNext={handleDeliveryNext}
           defaultValues={deliveryData ?? undefined}
+          t={t}
         />
       )}
       {step === "payment" && deliveryData && (
@@ -843,6 +854,7 @@ export function CheckoutPageClient({ store }: CheckoutPageClientProps) {
           onBack={() => setStep("delivery")}
           onSubmit={handlePaymentSubmit}
           isSubmitting={isSubmitting}
+          t={t}
         />
       )}
     </div>

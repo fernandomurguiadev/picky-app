@@ -11,6 +11,7 @@ import { SkeletonLoader } from "@/components/shared/skeleton-loader";
 import { useStoreSettings, useUpdateStoreSettings } from "@/lib/hooks/admin/use-store-settings";
 import { toast } from "@/components/shared/toast";
 import { ShoppingCart, MessageCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const schema = z.object({
   storeType: z.enum(["retail", "services"]),
@@ -20,6 +21,8 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function BusinessModelPage() {
+  const t = useTranslations("settings.businessModel");
+  const tCommon = useTranslations("common");
   const { data: settings, isLoading } = useStoreSettings();
   const updateMutation = useUpdateStoreSettings();
 
@@ -52,9 +55,9 @@ export default function BusinessModelPage() {
         storeType: values.storeType,
         customCtaText: values.storeType === "services" ? (values.customCtaText || null) : null,
       });
-      toast.success("Modelo de negocio actualizado");
+      toast.success(t("success"));
     } catch {
-      toast.error("Error al guardar");
+      toast.error(t("error"));
     }
   };
 
@@ -66,9 +69,9 @@ export default function BusinessModelPage() {
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <section className="rounded-xl border border-border p-6 space-y-5 bg-card">
         <div>
-          <h2 className="font-semibold text-base">Tipo de tienda</h2>
+          <h2 className="font-semibold text-base">{t("title")}</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Definí cómo opera tu negocio. Esto cambia la experiencia completa de tu tienda.
+            {t("subtitle")}
           </p>
         </div>
 
@@ -87,9 +90,9 @@ export default function BusinessModelPage() {
               <ShoppingCart className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-semibold text-sm">Retail / Productos</p>
+              <p className="font-semibold text-sm">{t("retailTitle")}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Carrito de compras, variantes, checkout completo.
+                {t("retailDesc")}
               </p>
             </div>
           </button>
@@ -108,9 +111,9 @@ export default function BusinessModelPage() {
               <MessageCircle className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-semibold text-sm">Servicios</p>
+              <p className="font-semibold text-sm">{t("servicesTitle")}</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Sin carrito. Los clientes consultan directo por WhatsApp.
+                {t("servicesDesc")}
               </p>
             </div>
           </button>
@@ -118,7 +121,7 @@ export default function BusinessModelPage() {
 
         {!canChangeStoreType && (
           <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800/40 mt-4">
-            No es posible cambiar el tipo de tienda una vez finalizada la configuración inicial, ya que afectaría tus catálogos y métricas.
+            {t("cannotChange")}
           </p>
         )}
 
@@ -128,17 +131,17 @@ export default function BusinessModelPage() {
       {storeType === "services" && (
         <section className="rounded-xl border border-border p-6 space-y-4 bg-card">
           <div>
-            <h2 className="font-semibold text-base">Texto del botón de acción</h2>
+            <h2 className="font-semibold text-base">{t("ctaTitle")}</h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Reemplaza "Agregar al carrito" en toda la tienda. Máx. 30 caracteres.
+              {t("ctaSubtitle")}
             </p>
           </div>
           <div className="space-y-1.5 max-w-xs">
-            <Label htmlFor="cta-text">Texto del CTA</Label>
+            <Label htmlFor="cta-text">{t("ctaLabel")}</Label>
             <Input
               id="cta-text"
               {...register("customCtaText")}
-              placeholder="Consultar, Pedir Turno..."
+              placeholder={t("ctaPlaceholder")}
               maxLength={30}
               className="rounded-lg"
             />
@@ -152,7 +155,7 @@ export default function BusinessModelPage() {
           disabled={updateMutation.isPending || !isDirty}
           className="rounded-xl px-6 shadow-sm font-medium"
         >
-          {updateMutation.isPending ? "Guardando..." : "Guardar cambios"}
+          {updateMutation.isPending ? tCommon("loading") : tCommon("save")}
         </Button>
       </div>
     </form>
