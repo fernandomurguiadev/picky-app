@@ -24,6 +24,9 @@ export class Tenant {
   @Column({ type: 'boolean', default: true })
   isActive!: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  isOnboardingCompleted!: boolean;
+
   @CreateDateColumn()
   createdAt!: Date;
 

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useProducts } from "@/lib/hooks/admin/use-products";
+
 import { useEffect } from "react";
 
 // --- Helper de Estado Dinámico ---
@@ -130,21 +130,18 @@ export default function DashboardPage() {
   const router = useRouter();
   const { data: metrics, isLoading: isMetricsLoading, isError, refetch } = useDashboardMetrics();
   const { data: settings, isLoading: isSettingsLoading } = useStoreSettings();
-  const { data: products, isLoading: isProductsLoading } = useProducts({ limit: 1 });
   const toggleStatusMutation = useToggleStoreStatus();
 
-  const isLoading = isMetricsLoading || isSettingsLoading || isProductsLoading;
+  const isLoading = isMetricsLoading || isSettingsLoading;
 
   // Redirección al Wizard de Onboarding (Requerimiento FE8.5)
   useEffect(() => {
-    if (!isLoading && !isError && settings && products) {
-      const hasProducts = (products.meta?.total ?? 0) > 0;
-      
-      if (!hasProducts) {
+    if (!isLoading && !isError && settings) {
+      if (settings.tenant?.isOnboardingCompleted === false) {
         router.replace("/admin/onboarding");
       }
     }
-  }, [isLoading, isError, settings, products, router]);
+  }, [isLoading, isError, settings, router]);
 
   if (isLoading) {
     return (

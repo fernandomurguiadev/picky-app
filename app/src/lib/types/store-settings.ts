@@ -49,5 +49,6 @@ export interface Tenant {
   name: string;
   slug: string;
   isActive: boolean;
+  isOnboardingCompleted: boolean;
   createdAt: string;
 }

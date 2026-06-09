@@ -18,6 +18,10 @@ export class UpdateStoreSettingsDto {
   @IsString()
   storeName?: string;
 
+  @IsOptional()
+  @IsBoolean()
+  isOnboardingCompleted?: boolean;
+
   // Modelo de Negocio
   @IsOptional()
   @IsIn(['retail', 'services'])

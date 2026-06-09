@@ -17,7 +17,7 @@ export interface StoreStatusResult {
 }
 
 export type StoreSettingsResponse = Omit<StoreSettings, 'tenant'> & {
-  tenant: Pick<Tenant, 'id' | 'name' | 'slug' | 'isActive'> | null;
+  tenant: Pick<Tenant, 'id' | 'name' | 'slug' | 'isActive' | 'isOnboardingCompleted'> | null;
 };
 
 // ─── Helpers de timezone ──────────────────────────────────────────────────
@@ -219,6 +219,7 @@ export class TenantsService {
             name: tenant.name,
             slug: tenant.slug,
             isActive: tenant.isActive,
+            isOnboardingCompleted: tenant.isOnboardingCompleted,
           }
         : null,
     };
@@ -237,11 +238,20 @@ export class TenantsService {
       ? runner.manager.getRepository(StoreSettings)
       : this.settingsRepo;
 
+    const tenantUpdate: Partial<Tenant> = {};
     if (dto.storeName?.trim()) {
-      await tenantRepo.update({ id: tenantId }, { name: dto.storeName.trim() });
+      tenantUpdate.name = dto.storeName.trim();
+    }
+    if (typeof dto.isOnboardingCompleted === 'boolean') {
+      tenantUpdate.isOnboardingCompleted = dto.isOnboardingCompleted;
+    }
+    
+    if (Object.keys(tenantUpdate).length > 0) {
+      await tenantRepo.update({ id: tenantId }, tenantUpdate);
     }
 
-    const { storeName: _, ...settingsDto } = dto;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { storeName: _, isOnboardingCompleted: __, ...settingsDto } = dto as any;
 
     let settings = await repo.findOne({ where: { tenantId } });
     if (!settings) {

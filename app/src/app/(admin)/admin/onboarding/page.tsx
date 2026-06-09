@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useStoreSettings, useUpdateStoreSettings } from "@/lib/hooks/admin/use-store-settings";
-import { useCategories } from "@/lib/hooks/admin/use-categories";
-import { useProducts } from "@/lib/hooks/admin/use-products";
+
 import { useCreateCategory } from "@/lib/hooks/admin/use-categories";
 import { useCreateProduct } from "@/lib/hooks/admin/use-products";
 import { ImageUploader } from "@/components/shared/image-uploader";
@@ -38,19 +37,13 @@ export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const categoriesQuery = useCategories();
-  const productsQuery = useProducts();
   const { data: settings } = useStoreSettings();
 
-  const hasData =
-    categoriesQuery.isSuccess &&
-    categoriesQuery.data.length > 0 &&
-    productsQuery.isSuccess &&
-    productsQuery.data.data.length > 0;
+  const isOnboardingCompleted = settings?.tenant?.isOnboardingCompleted === true;
 
   useEffect(() => {
-    if (hasData) router.replace("/admin/dashboard");
-  }, [hasData, router]);
+    if (isOnboardingCompleted) router.replace("/admin/dashboard");
+  }, [isOnboardingCompleted, router]);
 
   const updateSettingsMutation = useUpdateStoreSettings();
   const createCategoryMutation = useCreateCategory();
@@ -226,8 +219,13 @@ export default function OnboardingPage() {
 
         await updateSettingsMutation.mutateAsync({
           schedule: finalSchedule as unknown as Parameters<typeof updateSettingsMutation.mutateAsync>[0]["schedule"],
+          isOnboardingCompleted: true,
         });
         toast.success("Horarios guardados");
+      } else {
+        await updateSettingsMutation.mutateAsync({
+          isOnboardingCompleted: true,
+        });
       }
 
       toast.success("¡Configuración completada!", "Redirigiendo al dashboard...");
@@ -248,18 +246,18 @@ export default function OnboardingPage() {
     { id: 5, label: "Horarios", icon: <CalendarClock className="h-4 w-4" /> },
   ];
 
-  const isLoading = categoriesQuery.isLoading || productsQuery.isLoading;
+  const isLoading = !settings;
 
-  if (isLoading || hasData) {
+  if (isLoading || isOnboardingCompleted) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center animate-in fade-in duration-300">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <div className="space-y-1">
           <p className="text-sm font-semibold text-foreground">
-            {hasData ? "Accediendo a tu panel..." : "Cargando configuración..."}
+            {isOnboardingCompleted ? "Accediendo a tu panel..." : "Cargando configuración..."}
           </p>
           <p className="text-xs text-muted-foreground">
-            {hasData ? "Ya configuraste tu catálogo. Redirigiendo..." : "Verificando el estado de tu comercio..."}
+            {isOnboardingCompleted ? "Ya configuraste tu catálogo. Redirigiendo..." : "Verificando el estado de tu comercio..."}
           </p>
         </div>
       </div>
