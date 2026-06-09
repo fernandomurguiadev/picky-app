@@ -238,7 +238,7 @@ export class TenantsService {
       ? runner.manager.getRepository(StoreSettings)
       : this.settingsRepo;
 
-    const tenantUpdate: Partial<Tenant> = {};
+    const tenantUpdate: Record<string, any> = {};
     if (dto.storeName?.trim()) {
       tenantUpdate.name = dto.storeName.trim();
     }
@@ -250,8 +250,7 @@ export class TenantsService {
       await tenantRepo.update({ id: tenantId }, tenantUpdate);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { storeName: _, isOnboardingCompleted: __, ...settingsDto } = dto as any;
+    const { storeName: _1, isOnboardingCompleted: _2, ...settingsDto } = dto;
 
     let settings = await repo.findOne({ where: { tenantId } });
     if (!settings) {
@@ -260,7 +259,7 @@ export class TenantsService {
       Object.assign(settings, settingsDto);
     }
 
-    await repo.save(settings);
+    await repo.save(settings!);
     return this.getMySettings(tenantId, runner);
   }
 
