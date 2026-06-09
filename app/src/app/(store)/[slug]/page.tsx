@@ -111,13 +111,19 @@ export default async function StorePage({ params }: StorePageProps) {
                     {store?.deliveryEnabled && (
                       <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 shadow-sm">
                         <Truck className="w-3 h-3 shrink-0" />
-                        <span>Reparto disponible</span>
+                        <span>{store.storeType === "services" ? "A domicilio disponible" : "Reparto disponible"}</span>
                       </div>
                     )}
                     {store?.takeawayEnabled && (
                       <div className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 px-3 py-1 text-[11px] font-bold text-[var(--color-primary)]/90 shadow-sm">
                         <ShoppingBag className="w-3 h-3 shrink-0" />
-                        <span>Retiro en Local</span>
+                        <span>{store.storeType === "services" ? "Atención presencial" : "Retiro en Local"}</span>
+                      </div>
+                    )}
+                    {store?.inStoreEnabled && store.storeType === "services" && (
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 px-3 py-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 shadow-sm">
+                        <MapPin className="w-3 h-3 shrink-0" />
+                        <span>Atención Online</span>
                       </div>
                     )}
                   </div>

@@ -306,7 +306,7 @@ function DeliveryStep({
   const deliveryMethods = [
     {
       key: "delivery" as const,
-      label: "Delivery",
+      label: store.storeType === "services" ? "A domicilio" : "Delivery",
       icon: Truck,
       enabled: store.deliveryEnabled,
       extra:
@@ -316,13 +316,13 @@ function DeliveryStep({
     },
     {
       key: "takeaway" as const,
-      label: "Retiro en local",
+      label: store.storeType === "services" ? "Atención presencial" : "Retiro en local",
       icon: ShoppingBag,
       enabled: store.takeawayEnabled,
     },
     {
       key: "in_store" as const,
-      label: "En el local",
+      label: store.storeType === "services" ? "Atención Virtual" : "En el local",
       icon: Store,
       enabled: store.inStoreEnabled,
     },

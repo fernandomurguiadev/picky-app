@@ -80,12 +80,20 @@ export default function SettingsDeliveryPage() {
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <section className="rounded-xl border border-border p-6 space-y-5">
-        <h2 className="font-semibold">Métodos de entrega</h2>
+        <h2 className="font-semibold">
+          {settings?.storeType === "services" ? "Modalidades de atención" : "Métodos de entrega"}
+        </h2>
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-medium">Delivery</p>
-            <p className="text-sm text-muted-foreground">Enviás el pedido al domicilio del cliente.</p>
+            <p className="font-medium">
+              {settings?.storeType === "services" ? "A domicilio" : "Delivery"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {settings?.storeType === "services" 
+                ? "Te acercás al domicilio del cliente para brindar el servicio." 
+                : "Enviás el pedido al domicilio del cliente."}
+            </p>
           </div>
           <Switch
             checked={deliveryEnabled}
@@ -128,8 +136,14 @@ export default function SettingsDeliveryPage() {
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-medium">Takeaway / Retiro en local</p>
-            <p className="text-sm text-muted-foreground">El cliente pasa a retirar el pedido.</p>
+            <p className="font-medium">
+              {settings?.storeType === "services" ? "Atención presencial (Local/Consultorio)" : "Takeaway / Retiro en local"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {settings?.storeType === "services" 
+                ? "El cliente asiste a tu establecimiento." 
+                : "El cliente pasa a retirar el pedido."}
+            </p>
           </div>
           <Switch
             checked={watch("takeawayEnabled")}
@@ -141,8 +155,14 @@ export default function SettingsDeliveryPage() {
 
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-medium">Consumir en el local</p>
-            <p className="text-sm text-muted-foreground">El cliente consume en el lugar.</p>
+            <p className="font-medium">
+              {settings?.storeType === "services" ? "Atención Virtual / Online" : "Consumir en el local"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {settings?.storeType === "services"
+                ? "El servicio se brinda de forma remota o por videollamada."
+                : "El cliente consume en el lugar."}
+            </p>
           </div>
           <Switch
             checked={watch("inStoreEnabled")}

@@ -9,8 +9,8 @@ const BASE_SECTIONS = [
   { href: "/admin/settings/info", label: "Información general" },
   { href: "/admin/settings/business-model", label: "Modelo de negocio" },
   { href: "/admin/settings/hours", label: "Horarios" },
-  { href: "/admin/settings/delivery", label: "Entrega", retailOnly: true },
-  { href: "/admin/settings/payments", label: "Pagos", retailOnly: true },
+  { href: "/admin/settings/delivery", label: "Entrega" },
+  { href: "/admin/settings/payments", label: "Pagos" },
   { href: "/admin/settings/theme", label: "Tema" },
 ];
 
@@ -22,7 +22,13 @@ export default function SettingsLayout({
   const pathname = usePathname();
   const { data: settings } = useStoreSettings();
   const isServices = settings?.storeType === "services";
-  const sections = BASE_SECTIONS.filter((s) => !s.retailOnly || !isServices);
+  
+  const sections = BASE_SECTIONS.map((s) => {
+    if (s.href === "/admin/settings/delivery" && isServices) {
+      return { ...s, label: "Modalidades" };
+    }
+    return s;
+  });
 
   return (
     <div>

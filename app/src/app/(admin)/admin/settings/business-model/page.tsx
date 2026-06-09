@@ -60,6 +60,8 @@ export default function BusinessModelPage() {
 
   if (isLoading) return <SkeletonLoader rows={4} columns={1} />;
 
+  const canChangeStoreType = !settings?.tenant?.isOnboardingCompleted;
+
   return (
     <form noValidate onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <section className="rounded-xl border border-border p-6 space-y-5 bg-card">
@@ -73,6 +75,7 @@ export default function BusinessModelPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
             type="button"
+            disabled={!canChangeStoreType}
             onClick={() => setValue("storeType", "retail", { shouldDirty: true })}
             className={`flex flex-col gap-3 rounded-xl border-2 p-5 text-left transition-all ${
               storeType === "retail"
@@ -80,7 +83,7 @@ export default function BusinessModelPage() {
                 : "border-border hover:border-border/80 hover:bg-muted/40"
             }`}
           >
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${storeType === "retail" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${storeType === "retail" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"} ${!canChangeStoreType ? "opacity-50" : ""}`}>
               <ShoppingCart className="h-5 w-5" />
             </div>
             <div>
@@ -93,6 +96,7 @@ export default function BusinessModelPage() {
 
           <button
             type="button"
+            disabled={!canChangeStoreType}
             onClick={() => setValue("storeType", "services", { shouldDirty: true })}
             className={`flex flex-col gap-3 rounded-xl border-2 p-5 text-left transition-all ${
               storeType === "services"
@@ -100,7 +104,7 @@ export default function BusinessModelPage() {
                 : "border-border hover:border-border/80 hover:bg-muted/40"
             }`}
           >
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${storeType === "services" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${storeType === "services" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"} ${!canChangeStoreType ? "opacity-50" : ""}`}>
               <MessageCircle className="h-5 w-5" />
             </div>
             <div>
@@ -111,6 +115,12 @@ export default function BusinessModelPage() {
             </div>
           </button>
         </div>
+
+        {!canChangeStoreType && (
+          <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800/40 mt-4">
+            No es posible cambiar el tipo de tienda una vez finalizada la configuración inicial, ya que afectaría tus catálogos y métricas.
+          </p>
+        )}
 
         <input type="hidden" {...register("storeType")} />
       </section>
