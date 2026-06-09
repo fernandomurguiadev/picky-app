@@ -24,6 +24,11 @@ export function AdminSidebar() {
   const clearAuth = useAuthStore((s) => s.clearAuth);
   const activeTenantId = useAuthStore((s) => s.tenantId);
   const { data: settings } = useStoreSettings();
+  const { data: myTenants = [], isLoading } = useMyTenants();
+  const switchTenantMutation = useSwitchTenant();
+
+  if (pathname === "/admin/onboarding") return null;
+
   const isServices = settings?.storeType === "services";
 
   const navItems = [
@@ -36,10 +41,6 @@ export function AdminSidebar() {
     ] : []),
     { href: "/admin/settings/info", label: "Configuración", icon: Settings },
   ];
-
-  // Consulta de Tenants vinculados al usuario logueado
-  const { data: myTenants = [], isLoading } = useMyTenants();
-  const switchTenantMutation = useSwitchTenant();
 
   const handleLogout = async () => {
     try {

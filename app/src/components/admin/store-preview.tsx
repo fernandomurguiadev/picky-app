@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, ImageIcon } from "lucide-react";
 import type { CardStyle, GridLayout } from "@/lib/types/store";
 
 export const hexRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
@@ -113,8 +113,8 @@ export function StorePreview({
   const isDarkTheme = textBase === "#ffffff";
 
   const products = [
-    { name: "Hamburguesa Picky", price: "$3.500", icon: "🍔" },
-    { name: "Papas Rústicas", price: "$1.800", icon: "🍟" },
+    { name: "Producto destacado", price: "$2.500" },
+    { name: "Otro artículo", price: "$1.200" },
   ];
 
   return (
@@ -144,7 +144,7 @@ export function StorePreview({
         <div className="p-4 space-y-4 flex-1">
           {/* Categorías */}
           <div className="flex gap-2 overflow-hidden pb-1 border-b" style={{ borderColor: isDarkTheme ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)" }}>
-            {["Inicio", "Hamburguesas", "Bebidas"].map((cat, i) => (
+            {["Inicio", "Categoría 1", "Categoría 2"].map((cat, i) => (
               <div
                 key={cat}
                 className="shrink-0 text-[10px] font-bold px-3 py-1 rounded-full shadow-xs"
@@ -164,15 +164,15 @@ export function StorePreview({
               {products.map((prod, i) => {
                 const { wrapper, imageArea, info, infoText } = getCardStyles(cardStyle, primaryColor, accentColor, isDarkTheme);
                 return (
-                  <div key={i} style={{ ...wrapper, borderRadius: typeof wrapper.borderRadius === "number" ? wrapper.borderRadius : undefined }} className="flex flex-row items-center overflow-hidden transition-all">
+                  <div key={i} style={wrapper} className="flex flex-row items-center overflow-hidden transition-all">
                     {cardStyle === "glass" && (
                       <div style={{ width: 3, flexShrink: 0, alignSelf: "stretch", background: `linear-gradient(180deg, ${primaryColor}, ${accentColor})` }} />
                     )}
                     <div
-                      className="flex items-center justify-center text-xl shrink-0"
+                      className="flex items-center justify-center shrink-0"
                       style={{ width: 52, height: 52, ...imageArea }}
                     >
-                      {prod.icon}
+                      <ImageIcon className="h-5 w-5 opacity-30" style={{ color: textBase }} />
                     </div>
                     <div style={{ ...info, flex: 1, minWidth: 0 }} className="flex flex-row items-center justify-between px-3 py-2">
                       <div className="min-w-0">
@@ -198,10 +198,10 @@ export function StorePreview({
                       <div style={{ height: 3, flexShrink: 0, background: `linear-gradient(90deg, ${primaryColor}, ${accentColor})` }} />
                     )}
                     <div
-                      className="flex items-center justify-center text-2xl"
+                      className="flex items-center justify-center"
                       style={{ height: imgHeight, ...imageArea }}
                     >
-                      {prod.icon}
+                      <ImageIcon className="h-6 w-6 opacity-30" style={{ color: textBase }} />
                     </div>
                     <div style={info} className="flex-1 flex flex-col justify-between">
                       <p className="text-[10px] font-bold leading-tight truncate" style={{ color: infoText }}>

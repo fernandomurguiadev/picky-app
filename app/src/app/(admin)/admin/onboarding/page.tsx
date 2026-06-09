@@ -24,8 +24,6 @@ import {
   ArrowLeft,
   CheckCircle2,
   Sparkles,
-  Plus,
-  HelpCircle,
   Loader2,
   ShoppingCart,
   MessageCircle,
@@ -34,54 +32,51 @@ import {
 import { StorePreview } from "@/components/admin/store-preview";
 import { BrandColorSelector } from "@/components/admin/brand-color-selector";
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Queries para verificar si ya está configurado
   const categoriesQuery = useCategories();
   const productsQuery = useProducts();
 
-  const hasData = 
-    categoriesQuery.isSuccess && 
-    categoriesQuery.data.length > 0 && 
-    productsQuery.isSuccess && 
+  const hasData =
+    categoriesQuery.isSuccess &&
+    categoriesQuery.data.length > 0 &&
+    productsQuery.isSuccess &&
     productsQuery.data.data.length > 0;
 
-  // Redirección defensiva si ya tiene cargado catálogo
   useEffect(() => {
-    if (hasData) {
-      router.replace("/admin/dashboard");
-    }
+    if (hasData) router.replace("/admin/dashboard");
   }, [hasData, router]);
 
-  // Mutations
   const updateSettingsMutation = useUpdateStoreSettings();
   const createCategoryMutation = useCreateCategory();
   const createProductMutation = useCreateProduct();
 
-  // Step 1 State: Tipo de tienda + Profile
+  // Step 1: Tipo de negocio
   const [storeType, setStoreType] = useState<"retail" | "services">("retail");
+
+  // Step 2: Identidad Visual
   const [logoUrl, setLogoUrl] = useState("");
   const [description, setDescription] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#0f172a"); // Slate/Negro premium por defecto
-  const [accentColor, setAccentColor] = useState("#ffffff"); // Blanco por defecto
-  const [backgroundColor, setBackgroundColor] = useState("#FDFBF7"); // Minimal Cream por defecto
+  const [primaryColor, setPrimaryColor] = useState("#0f172a");
+  const [accentColor, setAccentColor] = useState("#ffffff");
+  const [backgroundColor, setBackgroundColor] = useState("#FDFBF7");
 
-  // Step 2 State: Category
+  // Step 3: Categoría
   const [catName, setCatName] = useState("");
   const [createdCategoryId, setCreatedCategoryId] = useState("");
 
-  // Step 3 State: Product
+  // Step 4: Producto / Servicio
   const [prodName, setProdName] = useState("");
-  const [prodPrice, setProdPrice] = useState(""); // en Pesos UI
+  const [prodPrice, setProdPrice] = useState("");
   const [prodDesc, setProdDesc] = useState("");
   const [prodImageUrl, setProdImageUrl] = useState("");
 
-  // Step 4 State: Schedule detallado
+  // Step 5: Horarios
   const [schedule, setSchedule] = useState<
     Record<string, { isOpen: boolean; open: string; close: string }>
   >({
@@ -94,23 +89,26 @@ export default function OnboardingPage() {
     sunday: { isOpen: false, open: "09:00", close: "18:00" },
   });
 
-  // Helpers
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, TOTAL_STEPS));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
-  // Submits per step
-  const handleStep1Submit = async (e: React.FormEvent) => {
+  // Step 1 — solo avanza, sin API
+  const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault();
-    // El logo ahora es opcional para no bloquear la experiencia del usuario
-    const finalLogoUrl = logoUrl || null;
+    nextStep();
+  };
+
+  // Step 2 — guarda identidad + storeType
+  const handleStep2Submit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
     try {
       await updateSettingsMutation.mutateAsync({
-        logoUrl: finalLogoUrl,
+        logoUrl: logoUrl || null,
         description: description || null,
-        primaryColor: primaryColor,
-        accentColor: accentColor,
-        backgroundColor: backgroundColor,
+        primaryColor,
+        accentColor,
+        backgroundColor,
         storeType,
       });
       toast.success("¡Identidad de marca configurada!");
@@ -122,7 +120,8 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleStep2Submit = async (e: React.FormEvent) => {
+  // Step 3 — crea categoría
+  const handleStep3Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!catName.trim()) {
       toast.error("Ingresá el nombre de la categoría");
@@ -130,12 +129,9 @@ export default function OnboardingPage() {
     }
     setIsSubmitting(true);
     try {
-      const category = await createCategoryMutation.mutateAsync({
-        name: catName,
-        isActive: true,
-      });
+      const category = await createCategoryMutation.mutateAsync({ name: catName, isActive: true });
       setCreatedCategoryId(category.id);
-      toast.success("Categoría inicial creada");
+      toast.success("Categoría creada");
       nextStep();
     } catch {
       toast.error("No pudimos crear la categoría.");
@@ -144,7 +140,8 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleStep3Submit = async (e: React.FormEvent) => {
+  // Step 4 — crea producto / servicio
+  const handleStep4Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prodName.trim() || !prodPrice) {
       toast.error("El nombre y el precio son obligatorios");
@@ -156,76 +153,62 @@ export default function OnboardingPage() {
         name: prodName,
         description: prodDesc || null,
         categoryId: createdCategoryId,
-        price: tosCents(parseFloat(prodPrice)), // UI pesos -> backend centavos
+        price: tosCents(parseFloat(prodPrice)),
         imageUrl: prodImageUrl || null,
         isActive: true,
         isFeatured: true,
         optionGroups: [],
       });
-      toast.success(storeType === "services" ? "¡Primer servicio publicado!" : "¡Primer producto publicado con éxito!");
+      toast.success(storeType === "services" ? "¡Primer servicio publicado!" : "¡Primer producto publicado!");
       nextStep();
     } catch {
-      toast.error("Fallo al dar de alta el producto.");
+      toast.error("Fallo al publicar.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleStep4Complete = async (skip = false) => {
+  // Step 5 — guarda horarios y redirige
+  const handleStep5Complete = async (skip = false) => {
     setIsSubmitting(true);
     try {
       if (!skip) {
         const daysList = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
         const dayLabels: Record<string, string> = {
-          monday: "Lunes",
-          tuesday: "Martes",
-          wednesday: "Miércoles",
-          thursday: "Jueves",
-          friday: "Viernes",
-          saturday: "Sábado",
-          sunday: "Domingo"
+          monday: "Lunes", tuesday: "Martes", wednesday: "Miércoles",
+          thursday: "Jueves", friday: "Viernes", saturday: "Sábado", sunday: "Domingo",
         };
 
-        // 1. Validación Defensiva de UX en Frontend
         for (const day of daysList) {
           const config = schedule[day];
           if (config.isOpen) {
             if (!config.open || !config.close) {
-              toast.error(`Por favor, ingresá el horario de apertura y cierre para el ${dayLabels[day]}`);
+              toast.error(`Ingresá el horario de ${dayLabels[day]}`);
               setIsSubmitting(false);
               return;
             }
             if (config.open >= config.close) {
-              toast.error(`Error en ${dayLabels[day]}: La hora de cierre debe ser posterior al horario de apertura.`);
+              toast.error(`${dayLabels[day]}: el cierre debe ser posterior a la apertura.`);
               setIsSubmitting(false);
               return;
             }
           }
         }
 
-        // 2. Mapeo Estricto Sanitizado para Backend
         const finalSchedule = daysList.map((day) => {
           const config = schedule[day];
           const isOpen = Boolean(config.isOpen);
-          return {
-            day,
-            isOpen,
-            shifts: isOpen 
-              ? [{ open: config.open, close: config.close }] 
-              : [],
-          };
+          return { day, isOpen, shifts: isOpen ? [{ open: config.open, close: config.close }] : [] };
         });
-        
+
         await updateSettingsMutation.mutateAsync({
           schedule: finalSchedule as unknown as Parameters<typeof updateSettingsMutation.mutateAsync>[0]["schedule"],
         });
         toast.success("Horarios guardados");
       }
-      
+
       toast.success("¡Configuración completada!", "Redirigiendo al dashboard...");
-      setTimeout(() => {
-        router.replace("/admin/dashboard");
-      }, 1500);
+      setTimeout(() => router.replace("/admin/dashboard"), 1500);
     } catch {
       toast.error("Error guardando horarios, pero ya podés ir al Dashboard.");
       router.replace("/admin/dashboard");
@@ -235,10 +218,11 @@ export default function OnboardingPage() {
   };
 
   const stepsConfig = [
-    { id: 1, label: "Tu Marca", icon: <Store className="h-4 w-4" /> },
-    { id: 2, label: "Categoría", icon: <FolderHeart className="h-4 w-4" /> },
-    { id: 3, label: "Producto", icon: <PackagePlus className="h-4 w-4" /> },
-    { id: 4, label: "Horarios", icon: <CalendarClock className="h-4 w-4" /> },
+    { id: 1, label: "Negocio", icon: <ShoppingCart className="h-4 w-4" /> },
+    { id: 2, label: "Tu Marca", icon: <Store className="h-4 w-4" /> },
+    { id: 3, label: "Categoría", icon: <FolderHeart className="h-4 w-4" /> },
+    { id: 4, label: storeType === "services" ? "Servicio" : "Producto", icon: <PackagePlus className="h-4 w-4" /> },
+    { id: 5, label: "Horarios", icon: <CalendarClock className="h-4 w-4" /> },
   ];
 
   const isLoading = categoriesQuery.isLoading || productsQuery.isLoading;
@@ -261,8 +245,8 @@ export default function OnboardingPage() {
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center py-12 w-full max-w-md md:max-w-[530px] px-4 mx-auto">
-      
-      {/* Header Onboarding */}
+
+      {/* Header */}
       <div className="text-center mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
         <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4 shadow-inner">
           <Sparkles className="h-6 w-6" />
@@ -271,34 +255,28 @@ export default function OnboardingPage() {
           Configurá tu comercio
         </h1>
         <p className="text-sm text-muted-foreground mt-1 font-medium max-w-xs mx-auto">
-          Te guiamos en 4 simples pasos para que puedas abrir las puertas de tu local online.
+          Te guiamos en 5 simples pasos para abrir las puertas de tu local online.
         </p>
       </div>
 
-      {/* Stepper Visual Progress */}
+      {/* Stepper */}
       <div className="w-full mb-8 relative flex justify-between px-2 items-center">
-        {/* Background line */}
         <div className="absolute top-5 left-6 right-6 h-0.5 bg-accent -z-10" />
-        {/* Completed progress line */}
-        <div 
+        <div
           className="absolute top-5 left-6 h-0.5 bg-primary -z-10 transition-all duration-500"
           style={{ width: `${((currentStep - 1) / (TOTAL_STEPS - 1)) * 88}%` }}
         />
-
         {stepsConfig.map((s) => {
           const isActive = s.id === currentStep;
           const isCompleted = s.id < currentStep;
-
           return (
             <div key={s.id} className="flex flex-col items-center gap-2">
-              <div
-                className={cn(
-                  "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 font-bold bg-background",
-                  isActive && "border-primary text-primary ring-4 ring-primary/10 scale-105",
-                  isCompleted && "border-primary bg-primary text-primary-foreground",
-                  !isActive && !isCompleted && "border-accent text-muted-foreground"
-                )}
-              >
+              <div className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 font-bold bg-background",
+                isActive && "border-primary text-primary ring-4 ring-primary/10 scale-105",
+                isCompleted && "border-primary bg-primary text-primary-foreground",
+                !isActive && !isCompleted && "border-accent text-muted-foreground"
+              )}>
                 {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : s.icon}
               </div>
               <span className={cn(
@@ -312,15 +290,15 @@ export default function OnboardingPage() {
         })}
       </div>
 
-      {/* Card Content Multi-Step */}
+      {/* Card */}
       <div className="w-full rounded-2xl border border-border bg-card p-6 shadow-xl ring-1 ring-black/5 relative overflow-hidden animate-in zoom-in-95 duration-300">
-        
-        {/* STEP 1: Profile Info */}
+
+        {/* STEP 1: Tipo de negocio */}
         {currentStep === 1 && (
           <form noValidate onSubmit={handleStep1Submit} className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-1">
-              <h3 className="font-bold text-lg tracking-tight">Tipo de negocio</h3>
-              <p className="text-xs text-muted-foreground">¿Cómo opera tu comercio?</p>
+              <h3 className="font-bold text-lg tracking-tight">¿Qué tipo de negocio tenés?</h3>
+              <p className="text-xs text-muted-foreground">Esto define cómo se ve tu tienda para tus clientes.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -328,47 +306,64 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={() => setStoreType("retail")}
                 className={cn(
-                  "flex flex-col items-center gap-2 rounded-xl border-2 p-4 text-center transition-all",
-                  storeType === "retail" ? "border-primary bg-primary/5" : "border-border hover:border-border/80"
+                  "flex flex-col items-center gap-3 rounded-xl border-2 p-5 text-center transition-all",
+                  storeType === "retail" ? "border-primary bg-primary/5" : "border-border hover:border-border/60 hover:bg-muted/30"
                 )}
               >
-                <div className={cn("flex h-9 w-9 items-center justify-center rounded-full", storeType === "retail" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
-                  <ShoppingCart className="h-4 w-4" />
+                <div className={cn("flex h-11 w-11 items-center justify-center rounded-full", storeType === "retail" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                  <ShoppingCart className="h-5 w-5" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm">Productos</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Carrito y checkout</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">Carrito y checkout</p>
                 </div>
               </button>
+
               <button
                 type="button"
                 onClick={() => setStoreType("services")}
                 className={cn(
-                  "flex flex-col items-center gap-2 rounded-xl border-2 p-4 text-center transition-all",
-                  storeType === "services" ? "border-primary bg-primary/5" : "border-border hover:border-border/80"
+                  "flex flex-col items-center gap-3 rounded-xl border-2 p-5 text-center transition-all",
+                  storeType === "services" ? "border-primary bg-primary/5" : "border-border hover:border-border/60 hover:bg-muted/30"
                 )}
               >
-                <div className={cn("flex h-9 w-9 items-center justify-center rounded-full", storeType === "services" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
-                  <MessageCircle className="h-4 w-4" />
+                <div className={cn("flex h-11 w-11 items-center justify-center rounded-full", storeType === "services" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                  <MessageCircle className="h-5 w-5" />
                 </div>
                 <div>
                   <p className="font-semibold text-sm">Servicios</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">Consultas por WhatsApp</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-tight">Consultas por WhatsApp</p>
                 </div>
               </button>
             </div>
 
-            <div className="border-t border-border/40 pt-4 space-y-1">
-              <h3 className="font-bold text-base tracking-tight">Identidad Visual</h3>
-              <p className="text-xs text-muted-foreground">Subí el logo y contanos de qué se trata tu local.</p>
+            <div className={cn("rounded-xl border p-3 text-xs leading-relaxed transition-all", storeType === "retail" ? "border-primary/20 bg-primary/5 text-foreground/70" : "border-primary/20 bg-primary/5 text-foreground/70")}>
+              {storeType === "retail"
+                ? "Tus clientes van a poder agregar productos al carrito y completar un pedido con entrega o retiro."
+                : "Tus clientes van a ver tus servicios y te van a contactar directamente por WhatsApp para consultarte o pedir turno."}
+            </div>
+
+            <Button type="submit" className="w-full rounded-xl font-bold shadow-md">
+              Continuar
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </form>
+        )}
+
+        {/* STEP 2: Identidad Visual */}
+        {currentStep === 2 && (
+          <form noValidate onSubmit={handleStep2Submit} className="space-y-6 animate-in fade-in duration-300">
+            <div className="space-y-1">
+              <h3 className="font-bold text-lg tracking-tight">Identidad Visual</h3>
+              <p className="text-xs text-muted-foreground">Subí el logo y elegí los colores de tu marca.</p>
             </div>
 
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Logo de la tienda</Label>
-              <ImageUploader 
-                value={logoUrl} 
+              <ImageUploader
+                value={logoUrl}
                 onChange={(url) => setLogoUrl(url)}
-                onRemove={() => setLogoUrl("")} 
+                onRemove={() => setLogoUrl("")}
               />
             </div>
 
@@ -385,14 +380,11 @@ export default function OnboardingPage() {
 
             <div className="space-y-3 pt-1">
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Colores de Marca</Label>
-              
-              {/* Info descriptiva de colores (visible siempre en mobile, oculta en desktop) */}
-              <div className="md:hidden p-3 rounded-xl bg-accent/30 border border-border/40 text-[10px] text-muted-foreground leading-relaxed space-y-1 select-none animate-in fade-in duration-300">
-                <p>💡 <strong>Primario:</strong> Va en encabezados, tarjetas de producto y categorías.</p>
-                <p>🛍️ <strong>Secundario:</strong> Va en los botones de agregar y carrito.</p>
-                <p>🎨 <strong>Fondo Tienda:</strong> Define la atmósfera general del catálogo.</p>
+              <div className="md:hidden p-3 rounded-xl bg-accent/30 border border-border/40 text-[10px] text-muted-foreground leading-relaxed space-y-1 select-none">
+                <p>💡 <strong>Primario:</strong> Encabezados y tarjetas.</p>
+                <p>🛍️ <strong>Secundario:</strong> Botones de acción.</p>
+                <p>🎨 <strong>Fondo:</strong> Atmósfera general del catálogo.</p>
               </div>
-              
               <BrandColorSelector
                 primaryColor={primaryColor}
                 setPrimaryColor={setPrimaryColor}
@@ -404,31 +396,37 @@ export default function OnboardingPage() {
             </div>
 
             <div className="space-y-2.5 pt-1 border-t border-border/30">
-              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Vista previa de tu local digital</Label>
-              <StorePreview 
-                primaryColor={primaryColor} 
-                accentColor={accentColor} 
+              <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">Vista previa</Label>
+              <StorePreview
+                primaryColor={primaryColor}
+                accentColor={accentColor}
                 backgroundColor={backgroundColor}
                 storeName="Tu tienda"
               />
             </div>
 
-            <Button type="submit" className="w-full rounded-xl font-bold shadow-md hover:opacity-95 active:scale-[0.99] transition-all" disabled={isSubmitting}>
-              {isSubmitting ? "Guardando..." : "Guardar y Continuar"}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <div className="flex gap-3">
+              <Button type="button" variant="ghost" className="rounded-xl text-muted-foreground" onClick={prevStep}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Atrás
+              </Button>
+              <Button type="submit" className="flex-1 rounded-xl font-bold shadow-md" disabled={isSubmitting}>
+                {isSubmitting ? "Guardando..." : "Guardar y Continuar"}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
           </form>
         )}
 
-        {/* STEP 2: First Category */}
-        {currentStep === 2 && (
-          <form noValidate onSubmit={handleStep2Submit} className="space-y-6 animate-in fade-in duration-300">
+        {/* STEP 3: Primera Categoría */}
+        {currentStep === 3 && (
+          <form noValidate onSubmit={handleStep3Submit} className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-1">
-              <h3 className="font-bold text-lg tracking-tight">Tu primer Categoría</h3>
+              <h3 className="font-bold text-lg tracking-tight">Tu primera Categoría</h3>
               <p className="text-xs text-muted-foreground">
                 {storeType === "services"
-                  ? "Sirve para agrupar tus servicios. Ej: Cortes, Coloraciones."
-                  : "Sirve para agrupar tus productos. Ej: Hamburguesas, Bebidas."}
+                  ? "Agrupa tus servicios por tipo. Ej: Cortes, Coloraciones."
+                  : "Agrupa tus productos. Ej: Hamburguesas, Bebidas."}
               </p>
             </div>
 
@@ -451,22 +449,22 @@ export default function OnboardingPage() {
                 Atrás
               </Button>
               <Button type="submit" className="flex-1 rounded-xl font-bold" disabled={isSubmitting}>
-                {isSubmitting ? "Creando..." : "Crear Categoría"}
+                {isSubmitting ? "Creando..." : "Crear y Continuar"}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </form>
         )}
 
-        {/* STEP 3: First Product / Service */}
-        {currentStep === 3 && (
-          <form noValidate onSubmit={handleStep3Submit} className="space-y-5 animate-in fade-in duration-300">
+        {/* STEP 4: Primer Producto / Servicio */}
+        {currentStep === 4 && (
+          <form noValidate onSubmit={handleStep4Submit} className="space-y-5 animate-in fade-in duration-300">
             <div className="space-y-1">
               <h3 className="font-bold text-lg tracking-tight">
-                {storeType === "services" ? "Cargá tu primer Servicio" : "Cargá tu primer Producto"}
+                {storeType === "services" ? "Tu primer Servicio" : "Tu primer Producto"}
               </h3>
               <p className="text-xs text-muted-foreground">
-                {storeType === "services" ? "Comencemos con tu servicio principal ⭐." : "Comencemos con tu plato o producto estrella ⭐."}
+                {storeType === "services" ? "El servicio estrella de tu negocio ⭐." : "Tu plato o producto estrella ⭐."}
               </p>
             </div>
 
@@ -477,6 +475,7 @@ export default function OnboardingPage() {
               <Input
                 id="prodName"
                 required
+                autoFocus
                 placeholder={storeType === "services" ? "Ej: Corte y peinado" : "Ej: Burger Completa con papas"}
                 value={prodName}
                 onChange={(e) => setProdName(e.target.value)}
@@ -486,7 +485,7 @@ export default function OnboardingPage() {
 
             <div className="space-y-2">
               <Label htmlFor="prodPrice" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {storeType === "services" ? "Precio (dejá 0 si es a consultar)" : "Precio de Venta ($)"}
+                {storeType === "services" ? "Precio (0 si es a consultar)" : "Precio de Venta ($)"}
               </Label>
               <Input
                 id="prodPrice"
@@ -500,13 +499,13 @@ export default function OnboardingPage() {
                 className="rounded-xl bg-accent/30"
               />
               {storeType === "services" && (
-                <p className="text-[10px] text-muted-foreground">Si el precio es 0, no se mostrará en tu tienda.</p>
+                <p className="text-[10px] text-muted-foreground">Precio 0 no se muestra en la tienda.</p>
               )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="prodDesc" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {storeType === "services" ? "Descripción (Opcional)" : "Detalle de ingredientes (Opcional)"}
+                {storeType === "services" ? "Descripción (Opcional)" : "Ingredientes / Detalle (Opcional)"}
               </Label>
               <Input
                 id="prodDesc"
@@ -519,7 +518,7 @@ export default function OnboardingPage() {
 
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                {storeType === "services" ? "Foto del Servicio (Recomendado)" : "Foto del Producto (Recomendado)"}
+                {storeType === "services" ? "Foto (Recomendado)" : "Foto del Producto (Recomendado)"}
               </Label>
               <ImageUploader
                 value={prodImageUrl}
@@ -527,7 +526,9 @@ export default function OnboardingPage() {
                 onRemove={() => setProdImageUrl("")}
               />
               <p className="text-[10px] text-muted-foreground font-medium leading-normal">
-                {storeType === "services" ? "Una buena foto genera más consultas." : "Subí una foto atractiva. Los productos con fotos venden hasta 3 veces más."}
+                {storeType === "services"
+                  ? "Una buena foto genera más consultas."
+                  : "Los productos con foto venden hasta 3 veces más."}
               </p>
             </div>
 
@@ -537,15 +538,15 @@ export default function OnboardingPage() {
                 Atrás
               </Button>
               <Button type="submit" className="flex-1 rounded-xl font-bold" disabled={isSubmitting}>
-                {isSubmitting ? "Publicando..." : "Publicar y Avanzar"}
+                {isSubmitting ? "Publicando..." : "Publicar y Continuar"}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </form>
         )}
 
-        {/* STEP 4: Horarios */}
-        {currentStep === 4 && (
+        {/* STEP 5: Horarios */}
+        {currentStep === 5 && (
           <div className="space-y-6 animate-in fade-in duration-300">
             <div className="space-y-1">
               <h3 className="font-bold text-lg tracking-tight">Horarios de Atención</h3>
@@ -564,25 +565,22 @@ export default function OnboardingPage() {
               ].map((d) => {
                 const item = schedule[d.key];
                 return (
-                  <div 
-                    key={d.key} 
+                  <div
+                    key={d.key}
                     className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-2.5 gap-3 sm:gap-2 rounded-xl border border-border/50 bg-accent/5 hover:bg-accent/10 transition-all duration-200 shadow-sm hover:shadow-md"
                   >
                     <div className="flex items-center gap-3 shrink-0">
-                      <Switch 
+                      <Switch
                         id={`switch-${d.key}`}
                         checked={item.isOpen}
-                        onCheckedChange={(checked) => {
-                          setSchedule(prev => ({
-                            ...prev,
-                            [d.key]: { ...prev[d.key], isOpen: checked }
-                          }));
-                        }}
+                        onCheckedChange={(checked) =>
+                          setSchedule((prev) => ({ ...prev, [d.key]: { ...prev[d.key], isOpen: checked } }))
+                        }
                       />
-                      <Label 
-                        htmlFor={`switch-${d.key}`} 
+                      <Label
+                        htmlFor={`switch-${d.key}`}
                         className={cn(
-                          "text-sm font-medium cursor-pointer transition-colors min-w-[76px] inline-block", 
+                          "text-sm font-medium cursor-pointer transition-colors min-w-[76px] inline-block",
                           item.isOpen ? "text-foreground font-bold" : "text-muted-foreground font-medium"
                         )}
                       >
@@ -594,28 +592,22 @@ export default function OnboardingPage() {
                       "flex items-center gap-2 justify-between sm:justify-end w-full sm:w-auto transition-all duration-300",
                       !item.isOpen && "opacity-30 pointer-events-none"
                     )}>
-                      <Input 
-                        type="time" 
+                      <Input
+                        type="time"
                         value={item.open}
-                        onChange={(e) => {
-                          setSchedule(prev => ({
-                            ...prev,
-                            [d.key]: { ...prev[d.key], open: e.target.value }
-                          }));
-                        }}
+                        onChange={(e) =>
+                          setSchedule((prev) => ({ ...prev, [d.key]: { ...prev[d.key], open: e.target.value } }))
+                        }
                         className="h-9 sm:h-8 flex-1 sm:flex-none w-full sm:w-[125px] min-w-0 px-2 py-1 text-xs rounded-lg text-center shadow-inner font-medium [color-scheme:dark] border-border/60 focus:border-primary/50"
                         disabled={!item.isOpen}
                       />
                       <span className="text-[10px] text-muted-foreground/80 font-extrabold uppercase px-1.5 shrink-0 tracking-wider select-none">a</span>
-                      <Input 
-                        type="time" 
+                      <Input
+                        type="time"
                         value={item.close}
-                        onChange={(e) => {
-                          setSchedule(prev => ({
-                            ...prev,
-                            [d.key]: { ...prev[d.key], close: e.target.value }
-                          }));
-                        }}
+                        onChange={(e) =>
+                          setSchedule((prev) => ({ ...prev, [d.key]: { ...prev[d.key], close: e.target.value } }))
+                        }
                         className="h-9 sm:h-8 flex-1 sm:flex-none w-full sm:w-[125px] min-w-0 px-2 py-1 text-xs rounded-lg text-center shadow-inner font-medium [color-scheme:dark] border-border/60 focus:border-primary/50"
                         disabled={!item.isOpen}
                       />
@@ -631,17 +623,17 @@ export default function OnboardingPage() {
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Atrás
                 </Button>
-                <Button 
-                  onClick={() => handleStep4Complete(false)} 
+                <Button
+                  onClick={() => handleStep5Complete(false)}
                   className="flex-1 rounded-xl font-bold shadow-md"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Finalizando..." : "Finalizar 🚀"}
                 </Button>
               </div>
-              <Button 
-                variant="ghost" 
-                onClick={() => handleStep4Complete(true)} 
+              <Button
+                variant="ghost"
+                onClick={() => handleStep5Complete(true)}
                 className="w-full rounded-xl text-[11px] text-muted-foreground/60 hover:text-foreground font-medium h-8"
                 disabled={isSubmitting}
               >
