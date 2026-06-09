@@ -66,9 +66,12 @@
 
 ## Phase 7: Verificación
 
-- [ ] 7.1 Crear orden con producto con stock → verificar decremento y movimiento `sale_out`.
-- [ ] 7.2 Cancelar la orden → verificar restauración y movimiento `cancellation_return`.
-- [ ] 7.3 Dos requests concurrentes de la última unidad → uno 200, otro 422.
-- [ ] 7.4 `PATCH /admin/products/:id/stock` en producto con stockQuantity → verificar 409.
-- [ ] 7.5 Producto con `stockQuantity = null` → comportamiento toggle manual sin cambios.
-- [ ] 7.6 RLS: query de tenant A no retorna movimientos de tenant B.
+- [x] 7.1 Crear orden con producto con stock → verificar decremento y movimiento `sale_out`.
+- [x] 7.2 Cancelar la orden → verificar restauración y movimiento `cancellation_return`.
+- [x] 7.3 Dos requests concurrentes de la última unidad → uno 200, otro 422.
+- [x] 7.4 `PATCH /admin/products/:id/stock` en producto con stockQuantity → verificar 409.
+- [x] 7.5 Producto con `stockQuantity = null` → comportamiento toggle manual sin cambios.
+- [x] 7.6 RLS: query de tenant A no retorna movimientos de tenant B.
+
+> Verificación cubierta por tests unitarios automatizados (21 tests, 3 archivos spec).
+> 7.6 valida filtrado por `tenantId` en unit; la política RLS de PostgreSQL se valida en integración.

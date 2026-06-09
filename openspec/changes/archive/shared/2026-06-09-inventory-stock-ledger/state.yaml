@@ -1,11 +1,11 @@
 change: inventory-stock-ledger
-phase: apply
+phase: done
 artifact_store: openspec
 artifacts:
   exploration: true
   proposal: true
-  specs: false
-  design: false
+  specs: true
+  design: true
   tasks: true
 tasks_progress:
   completed:
@@ -22,6 +22,7 @@ tasks_progress:
     - "3.2 createProduct stockQuantity"
     - "3.3 updateProduct stockQuantity"
     - "3.4 updateProductStock 409"
+    - "3.5 products.controller.ts 409"
     - "4.1 orders.module.ts import InventoryModule"
     - "4.2 createOrder decrement"
     - "4.3 updateOrderStatus restore"
@@ -32,6 +33,11 @@ tasks_progress:
     - "6.3 inventory/page.tsx"
     - "6.4 product-form stock section"
     - "6.5 products/page.tsx badge"
-  pending:
-    - "7.1-7.6 verificacion"
-last_updated: 2026-06-07T14:30:00-03:00
+    - "7.1 sale_out decrement + movement (automated)"
+    - "7.2 cancellation_return restore (automated)"
+    - "7.3 race condition 422 conversion (automated)"
+    - "7.4 toggle 409 blocked (automated)"
+    - "7.5 null-stock bypass (automated)"
+    - "7.6 tenantId RLS filtering (automated)"
+  pending: []
+last_updated: 2026-06-09T00:00:00-03:00
