@@ -16,9 +16,10 @@ interface ProductCardProps {
   slug: string;
   layout?: GridLayout;
   hidePrice?: boolean;
+  groupPrice?: number;
 }
 
-export function ProductCard({ product, slug, layout = 'grid-2', hidePrice = false }: ProductCardProps) {
+export function ProductCard({ product, slug, layout = 'grid-2', hidePrice = false, groupPrice }: ProductCardProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const { storeType, customCtaText, whatsapp } = useStoreConfig();
   const isServices = storeType === "services";
@@ -184,6 +185,10 @@ export function ProductCard({ product, slug, layout = 'grid-2', hidePrice = fals
             {showPrice ? (
               <span className={`font-extrabold text-sm${outOfStock ? " opacity-50" : ""}`}>
                 {formatCurrency(product.price)}
+              </span>
+            ) : groupPrice != null ? (
+              <span className={`font-extrabold text-sm text-[var(--color-primary)]${outOfStock ? " opacity-50" : ""}`}>
+                {formatCurrency(groupPrice)}
               </span>
             ) : (
               <span />

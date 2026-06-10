@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Tag } from "lucide-react";
 import { CategoryNav } from "@/components/store/category-nav";
 import { ProductCard } from "@/components/store/product-card";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -42,26 +43,28 @@ export default async function CategoryPage({
 
   const categories: Category[] = categoriesJson.data ?? [];
   const currentCategory = categories.find((category) => category.id === id);
+  const groupPrice =
+    currentCategory?.isGroupPricingEnabled && currentCategory.groupPrice != null
+      ? currentCategory.groupPrice
+      : null;
 
   return (
     <div className="pb-10">
       <CategoryNav categories={categories} />
 
-      {currentCategory?.isGroupPricingEnabled && currentCategory.groupPrice != null && (
-        <div className="mx-auto max-w-4xl px-4 pt-4">
-          <div className="rounded-lg bg-primary/10 border border-primary/20 px-4 py-3 text-center">
-            <span className="text-sm font-semibold text-primary">
-              Precio único · {formatCurrency(currentCategory.groupPrice)}
-            </span>
-          </div>
-        </div>
-      )}
-
       <section className="mx-auto max-w-4xl px-4 py-6">
         <div className="mb-5 flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="text-sm text-muted-foreground">Categoría</p>
-            <h1 className="text-2xl font-bold truncate">{currentCategory?.name ?? "Productos"}</h1>
+            <div className="flex flex-wrap items-center gap-2 mt-0.5">
+              <h1 className="text-2xl font-bold truncate">{currentCategory?.name ?? "Productos"}</h1>
+              {groupPrice != null && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 px-3 py-1 text-sm font-semibold text-[var(--color-primary)]">
+                  <Tag className="h-3.5 w-3.5 shrink-0" />
+                  {formatCurrency(groupPrice)}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <span className="text-sm text-muted-foreground hidden sm:block">
@@ -79,7 +82,8 @@ export default async function CategoryPage({
                   key={product.id}
                   product={product}
                   slug={slug}
-                  hidePrice={currentCategory?.isGroupPricingEnabled === true}
+                  hidePrice={groupPrice != null}
+                  groupPrice={groupPrice ?? undefined}
                 />
               ))}
             </div>
