@@ -47,13 +47,14 @@ export function SearchCategoryFilter({
       {/* Chips scrollables */}
       <div className="relative flex-1 min-w-0 overflow-hidden">
         <div className="flex flex-nowrap gap-2 overflow-x-auto scrollbar-none pb-1">
-          <Link href={buildUrl("")} className={chipClass(!activeCategoryId)}>
+          <Link href={buildUrl("")} scroll={false} className={chipClass(!activeCategoryId)}>
             Todos
           </Link>
           {categories.map((cat) => (
             <Link
               key={cat.id}
               href={buildUrl(activeCategoryId === cat.id ? "" : cat.id)}
+              scroll={false}
               className={chipClass(activeCategoryId === cat.id)}
             >
               {cat.name}
@@ -86,6 +87,7 @@ export function SearchCategoryFilter({
                 <div className="flex flex-col gap-2">
                   <Link
                     href={buildUrl("")}
+                    scroll={false}
                     onClick={() => setDrawerOpen(false)}
                     className={cn(
                       "flex items-center rounded-lg px-4 py-3 font-medium transition-colors",
@@ -100,6 +102,7 @@ export function SearchCategoryFilter({
                     <Link
                       key={cat.id}
                       href={buildUrl(cat.id)}
+                      scroll={false}
                       onClick={() => setDrawerOpen(false)}
                       className={cn(
                         "flex items-center rounded-lg px-4 py-3 font-medium transition-colors",

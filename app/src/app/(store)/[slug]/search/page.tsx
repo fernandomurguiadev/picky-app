@@ -1,9 +1,8 @@
-import { Suspense } from "react";
 import { ProductCard } from "@/components/store/product-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Pagination } from "@/components/shared/pagination";
 import { SearchCategoryFilter } from "@/components/store/search-category-filter";
-import { ScrollReset } from "@/components/shared/scroll-reset";
+import { SearchShareButton } from "@/components/store/search-share-button";
 import type { Category, PaginatedResponse, Product } from "@/lib/types/catalog";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
@@ -58,19 +57,18 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
-      <Suspense fallback={null}>
-        <ScrollReset />
-      </Suspense>
-
-      {/* Header con término y total */}
-      <div className="mb-4 flex items-end justify-between gap-4">
-        <div>
+      {/* Header con término, total y botón de compartir */}
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div className="min-w-0">
           <p className="text-sm text-muted-foreground">Resultados para</p>
-          <h1 className="text-2xl font-bold">"{term}"</h1>
+          <h1 className="text-2xl font-bold truncate">"{term}"</h1>
         </div>
-        <span className="text-sm text-muted-foreground shrink-0">
-          {searchJson.meta.total} encontrados
-        </span>
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="text-sm text-muted-foreground hidden sm:block">
+            {searchJson.meta.total} encontrados
+          </span>
+          <SearchShareButton />
+        </div>
       </div>
 
       {/* Chips de categoría + botón drawer en mobile — solo categorías con resultados */}
@@ -96,6 +94,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
               totalPages={searchJson.meta.totalPages}
               basePath={`/${slug}/search`}
               searchParams={{ q: term, ...(activeCategoryId && { category: activeCategoryId }) }}
+              scroll={false}
             />
           </div>
         </>

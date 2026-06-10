@@ -10,6 +10,8 @@ interface PaginationProps {
   className?: string;
   /** Si se provee, los botones llaman onPageChange en lugar de navegar por URL */
   onPageChange?: (page: number) => void;
+  /** Controla si Next.js hace scroll al top al cambiar de página. Default: true */
+  scroll?: boolean;
 }
 
 export function Pagination({
@@ -19,6 +21,7 @@ export function Pagination({
   searchParams = {},
   className,
   onPageChange,
+  scroll = true,
 }: PaginationProps) {
   if (totalPages <= 1) return null;
 
@@ -68,6 +71,7 @@ export function Pagination({
       <Link
         href={hasPrev ? buildUrl(page - 1) : "#"}
         aria-disabled={!hasPrev}
+        scroll={scroll}
         className={btnClass(false, hasPrev)}
         aria-label="Página anterior"
       >
@@ -78,6 +82,7 @@ export function Pagination({
         <Link
           key={p}
           href={buildUrl(p)}
+          scroll={scroll}
           aria-current={p === page ? "page" : undefined}
           className={btnClass(p === page, true)}
         >
@@ -88,6 +93,7 @@ export function Pagination({
       <Link
         href={hasNext ? buildUrl(page + 1) : "#"}
         aria-disabled={!hasNext}
+        scroll={scroll}
         className={btnClass(false, hasNext)}
         aria-label="Página siguiente"
       >

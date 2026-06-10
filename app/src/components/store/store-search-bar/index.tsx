@@ -26,9 +26,9 @@ function StoreSearchBarInput({ slug }: StoreSearchBarProps) {
     clearTimeout(debounceRef.current!);
     debounceRef.current = setTimeout(() => {
       if (term) {
-        router.push(`/${slug}/search?q=${encodeURIComponent(term)}`);
+        router.push(`/${slug}/search?q=${encodeURIComponent(term)}`, { scroll: false });
       } else {
-        router.push(`/${slug}`);
+        router.push(`/${slug}`, { scroll: false });
       }
     }, 300);
   };
