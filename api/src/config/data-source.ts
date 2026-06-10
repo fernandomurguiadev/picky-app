@@ -10,8 +10,8 @@ export const AppDataSource = new DataSource({
   password: process.env['DATABASE_PASSWORD'] ?? 'admin',
   database: process.env['DATABASE_NAME'] ?? 'picky',
   ssl: process.env['DATABASE_SSL'] === 'true',
-  entities: [join(process.cwd(), 'src/**/*.entity.ts')],
-  migrations: [join(process.cwd(), 'src/migrations/*.ts')],
+  entities: [join(process.cwd(), process.env['NODE_ENV'] === 'production' ? 'dist/**/*.entity.js' : 'src/**/*.entity.ts')],
+  migrations: [join(process.cwd(), process.env['NODE_ENV'] === 'production' ? 'dist/migrations/*.js' : 'src/migrations/*.ts')],
   synchronize: false,
   logging: process.env['DATABASE_LOGGING'] === 'true',
   extra: {

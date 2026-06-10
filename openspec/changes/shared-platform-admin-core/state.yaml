@@ -1,0 +1,19 @@
+change: shared-platform-admin-core
+status: archived
+phases_completed:
+  - explore
+  - propose
+  - spec
+  - design
+  - tasks
+  - implement
+  - code-review
+  - security-review
+  - logic-review
+  - deploy
+implemented_at: 2026-06-10
+archived_at: 2026-06-10
+notes: |
+  Deployado en admin.picky.orbitech.cloud.
+  Fixes de deploy incluidos: proxy.ts (Next.js 16), BFF impersonate routes,
+  Dockerfile ARGs, data-source prod paths, CORS/cookie domain via env vars.

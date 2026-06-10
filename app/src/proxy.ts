@@ -4,6 +4,23 @@ const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const hostname = request.headers.get("host") ?? "";
+
+  // ── Platform admin subdomain → rewrite to /platform/* ─────────────────
+  if (hostname.startsWith("admin.")) {
+    if (
+      pathname.startsWith("/api/") ||
+      pathname.startsWith("/_next/") ||
+      pathname.startsWith("/favicon") ||
+      pathname.startsWith("/platform")
+    ) {
+      return NextResponse.next();
+    }
+
+    const url = request.nextUrl.clone();
+    url.pathname = `/platform${pathname === "/" ? "/tenants" : pathname}`;
+    return NextResponse.rewrite(url);
+  }
 
   // ── Proteger rutas /admin/* ─────────────────────────────────────────────
   if (pathname.startsWith("/admin")) {
@@ -17,29 +34,37 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── Resolver slug → tenantId para rutas de tienda pública ──────────────
-  // Match: /[slug]/* (excluye /admin, /auth, /api, /_next)
+  // Match: /[slug]/* (excluye /admin, /auth, /api, /_next, /platform)
   const storeMatch = pathname.match(/^\/([a-z0-9-]+)(\/.*)?$/);
-  const excluded = new Set(["admin", "auth", "api", "_next", "favicon.ico"]);
+  const excluded = new Set([
+    "admin",
+    "auth",
+    "api",
+    "_next",
+    "favicon.ico",
+    "platform",
+    "impersonate",
+  ]);
 
   if (storeMatch && !excluded.has(storeMatch[1])) {
-    const slug = storeMatch[1];
+    const slug = storeMatch[1]!;
 
-    // Si ya viene el tenantId en el header (cached por edge), pasarlo
     const existingTenantId = request.headers.get("x-tenant-id");
     if (existingTenantId) {
       return NextResponse.next();
     }
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/stores/${slug}/tenant-id`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        // Timeout de edge
-        signal: AbortSignal.timeout(3000),
-      });
+      const res = await fetch(
+        `${BACKEND_URL}/api/v1/stores/${slug}/tenant-id`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          signal: AbortSignal.timeout(3000),
+        }
+      );
 
       if (!res.ok) {
-        // Slug inválido → not-found
         return NextResponse.rewrite(new URL("/not-found", request.url));
       }
 
@@ -55,7 +80,6 @@ export async function proxy(request: NextRequest) {
       response.headers.set("x-store-slug", slug);
       return response;
     } catch {
-      // Error de red → no bloquear, continuar sin tenantId
       return NextResponse.next();
     }
   }
@@ -65,13 +89,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization)
-     * - favicon.ico
-     * - public folder
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
