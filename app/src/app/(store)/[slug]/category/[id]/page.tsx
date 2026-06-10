@@ -50,7 +50,7 @@ export default async function CategoryPage({
 
   return (
     <div className="pb-10">
-      <CategoryNav categories={categories} />
+      <CategoryNav categories={categories} slug={slug} activeCategoryId={id} />
 
       <section className="mx-auto max-w-4xl px-4 py-6">
         <div className="mb-5 flex items-center justify-between gap-4">
