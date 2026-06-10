@@ -168,6 +168,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
   const methods = useForm<ProductFormData>({
     resolver: zodResolver(schema),
     defaultValues: isEdit && product ? buildProductValues(product) : emptyValues,
+    mode: "onChange",
   });
 
   useEffect(() => {
@@ -187,7 +188,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     watch,
     setValue,
     getValues,
-    formState: { errors },
+    formState: { errors, isValid },
   } = methods;
 
   const imageUrl = watch("imageUrl");
@@ -517,7 +518,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
               >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isPending}>
+              <Button type="submit" disabled={isPending || !isValid}>
                 {isImageUploading
                   ? "Esperando imagen..."
                   : createMutation.isPending || updateMutation.isPending
