@@ -83,28 +83,29 @@ function ProductSection({
               </span>
             )}
           </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          {categoryId && (
-            <button
-              type="button"
-              onClick={handleShare}
-              className="flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
-              aria-label={`Compartir categoría ${label}`}
-            >
-              <Share2 className="h-3 w-3" />
-              Compartir
-            </button>
-          )}
-          {showToggle && (
-            <button
-              type="button"
-              onClick={onToggle}
-              className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors lg:hidden"
-              aria-label={NEXT_LABEL[layout]}
-            >
-              {NEXT_ICON[layout]}
-            </button>
-          )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {categoryId && (
+              <button
+                type="button"
+                onClick={handleShare}
+                className="flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+                aria-label={`Compartir categoría ${label}`}
+              >
+                <Share2 className="h-3 w-3" />
+                Compartir
+              </button>
+            )}
+            {showToggle && (
+              <button
+                type="button"
+                onClick={onToggle}
+                className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors lg:hidden"
+                aria-label={NEXT_LABEL[layout]}
+              >
+                {NEXT_ICON[layout]}
+              </button>
+            )}
+          </div>
         </div>
         {hidePrice && groupPrice != null && (
           <div className="mt-2 sm:hidden flex justify-center">
