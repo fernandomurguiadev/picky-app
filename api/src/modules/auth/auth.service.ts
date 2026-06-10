@@ -38,7 +38,20 @@ export class AuthService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async register(dto: RegisterDto): Promise<{ access_token: string }> {
+  private setAccessTokenCookie(response: Response, token: string): void {
+    const isProduction = this.configService.get('NODE_ENV') === 'production';
+    response.cookie('access-token', token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000,
+    });
+  }
+
+  async register(
+    dto: RegisterDto,
+    response: Response,
+  ): Promise<{ access_token: string }> {
     const lowercaseEmail = dto.email.toLowerCase();
     const existingTenant = await this.tenantRepo.findOne({
       where: { slug: dto.slug },
@@ -98,6 +111,7 @@ export class AuthService {
       await queryRunner.commitTransaction();
 
       const access_token = this.signAccessToken(user, tenant.id);
+      this.setAccessTokenCookie(response, access_token);
       return { access_token };
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -197,7 +211,9 @@ export class AuthService {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return { access_token: this.signAccessToken(user, tenantId) };
+      const access_token = this.signAccessToken(user, tenantId);
+      this.setAccessTokenCookie(response, access_token);
+      return { access_token };
     }
 
     // Multiple active shops -> Return selection prompt with stateless selectionToken
@@ -269,7 +285,9 @@ export class AuthService {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return { access_token: this.signAccessToken(membership.user, tenantId) };
+    const access_token = this.signAccessToken(membership.user, tenantId);
+    this.setAccessTokenCookie(response, access_token);
+    return { access_token };
   }
 
   async refresh(
@@ -320,7 +338,9 @@ export class AuthService {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return { access_token: this.signAccessToken(matchedUser, sessionTenantId) };
+    const access_token = this.signAccessToken(matchedUser, sessionTenantId);
+    this.setAccessTokenCookie(response, access_token);
+    return { access_token };
   }
 
   async logout(
@@ -329,6 +349,7 @@ export class AuthService {
   ): Promise<{ message: string }> {
     await this.userRepo.update(userId, { refreshToken: null });
     response.clearCookie('refresh-token');
+    response.clearCookie('access-token');
     return { message: 'ok' };
   }
 
@@ -434,7 +455,9 @@ export class AuthService {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return { access_token: this.signAccessToken(membership.user, tenantId) };
+    const access_token = this.signAccessToken(membership.user, tenantId);
+    this.setAccessTokenCookie(response, access_token);
+    return { access_token };
   }
 
   private signSelectionToken(

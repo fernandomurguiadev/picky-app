@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
 
+function parseJwt(token: string) {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const buffer = Buffer.from(parts[1]!, "base64");
+    return JSON.parse(buffer.toString("utf-8"));
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const refreshToken = req.cookies.get("refresh-token")?.value;
@@ -20,10 +31,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(data, { status: backendRes.status });
     }
 
+    const accessToken = data.data?.access_token ?? data.access_token;
+    const claims = parseJwt(accessToken);
+
     const response = NextResponse.json({
-      access_token: data.data?.access_token ?? data.access_token,
+      tenantId: claims?.tenantId,
+      role: claims?.role,
     });
 
+    // Forward all Set-Cookie headers (rotated refresh-token + new access-token)
     const setCookie = backendRes.headers.get("set-cookie");
     if (setCookie) {
       response.headers.set("set-cookie", setCookie);

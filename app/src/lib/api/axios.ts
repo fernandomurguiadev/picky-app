@@ -4,9 +4,6 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 /**
  * Instancia Axios para llamadas desde el BFF (server-side) o desde API routes.
- * Adjunta el Bearer token desde las cookies httpOnly via el flujo BFF.
- *
- * Para llamadas del browser, usar `apiBff` que enruta por /api/backend/[...path].
  */
 export const apiServer = axios.create({
   baseURL: `${BACKEND_URL}/api/v1`,
@@ -18,8 +15,8 @@ export const apiServer = axios.create({
 
 /**
  * Instancia Axios para llamadas client-side.
- * Siempre apunta al BFF de Next.js (`/api/backend/...`).
- * El BFF inyecta el JWT desde la cookie httpOnly.
+ * Apunta al BFF de Next.js (`/api/backend/...`).
+ * El BFF inyecta el JWT desde la cookie httpOnly access-token.
  */
 export const apiBff = axios.create({
   baseURL: "/api/backend/api/v1",
@@ -30,38 +27,21 @@ export const apiBff = axios.create({
   withCredentials: true,
 });
 
-// ── Interceptor de request: adjuntar token desde Zustand (solo client) ────
-let _getAccessToken: (() => string | null) | null = null;
-
-export function setAccessTokenGetter(fn: () => string | null) {
-  _getAccessToken = fn;
-}
-
-apiBff.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  if (_getAccessToken) {
-    const token = _getAccessToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  }
-  return config;
-});
-
 // ── Interceptor de respuesta: refresh automático en 401 ───────────────────
 type FailedRequest = {
-  resolve: (token: string) => void;
+  resolve: (value: unknown) => void;
   reject: (error: unknown) => void;
 };
 
 let isRefreshing = false;
 let failedQueue: FailedRequest[] = [];
 
-function processQueue(error: unknown, token: string | null) {
+function processQueue(error: unknown) {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
-      prom.resolve(token!);
+      prom.resolve(undefined);
     }
   });
   failedQueue = [];
@@ -79,13 +59,10 @@ apiBff.interceptors.response.use(
     }
 
     if (isRefreshing) {
-      return new Promise<string>((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject });
       })
-        .then((token) => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return apiBff(originalRequest);
-        })
+        .then(() => apiBff(originalRequest))
         .catch((err) => Promise.reject(err));
     }
 
@@ -93,30 +70,14 @@ apiBff.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      // El refresh llama al BFF que a su vez llama a POST /auth/refresh
-      const { data } = await axios.post<{ access_token: string }>(
-        "/api/auth/refresh",
-        {},
-        { withCredentials: true }
-      );
+      // El BFF rota el refresh-token y setea una nueva cookie access-token
+      await axios.post("/api/auth/refresh", {}, { withCredentials: true });
 
-      const newToken = data.access_token;
-
-      // Actualizar el token en Zustand
-      if (_getAccessToken !== null && typeof window !== "undefined") {
-        const { useAuthStore } = await import("@/lib/stores/auth.store");
-        useAuthStore.getState().setAccessToken(newToken);
-      }
-
-      apiBff.defaults.headers.common.Authorization = `Bearer ${newToken}`;
-      originalRequest.headers.Authorization = `Bearer ${newToken}`;
-      processQueue(null, newToken);
-
+      processQueue(null);
       return apiBff(originalRequest);
     } catch (refreshError) {
-      processQueue(refreshError, null);
+      processQueue(refreshError);
 
-      // Session expirada: limpiar y redirigir
       if (typeof window !== "undefined") {
         const { useAuthStore } = await import("@/lib/stores/auth.store");
         useAuthStore.getState().clearAuth();

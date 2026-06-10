@@ -46,16 +46,14 @@ export async function POST(req: NextRequest) {
     }
 
     const payload = data.data ?? data;
-    const accessToken = payload.access_token;
-    const claims = parseJwt(accessToken);
+    const claims = parseJwt(payload.access_token);
 
     const response = NextResponse.json({
-      access_token: accessToken,
       tenantId: claims?.tenantId,
       role: claims?.role,
     });
 
-    // Forward Set-Cookie for rotated refresh token
+    // Forward all Set-Cookie headers (refresh-token + access-token httpOnly cookies)
     const setCookie = backendRes.headers.get("set-cookie");
     if (setCookie) {
       response.headers.set("set-cookie", setCookie);

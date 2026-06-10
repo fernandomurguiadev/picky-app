@@ -17,15 +17,15 @@ async function handler(
 
   const backendUrl = `${BACKEND_URL}/api/v1/${normalizedPath}${url.search}`;
 
+  const accessToken = req.cookies.get("access-token")?.value;
   const refreshToken = req.cookies.get("refresh-token")?.value;
-  const authHeader = req.headers.get("authorization");
 
   const headers: HeadersInit = {
     "Content-Type": req.headers.get("content-type") ?? "application/json",
   };
 
-  if (authHeader) {
-    headers["Authorization"] = authHeader;
+  if (accessToken) {
+    headers["Authorization"] = `Bearer ${accessToken}`;
   }
 
   if (refreshToken) {

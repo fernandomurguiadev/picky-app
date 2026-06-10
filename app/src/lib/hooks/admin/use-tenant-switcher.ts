@@ -31,17 +31,14 @@ export function useSwitchTenant() {
 
   return useMutation({
     mutationFn: async (tenantId: string) => {
-      const { data } = await apiBff.post<{ access_token: string }>("/auth/switch-tenant", {
-        tenantId,
-      });
-      return { access_token: data.access_token, tenantId };
+      await apiBff.post("/auth/switch-tenant", { tenantId });
+      return { tenantId };
     },
     onSuccess: (data) => {
-      // 1. Actualizar el Auth Store local con el nuevo token y tenantId
+      // 1. Actualizar el Auth Store con el nuevo tenantId (cookie access-token rotada por el BFF)
       setAuth({
-        accessToken: data.access_token,
         tenantId: data.tenantId,
-        role: role || "ADMIN", // Preservar rol del store
+        role: role || "ADMIN",
       });
 
       // 2. Limpiar la caché entera de react-query para evitar fugas de datos entre inquilinos

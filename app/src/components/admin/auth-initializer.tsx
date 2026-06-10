@@ -30,18 +30,13 @@ export function AuthInitializer({ children }: { children: React.ReactNode }) {
         return res.json();
       })
       .then((data) => {
-        if (!data?.access_token) {
+        if (!data?.tenantId) {
           router.replace("/auth/login?reason=session_expired");
           return;
         }
-        const parts = data.access_token.split(".");
-        const payload = parts[1]
-          ? JSON.parse(atob(parts[1]))
-          : {};
         setAuth({
-          accessToken: data.access_token,
-          tenantId: payload.tenantId ?? "",
-          role: (payload.role ?? "ADMIN") as UserRole,
+          tenantId: data.tenantId ?? "",
+          role: (data.role ?? "ADMIN") as UserRole,
         });
         setIsInitializing(false);
       })

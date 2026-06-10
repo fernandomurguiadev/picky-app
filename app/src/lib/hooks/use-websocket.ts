@@ -22,7 +22,7 @@ interface UseWebSocketOptions {
 export function useWebSocket({ tenantId, on, enabled = true }: UseWebSocketOptions) {
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const accessToken = useAuthStore((s) => s.accessToken);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const clearAuth = useAuthStore((s) => s.clearAuth);
 
   // Sincronizar handlers en una referencia mutable para evitar closures viejos (stale)
@@ -31,11 +31,25 @@ export function useWebSocket({ tenantId, on, enabled = true }: UseWebSocketOptio
     handlersRef.current = on;
   }, [on]);
 
-  const connect = useCallback(() => {
-    if (!enabled || !accessToken) return;
+  const connect = useCallback(async () => {
+    if (!enabled || !isAuthenticated) return;
+
+    // Obtener el token desde la cookie httpOnly via BFF (WS no puede usar cookies directamente)
+    let wsToken: string | null = null;
+    try {
+      const res = await fetch("/api/auth/ws-ticket", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        wsToken = data.token ?? null;
+      }
+    } catch {
+      return;
+    }
+
+    if (!wsToken) return;
 
     const socket = io(BACKEND_WS_URL, {
-      auth: { token: accessToken },
+      auth: { token: wsToken },
       transports: ["websocket"],
       reconnection: true,
       reconnectionAttempts: 5,
@@ -82,14 +96,21 @@ export function useWebSocket({ tenantId, on, enabled = true }: UseWebSocketOptio
     }
 
     return socket;
-  }, [accessToken, clearAuth, enabled, tenantId]);
+  }, [isAuthenticated, clearAuth, enabled, tenantId]);
 
   useEffect(() => {
-    const socket = connect();
+    let cancelled = false;
+
+    connect().then((socket) => {
+      if (cancelled && socket) {
+        socket.disconnect();
+      }
+    });
 
     return () => {
-      if (socket) {
-        socket.disconnect();
+      cancelled = true;
+      if (socketRef.current) {
+        socketRef.current.disconnect();
         socketRef.current = null;
       }
     };

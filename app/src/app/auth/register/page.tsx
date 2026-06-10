@@ -96,7 +96,6 @@ export default function RegisterPage() {
       }
 
       setAuth({
-        accessToken: data.access_token,
         tenantId: data.tenantId,
         role: data.role as UserRole,
       });

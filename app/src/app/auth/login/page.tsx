@@ -82,7 +82,6 @@ function LoginContent() {
       }
 
       setAuth({
-        accessToken: data.access_token,
         tenantId: data.tenantId,
         role: data.role as UserRole,
       });
@@ -115,7 +114,6 @@ function LoginContent() {
       }
 
       setAuth({
-        accessToken: data.access_token,
         tenantId: data.tenantId,
         role: data.role as UserRole,
       });

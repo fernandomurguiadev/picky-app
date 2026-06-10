@@ -53,16 +53,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Normal single-store login
-    const accessToken = payload.access_token;
-    const claims = parseJwt(accessToken);
+    const claims = parseJwt(payload.access_token);
 
     const response = NextResponse.json({
-      access_token: accessToken,
       tenantId: claims?.tenantId,
       role: claims?.role,
     });
 
-    // Copy Set-Cookie from backend for the refresh token
+    // Forward all Set-Cookie headers (refresh-token + access-token httpOnly cookies)
     const setCookie = backendRes.headers.get("set-cookie");
     if (setCookie) {
       response.headers.set("set-cookie", setCookie);

@@ -18,14 +18,15 @@ export async function POST(req: NextRequest) {
     }
 
     const response = NextResponse.json({ success: true });
-    // Eliminar la cookie del refresh token
-    response.cookies.set("refresh-token", "", {
+    const cookieOpts = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "strict" as const,
       maxAge: 0,
       path: "/",
-    });
+    };
+    response.cookies.set("refresh-token", "", cookieOpts);
+    response.cookies.set("access-token", "", cookieOpts);
 
     return response;
   } catch {
