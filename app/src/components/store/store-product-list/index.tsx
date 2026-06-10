@@ -107,7 +107,7 @@ function ProductSection({
           )}
         </div>
         {hidePrice && groupPrice != null && (
-          <div className="mt-2 sm:hidden">
+          <div className="mt-2 sm:hidden flex justify-center">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
               <Tag className="h-3 w-3 shrink-0" />
               {formatCurrency(groupPrice)}
