@@ -53,25 +53,27 @@ export default async function CategoryPage({
       <CategoryNav categories={categories} slug={slug} activeCategoryId={id} />
 
       <section className="mx-auto max-w-4xl px-4 py-6">
-        <div className="mb-5 flex items-center justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-sm text-muted-foreground">Categoría</p>
-            <div className="flex flex-wrap items-center gap-2 mt-0.5">
-              <h1 className="text-2xl font-bold truncate">{currentCategory?.name ?? "Productos"}</h1>
-              {groupPrice != null && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 px-3 py-1 text-sm font-semibold text-[var(--color-primary)]">
-                  <Tag className="h-3.5 w-3.5 shrink-0" />
-                  {formatCurrency(groupPrice)}
-                </span>
-              )}
+        <div className="mb-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm text-muted-foreground">Categoría</p>
+              <h1 className="text-2xl font-bold truncate mt-0.5">{currentCategory?.name ?? "Productos"}</h1>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <span className="text-sm text-muted-foreground hidden sm:block">
+                {productsJson.meta.total} resultados
+              </span>
+              <SearchShareButton />
             </div>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="text-sm text-muted-foreground hidden sm:block">
-              {productsJson.meta.total} resultados
-            </span>
-            <SearchShareButton />
-          </div>
+          {groupPrice != null && (
+            <div className="mt-3 flex justify-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 px-4 py-1.5 text-sm font-semibold text-[var(--color-primary)]">
+                <Tag className="h-3.5 w-3.5 shrink-0" />
+                {formatCurrency(groupPrice)}
+              </span>
+            </div>
+          )}
         </div>
 
         {productsJson.data.length ? (
