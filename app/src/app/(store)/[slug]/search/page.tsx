@@ -94,7 +94,6 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
               totalPages={searchJson.meta.totalPages}
               basePath={`/${slug}/search`}
               searchParams={{ q: term, ...(activeCategoryId && { category: activeCategoryId }) }}
-              scroll={false}
             />
           </div>
         </>

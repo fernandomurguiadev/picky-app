@@ -3,6 +3,7 @@ import { CategoryNav } from "@/components/store/category-nav";
 import { ProductCard } from "@/components/store/product-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Pagination } from "@/components/shared/pagination";
+import { SearchShareButton } from "@/components/store/search-share-button";
 import { formatCurrency } from "@/lib/utils";
 import type { Category, PaginatedResponse, Product } from "@/lib/types/catalog";
 
@@ -57,14 +58,17 @@ export default async function CategoryPage({
       )}
 
       <section className="mx-auto max-w-4xl px-4 py-6">
-        <div className="mb-5 flex items-end justify-between gap-4">
-          <div>
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <div className="min-w-0">
             <p className="text-sm text-muted-foreground">Categoría</p>
-            <h1 className="text-2xl font-bold">{currentCategory?.name ?? "Productos"}</h1>
+            <h1 className="text-2xl font-bold truncate">{currentCategory?.name ?? "Productos"}</h1>
           </div>
-          <span className="text-sm text-muted-foreground">
-            {productsJson.meta.total} resultados
-          </span>
+          <div className="flex items-center gap-3 shrink-0">
+            <span className="text-sm text-muted-foreground hidden sm:block">
+              {productsJson.meta.total} resultados
+            </span>
+            <SearchShareButton />
+          </div>
         </div>
 
         {productsJson.data.length ? (
