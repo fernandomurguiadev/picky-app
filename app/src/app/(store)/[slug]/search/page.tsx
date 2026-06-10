@@ -67,7 +67,7 @@ export default async function SearchPage({ params, searchParams }: SearchPagePro
           <span className="text-sm text-muted-foreground hidden sm:block">
             {searchJson.meta.total} encontrados
           </span>
-          <SearchShareButton />
+          {searchJson.data.length > 0 && <SearchShareButton />}
         </div>
       </div>
 
