@@ -1,0 +1,24 @@
+# Tasks: Share Search and Category via WhatsApp
+
+- [ ] 1. **URL State Sync Setup**
+  - [ ] Implement debounced update for the search query to the URL.
+  - [ ] Update category selection to reflect in the URL (`?category=...`).
+  - [ ] Update pagination to reflect in the URL (`?page=...`).
+  - [ ] **CRITICAL**: Ensure `{ scroll: false }` is used on all `router.replace` calls.
+  - [ ] Ensure that clearing a filter completely removes its key from the URL (no `?q=&category=`).
+- [ ] 2. **Initial State Hydration**
+  - [ ] Read `category`, `q`, and `page` from `useSearchParams` on component mount.
+  - [ ] Apply these parameters to the initial state and fetch correct products.
+- [ ] 3. **Share Component & Logic**
+  - [ ] Create a `ShareButton` component with a share/WhatsApp icon.
+  - [ ] Implement URL generation injecting `utm_source` and `utm_medium`.
+  - [ ] Implement `navigator.share` for mobile with a seamless fallback to `wa.me` for desktop.
+- [ ] 4. **UI Integration**
+  - [ ] Place the `ShareButton` strategically next to the search/filter controls.
+  - [ ] Ensure responsive design (looks good on mobile and desktop).
+- [ ] 5. **Testing & Validation**
+  - [ ] Verify debouncing works without lag.
+  - [ ] Verify page does NOT scroll to top when typing or clicking a category.
+  - [ ] Verify clearing the search removes the `q` param.
+  - [ ] Verify copying the URL manually and pasting in a new tab loads the correct state and page.
+  - [ ] Verify the Share button opens native share on mobile and WhatsApp on desktop, both with UTMs.
