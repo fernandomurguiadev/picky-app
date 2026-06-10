@@ -5,21 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Formatea centavos a pesos con símbolo $ */
-export function formatCurrency(cents: number): string {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    minimumFractionDigits: 0,
-  }).format(cents / 100);
-}
+export { formatCurrency, toCents, fromCents } from "./utils/currency";
 
-/** Convierte pesos (UI) a centavos (backend) */
-export function tosCents(pesos: number): number {
-  return Math.round(pesos * 100);
-}
-
-/** Convierte centavos (backend) a pesos (UI) */
-export function fromCents(cents: number): number {
-  return cents / 100;
-}
+/** @deprecated usar toCents */
+export { toCents as tosCents } from "./utils/currency";

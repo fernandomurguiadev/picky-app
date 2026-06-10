@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { ProductFormData } from "@/lib/types/catalog";
+import { fromCents, toCents } from "@/lib/utils/currency";
 
 function OptionItemRow({
   groupIndex,
@@ -47,10 +48,10 @@ function OptionItemRow({
           step={1}
           placeholder="0"
           className="pl-8"
-          value={priceModifier === 0 ? "" : String(priceModifier / 100)}
+          value={priceModifier === 0 ? "" : String(fromCents(priceModifier))}
           onChange={(e) => {
             const pesos = parseFloat(e.target.value) || 0;
-            setValue(`${path}.priceModifier`, Math.round(pesos * 100), { shouldDirty: true });
+            setValue(`${path}.priceModifier`, toCents(pesos), { shouldDirty: true });
           }}
           aria-label="Precio adicional en pesos"
         />

@@ -40,7 +40,7 @@ Por defecto: **LITE**.
 - Stack frontend: Next.js 15 + TypeScript strict + TanStack Query v5 + Tailwind CSS v4 + shadcn/ui.
 - Stack backend: NestJS + PostgreSQL + TypeORM.
 - No guardar tokens en localStorage/sessionStorage. Usar cookies httpOnly vía BFF.
-- Montos monetarios en centavos enteros o BigInt (nunca punto flotante).
+- Montos monetarios en centavos enteros o BigInt (nunca punto flotante). Frontend: usar siempre `formatCurrency`, `toCents`, `fromCents` de `@/lib/utils/currency` — nunca aritmética directa (`/ 100`, `* 100`) fuera de ese módulo.
 - Archivos en kebab-case.
 - No crear migraciones TypeORM manualmente — avisar al usuario para que ejecute `npm run migration:generate`.
 

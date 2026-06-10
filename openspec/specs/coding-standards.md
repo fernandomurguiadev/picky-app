@@ -194,6 +194,36 @@ export function ProductForm() {
 }
 ```
 
+### 3.6 Manejo de montos monetarios
+
+**Regla obligatoria**: todos los montos viajan y se almacenan en **centavos enteros** (`integer`). Nunca usar `float` ni `decimal` para precios.
+
+**Frontend — usar siempre las utilidades de `@/lib/utils/currency`**:
+
+```ts
+import { formatCurrency, toCents, fromCents } from "@/lib/utils/currency";
+
+// Mostrar precio al usuario
+formatCurrency(product.price)   // 1050 → "$10,50"
+
+// Leer input del form (pesos) → guardar en backend (centavos)
+toCents(values.price)           // 10.5 → 1050
+
+// Cargar dato del backend en un form (centavos → pesos para el input)
+fromCents(product.price)        // 1050 → 10.5
+```
+
+**Prohibido**:
+```ts
+// ❌ Aritmética directa fuera del módulo currency
+price / 100
+Math.round(pesos * 100)
+price.toFixed(2)
+new Intl.NumberFormat(...).format(price)
+```
+
+**Backend** — las entidades TypeORM declaran columnas de precio como `{ type: 'integer' }`. El API recibe y devuelve centavos sin transformación.
+
 ---
 
 ## 4. Backend (NestJS)
