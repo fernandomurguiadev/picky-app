@@ -341,10 +341,15 @@ export default function ProductsPage() {
             {canReorder ? " · arrastrá para reordenar." : " · seleccioná una categoría para reordenar."}
           </p>
         </div>
-        <Button asChild>
+        <Button asChild size="icon" className="sm:hidden">
+          <Link href="/admin/catalog/products/new" aria-label={`Nuevo ${itemLabel}`}>
+            <Plus className="h-5 w-5" />
+          </Link>
+        </Button>
+        <Button asChild className="hidden sm:inline-flex">
           <Link href="/admin/catalog/products/new">
-            <Plus className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Nuevo {itemLabel}</span>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo {itemLabel}
           </Link>
         </Button>
       </div>

@@ -27,6 +27,48 @@ import { toast } from "@/components/shared/toast";
 import { fromCents, tosCents, formatCurrency } from "@/lib/utils";
 import type { Product, ProductFormData } from "@/lib/types/catalog";
 
+function formatThousands(n: number): string {
+  if (!n) return "";
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+function PriceInput({
+  value,
+  onChange,
+  disabled,
+  id,
+  "aria-invalid": ariaInvalid,
+}: {
+  value: number;
+  onChange: (val: number) => void;
+  disabled?: boolean;
+  id?: string;
+  "aria-invalid"?: boolean;
+}) {
+  const [display, setDisplay] = useState(() => formatThousands(value));
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\./g, "").replace(/\D/g, "");
+    const num = raw ? parseInt(raw, 10) : 0;
+    setDisplay(raw ? formatThousands(num) : "");
+    onChange(num);
+  };
+
+  return (
+    <Input
+      id={id}
+      type="text"
+      inputMode="numeric"
+      value={display}
+      onChange={handleChange}
+      disabled={disabled}
+      aria-invalid={ariaInvalid}
+      placeholder="0"
+      className="pl-7"
+    />
+  );
+}
+
 const DRAFT_KEY = "picky-product-draft";
 const AUTOSAVE_MS = 30_000;
 
@@ -341,16 +383,18 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                   $
                 </span>
-                <Input
-                  id="p-price"
-                  type="number"
-                  min={0}
-                  step={1}
-                  className="pl-7"
-                  placeholder="0"
-                  disabled={isGroupPriced}
-                  aria-invalid={!!errors.price}
-                  {...register("price", { valueAsNumber: true })}
+                <Controller
+                  control={methods.control}
+                  name="price"
+                  render={({ field }) => (
+                    <PriceInput
+                      id="p-price"
+                      value={field.value}
+                      onChange={field.onChange}
+                      disabled={isGroupPriced}
+                      aria-invalid={!!errors.price}
+                    />
+                  )}
                 />
               </div>
               {errors.price && (
