@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { LayoutGrid, LayoutList, Rows3 } from "lucide-react";
+import { LayoutGrid, LayoutList, Rows3, Tag, Share2 } from "lucide-react";
 import { ProductCard } from "@/components/store/product-card";
 import { EmptyState } from "@/components/shared/empty-state";
 import { formatCurrency } from "@/lib/utils";
+import { shareViaWhatsApp } from "@/lib/utils/share";
 import type { Product } from "@/lib/types/catalog";
 import type { Category } from "@/lib/types/catalog";
 import type { GridLayout } from "@/lib/types/store";
@@ -50,6 +51,7 @@ function ProductSection({
   onToggle,
   hidePrice,
   groupPrice,
+  categoryId,
 }: {
   label: string;
   products: Product[];
@@ -59,32 +61,51 @@ function ProductSection({
   onToggle?: () => void;
   hidePrice?: boolean;
   groupPrice?: number | null;
+  categoryId?: string;
 }) {
+  const handleShare = () => {
+    if (!categoryId) return;
+    const url = `${window.location.origin}/${slug}/category/${categoryId}?utm_source=whatsapp_share&utm_medium=seller_link`;
+    shareViaWhatsApp(url);
+  };
+
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold tracking-tight">{label}</h2>
-          <span className="text-sm font-medium text-muted-foreground">{products.length}</span>
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2 min-w-0">
+          <h2 className="text-xl font-bold tracking-tight truncate">{label}</h2>
+          <span className="text-sm font-medium text-muted-foreground shrink-0">{products.length}</span>
+          {hidePrice && groupPrice != null && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 px-3 py-1 text-xs font-semibold text-[var(--color-primary)] shrink-0">
+              <Tag className="h-3 w-3 shrink-0" />
+              {formatCurrency(groupPrice)}
+            </span>
+          )}
         </div>
-        {showToggle && (
-          <button
-            type="button"
-            onClick={onToggle}
-            className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors lg:hidden"
-            aria-label={NEXT_LABEL[layout]}
-          >
-            {NEXT_ICON[layout]}
-          </button>
-        )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {categoryId && (
+            <button
+              type="button"
+              onClick={handleShare}
+              className="flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground shadow-sm transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+              aria-label={`Compartir categoría ${label}`}
+            >
+              <Share2 className="h-3 w-3" />
+              Compartir
+            </button>
+          )}
+          {showToggle && (
+            <button
+              type="button"
+              onClick={onToggle}
+              className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors lg:hidden"
+              aria-label={NEXT_LABEL[layout]}
+            >
+              {NEXT_ICON[layout]}
+            </button>
+          )}
+        </div>
       </div>
-      {hidePrice && groupPrice != null && (
-        <div className="mb-3 rounded-lg bg-primary/10 border border-primary/20 px-4 py-2.5 text-center">
-          <span className="text-sm font-semibold text-primary">
-            Precio único · {formatCurrency(groupPrice)}
-          </span>
-        </div>
-      )}
       <div className={GRID_CLASS[layout]}>
         {products.map((product) => (
           <ProductCard
@@ -93,6 +114,7 @@ function ProductSection({
             slug={slug}
             layout={layout}
             hidePrice={hidePrice ?? (product.category?.isGroupPricingEnabled === true)}
+            groupPrice={hidePrice && groupPrice != null ? groupPrice : undefined}
           />
         ))}
       </div>
@@ -152,6 +174,7 @@ export function StoreProductList({
                   layout={layout}
                   hidePrice={category.isGroupPricingEnabled === true}
                   groupPrice={category.groupPrice}
+                  categoryId={category.id}
                 />
               </div>
             </section>
