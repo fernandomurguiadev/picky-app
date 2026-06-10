@@ -71,17 +71,18 @@ function ProductSection({
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2 min-w-0">
-          <h2 className="text-xl font-bold tracking-tight truncate">{label}</h2>
-          <span className="text-sm font-medium text-muted-foreground shrink-0">{products.length}</span>
-          {hidePrice && groupPrice != null && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 px-3 py-1 text-xs font-semibold text-[var(--color-primary)] shrink-0">
-              <Tag className="h-3 w-3 shrink-0" />
-              {formatCurrency(groupPrice)}
-            </span>
-          )}
-        </div>
+      <div className="mb-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <h2 className="text-xl font-bold tracking-tight truncate">{label}</h2>
+            <span className="text-sm font-medium text-muted-foreground shrink-0">{products.length}</span>
+            {hidePrice && groupPrice != null && (
+              <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 px-3 py-1 text-xs font-semibold text-[var(--color-primary)] shrink-0">
+                <Tag className="h-3 w-3 shrink-0" />
+                {formatCurrency(groupPrice)}
+              </span>
+            )}
+          </div>
         <div className="flex items-center gap-1.5 shrink-0">
           {categoryId && (
             <button
@@ -105,6 +106,14 @@ function ProductSection({
             </button>
           )}
         </div>
+        {hidePrice && groupPrice != null && (
+          <div className="mt-2 sm:hidden">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 px-3 py-1 text-xs font-semibold text-[var(--color-primary)]">
+              <Tag className="h-3 w-3 shrink-0" />
+              {formatCurrency(groupPrice)}
+            </span>
+          </div>
+        )}
       </div>
       <div className={GRID_CLASS[layout]}>
         {products.map((product) => (
