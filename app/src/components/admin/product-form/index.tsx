@@ -356,11 +356,6 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
               {errors.price && (
                 <p className="text-sm text-destructive">{errors.price.message}</p>
               )}
-              {!isGroupPriced && (
-                <p className="text-xs text-muted-foreground">
-                  Se guarda como {tosCents(watch("price") || 0)} centavos internamente.
-                </p>
-              )}
             </div>
           </section>
 

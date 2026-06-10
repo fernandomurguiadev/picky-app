@@ -343,8 +343,8 @@ export default function ProductsPage() {
         </div>
         <Button asChild>
           <Link href="/admin/catalog/products/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo {itemLabel}
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Nuevo {itemLabel}</span>
           </Link>
         </Button>
       </div>
