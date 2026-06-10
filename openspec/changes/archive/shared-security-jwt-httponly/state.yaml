@@ -1,0 +1,4 @@
+id: shared-security-jwt-httponly
+status: active
+phase: proposal
+next_recommended: sdd-spec
