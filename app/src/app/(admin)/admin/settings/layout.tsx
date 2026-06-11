@@ -12,6 +12,7 @@ const BASE_SECTIONS = [
   { href: "/admin/settings/delivery", label: "Entrega" },
   { href: "/admin/settings/payments", label: "Pagos" },
   { href: "/admin/settings/theme", label: "Tema" },
+  { href: "/admin/settings/qr-flyer", label: "QR / Flyer" },
 ];
 
 export default function SettingsLayout({
