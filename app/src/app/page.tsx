@@ -63,7 +63,7 @@ export default function HomePage() {
                   <span className="absolute inline-flex h-full w-full rounded-full bg-[oklch(0.55_0.22_250)] animate-ping-slow" />
                   <span className="relative h-1.5 w-1.5 rounded-full bg-[oklch(0.55_0.22_250)]" />
                 </span>
-                Sin tarjeta de crédito · Empezá gratis, tu espacio para siempre
+                Para negocios que quieren modernizarse y tener su lugar en la nube
               </div>
 
               <h1 className="text-[3.2rem] sm:text-[4rem] lg:text-[4.5rem] font-black tracking-tight leading-[1.05] mb-6">
