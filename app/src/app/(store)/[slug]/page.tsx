@@ -4,8 +4,9 @@ import { StoreProductList } from "@/components/store/store-product-list";
 import type { Category, Product } from "@/lib/types/catalog";
 import type { StorePublicData } from "@/lib/types/store";
 import { MOBILE_COLS_TO_LAYOUT } from "@/lib/types/store";
-import { MapPin, Truck, ShoppingBag } from "lucide-react";
+import { MapPin, Truck, ShoppingBag, ExternalLink } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:4000";
 
@@ -110,6 +111,17 @@ export default async function StorePage({ params }: StorePageProps) {
                         <span className="truncate max-w-[160px] sm:max-w-[300px]">{store.address}</span>
                       </div>
                     )}
+                    {store?.address && (
+                      <a
+                        href={`https://www.google.com/maps/search/${encodeURIComponent(store.address)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full bg-background/60 backdrop-blur border border-border/40 px-3 py-1 text-[11px] font-semibold text-foreground/70 shadow-sm hover:bg-background/80 transition-colors"
+                      >
+                        <ExternalLink className="w-3 h-3 text-[var(--color-primary)]/80 shrink-0" />
+                        <span>Ver en Google Maps</span>
+                      </a>
+                    )}
                     {store?.deliveryEnabled && (
                       <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 shadow-sm">
                         <Truck className="w-3 h-3 shrink-0" />
@@ -142,6 +154,25 @@ export default async function StorePage({ params }: StorePageProps) {
               slug={slug}
               defaultLayout={defaultLayout}
             />
+
+            {store?.address && (
+              <section className="rounded-2xl border border-border/50 overflow-hidden">
+                <div className="px-4 py-3 border-b border-border/40 flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[var(--color-primary)]" />
+                  <span className="text-sm font-semibold">Dónde encontrarnos</span>
+                </div>
+                <iframe
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(store.address)}&output=embed`}
+                  width="100%"
+                  height="320"
+                  style={{ border: 0, display: "block" }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title={`Ubicación de ${storeName}`}
+                />
+              </section>
+            )}
 
           </div>
         </div>

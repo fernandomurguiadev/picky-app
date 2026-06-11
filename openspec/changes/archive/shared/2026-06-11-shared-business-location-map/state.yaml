@@ -1,0 +1,16 @@
+id: 2026-06-11-shared-business-location-map
+title: Mapa de Ubicación del Negocio
+type: shared
+status: done
+created: 2026-06-11
+updated: 2026-06-11
+
+scope:
+  - api
+  - app
+
+stages:
+  - id: proposal
+    status: done
+  - id: implementation
+    status: done

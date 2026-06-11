@@ -171,13 +171,17 @@ export default function SettingsInfoPage() {
 
           <div className="space-y-1.5">
             <Label htmlFor="s-address">Dirección física / sucursal</Label>
-            <Input 
-              id="s-address" 
-              {...register("address")} 
-              placeholder="Ej. Av. Corrientes 1234, CABA" 
+            <Input
+              id="s-address"
+              {...register("address")}
+              placeholder="Ej. Av. Corrientes 1234, Buenos Aires, Argentina"
               className="rounded-lg"
             />
+            <p className="text-[11px] text-muted-foreground">
+              Incluí calle, número, ciudad y país para que Google Maps encuentre el lugar correctamente. Ej: <span className="font-medium text-foreground/60">Av. Santa Fe 1234, Buenos Aires, Argentina</span>
+            </p>
           </div>
+
         </section>
 
         <section className="rounded-xl border border-border p-6 space-y-4 bg-card">
