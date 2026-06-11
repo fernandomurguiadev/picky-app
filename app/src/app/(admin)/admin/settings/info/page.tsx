@@ -177,8 +177,9 @@ export default function SettingsInfoPage() {
               placeholder="Ej. Av. Corrientes 1234, Buenos Aires, Argentina"
               className="rounded-lg"
             />
-            <p className="text-[11px] text-muted-foreground">
-              Incluí calle, número, ciudad y país para que Google Maps encuentre el lugar correctamente. Ej: <span className="font-medium text-foreground/60">Av. Santa Fe 1234, Buenos Aires, Argentina</span>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
+              Incluí calle, número, ciudad y país para que Google Maps encuentre el lugar correctamente.
+              <span className="block mt-0.5 font-medium text-foreground/60 break-words">Ej: Av. Santa Fe 1234, Buenos Aires, Argentina</span>
             </p>
           </div>
 
