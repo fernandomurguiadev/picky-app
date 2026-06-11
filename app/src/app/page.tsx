@@ -613,7 +613,7 @@ export default function HomePage() {
               <div className="h-12 w-12 rounded-2xl bg-emerald-500 flex items-center justify-center text-white font-black text-lg shadow-lg shadow-emerald-500/30">03</div>
             </div>
             <div className="flex-1 bg-white rounded-2xl p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-zinc-900 mb-1">Compartí tu link y empezá a recibir</h3>
+              <h3 className="text-lg font-bold text-zinc-900 mb-1">Compartí tu link y empezá a recibir pedidos</h3>
               <p className="text-zinc-500 text-sm mb-5">
                 Compartí tu URL en{" "}
                 <span className="font-semibold text-zinc-800">Instagram, WhatsApp, menú impreso o donde quieras.</span>{" "}
