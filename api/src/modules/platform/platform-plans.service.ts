@@ -19,7 +19,10 @@ export class PlatformPlansService {
   ) {}
 
   findAll() {
-    return this.planRepo.find({ order: { sortOrder: 'ASC', createdAt: 'ASC' } });
+    return this.planRepo.find({
+      relations: { planFeatures: { feature: true } },
+      order: { sortOrder: 'ASC', createdAt: 'ASC' },
+    });
   }
 
   async reorder(ids: string[]): Promise<void> {
@@ -29,7 +32,10 @@ export class PlatformPlansService {
   }
 
   async findOne(id: string) {
-    const plan = await this.planRepo.findOne({ where: { id } });
+    const plan = await this.planRepo.findOne({
+      where: { id },
+      relations: { planFeatures: { feature: true } },
+    });
     if (!plan) throw new NotFoundException('Plan no encontrado');
     return plan;
   }

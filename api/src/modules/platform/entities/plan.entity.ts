@@ -2,9 +2,11 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PlanFeature } from './plan-feature.entity.js';
 
 @Entity('plans')
 export class Plan {
@@ -43,4 +45,7 @@ export class Plan {
 
   @UpdateDateColumn()
   updatedAt!: Date;
+
+  @OneToMany(() => PlanFeature, (pf) => pf.plan)
+  planFeatures!: PlanFeature[];
 }

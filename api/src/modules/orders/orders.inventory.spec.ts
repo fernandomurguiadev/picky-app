@@ -87,7 +87,7 @@ function makeCreateOrderDto() {
     tenantId: T_ID,
     deliveryMethod: DeliveryMethod.TAKEAWAY,
     paymentMethod: PaymentMethod.CASH,
-    customer: { name: 'Test User', phone: '1234567890', address: null },
+    customer: { name: 'Test User', phone: '1234567890', address: undefined },
     items: [
       {
         productId: P_ID,
@@ -95,7 +95,7 @@ function makeCreateOrderDto() {
         quantity: 2,
         unitPrice: 1000,
         selectedOptions: [],
-        itemNote: null,
+        itemNote: undefined,
       },
     ],
   };

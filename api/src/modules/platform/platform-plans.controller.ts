@@ -8,20 +8,26 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { PlatformAdminGuard } from './guards/platform-admin.guard.js';
 import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
 import { PlatformPlansService } from './platform-plans.service.js';
+import { FeatureService } from './feature.service.js';
 import { PlatformCreatePlanDto } from './dto/platform-create-plan.dto.js';
 import { PlatformUpdatePlanDto } from './dto/platform-update-plan.dto.js';
 import { PlatformReorderPlansDto } from './dto/platform-reorder-plans.dto.js';
+import { PlatformAssignFeaturesDto } from './dto/platform-assign-features.dto.js';
 
 @SkipRls()
 @UseGuards(PlatformAdminGuard)
 @Controller('platform/plans')
 export class PlatformPlansController {
-  constructor(private readonly plansService: PlatformPlansService) {}
+  constructor(
+    private readonly plansService: PlatformPlansService,
+    private readonly featureService: FeatureService,
+  ) {}
 
   @Get()
   findAll() {
@@ -62,5 +68,19 @@ export class PlatformPlansController {
   @HttpCode(HttpStatus.OK)
   toggleVisibility(@Param('id', ParseUUIDPipe) id: string) {
     return this.plansService.toggleVisibility(id);
+  }
+
+  @Get(':id/features')
+  getFeaturesForPlan(@Param('id', ParseUUIDPipe) id: string) {
+    return this.featureService.getFeaturesForPlan(id);
+  }
+
+  @Put(':id/features')
+  @HttpCode(HttpStatus.OK)
+  assignFeaturesToPlan(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: PlatformAssignFeaturesDto,
+  ) {
+    return this.featureService.assignFeaturesToPlan(id, dto.featureIds);
   }
 }

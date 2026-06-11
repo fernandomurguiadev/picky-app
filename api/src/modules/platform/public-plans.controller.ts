@@ -13,15 +13,10 @@ export class PublicPlansController {
 
   @Get()
   findVisible() {
-    return this.planRepo.query(`
-      SELECT id, name, "maxProducts", "maxCategories", "maxStaffUsers", "maxImages", "priceMonthly",
-             CASE WHEN EXISTS (
-               SELECT 1 FROM information_schema.columns
-               WHERE table_name = 'plans' AND column_name = 'description'
-             ) THEN description ELSE NULL END AS description
-      FROM plans
-      WHERE "isHidden" = false
-      ORDER BY "sortOrder" ASC, "priceMonthly" ASC
-    `);
+    return this.planRepo.find({
+      where: { isHidden: false },
+      relations: { planFeatures: { feature: true } },
+      order: { sortOrder: 'ASC', priceMonthly: 'ASC' },
+    });
   }
 }

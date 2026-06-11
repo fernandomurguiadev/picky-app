@@ -2,6 +2,10 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Check } from "lucide-react";
 
+interface PlanFeatureItem {
+  feature: { id: string; code: string; name: string };
+}
+
 interface Plan {
   id: string;
   name: string;
@@ -11,6 +15,7 @@ interface Plan {
   maxStaffUsers: number;
   maxImages: number;
   priceMonthly: number; // centavos — 0=gratis, -1=contactar, >0=precio
+  planFeatures?: PlanFeatureItem[];
 }
 
 const PLAN_META: Record<
@@ -100,7 +105,6 @@ async function fetchPlans(): Promise<Plan[]> {
     }
     const json = await res.json();
     const rows: Plan[] = (json.data ?? json) as Plan[];
-    // La query raw de PG devuelve números como strings — normalizamos
     return rows.map((p) => ({
       ...p,
       priceMonthly: Number(p.priceMonthly),
@@ -137,11 +141,7 @@ export async function PricingSection() {
           limitText(plan.maxCategories, "categoría", "categorías"),
           limitText(plan.maxStaffUsers, "usuario staff", "usuarios staff"),
           limitText(plan.maxImages, "imagen", "imágenes"),
-          plan.priceMonthly === 0
-            ? "Soporte por email"
-            : plan.priceMonthly === -1
-              ? "Soporte dedicado"
-              : "Soporte prioritario",
+          ...(plan.planFeatures ?? []).map((pf) => pf.feature.name),
         ];
 
         return (
