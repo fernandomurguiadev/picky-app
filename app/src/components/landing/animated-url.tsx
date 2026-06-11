@@ -48,11 +48,11 @@ export function AnimatedUrl() {
       </div>
 
       {/* Big URL display */}
-      <div className="px-5 py-5 flex items-baseline gap-0 font-mono font-bold select-none overflow-hidden">
-        <span className="text-zinc-400 text-lg sm:text-xl shrink-0">picky.ar/</span>
+      <div className="px-5 py-5 flex items-baseline gap-0 font-mono font-bold select-none min-w-0">
+        <span className="text-zinc-400 text-base sm:text-xl shrink-0">picky.ar/</span>
         <span
           key={`slug-${current}`}
-          className={`text-lg sm:text-xl whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 duration-500 ${
+          className={`text-base sm:text-xl min-w-0 truncate animate-in fade-in slide-in-from-bottom-2 duration-500 ${
             isOwn ? "text-[oklch(0.55_0.22_250)]" : "text-zinc-900"
           }`}
         >
