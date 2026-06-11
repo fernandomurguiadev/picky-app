@@ -476,6 +476,64 @@ export default function HomePage() {
               <p className="text-zinc-600 text-sm leading-relaxed">Buscá el producto en segundos y mandá el link directo. Tu cliente lo ve, elige y confirma — sin que vos tengas que dejar de atender.</p>
             </div>
           </div>
+
+          {/* Pago online + retiro / delivery — full width */}
+          <div className="relative rounded-3xl p-8 md:p-12 mt-4 overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-emerald-50 shadow-sm hover:shadow-xl hover:shadow-indigo-200/40 transition-all duration-300 group">
+            <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-indigo-300/15 blur-3xl pointer-events-none" />
+            <div className="absolute bottom-0 left-0 h-48 w-48 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
+
+            <div className="relative flex flex-col md:flex-row md:items-center gap-8 md:gap-16">
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2 mb-5">
+                  <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 text-xs font-bold px-3 py-1.5 rounded-full border border-indigo-200">
+                    💳 Nuevo servicio
+                  </div>
+                  <div className="inline-flex items-center gap-2 bg-amber-50 text-amber-700 text-xs font-bold px-3 py-1.5 rounded-full border border-amber-200">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-amber-500 animate-ping" />
+                      <span className="relative h-1.5 w-1.5 rounded-full bg-amber-500" />
+                    </span>
+                    Próximamente · MercadoPago
+                  </div>
+                </div>
+                <h3 className="text-3xl md:text-4xl font-black mb-3 leading-tight text-zinc-900">
+                  El cliente paga,{" "}
+                  <span className="text-indigo-600">elige cómo recibir</span>
+                  <br className="hidden md:block" /> y vos solo confirmás.
+                </h3>
+                <p className="text-zinc-500 leading-relaxed max-w-lg mb-5">
+                  Tu tienda puede ofrecer retiro en el local, delivery a domicilio, o ambos. Cada negocio decide qué modalidades habilita. Pronto, los clientes podrán pagar online — sin salir de la app, sin coordinación extra.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "✓ Retiro en el local",
+                    "✓ Delivery a domicilio",
+                    "✓ El negocio elige qué habilitar",
+                    "✓ Sin coordinación extra",
+                  ].map((tag) => (
+                    <span key={tag} className="text-[11px] bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full font-semibold">{tag}</span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="shrink-0 flex flex-col gap-3 w-full md:w-72">
+                {[
+                  { icon: "🏃", label: "Retiro en el local", desc: "El cliente pasa a buscar cuando quiere", cls: "bg-emerald-50 border-emerald-200" },
+                  { icon: "🛵", label: "Delivery a domicilio", desc: "El pedido llega directo a su puerta", cls: "bg-blue-50 border-blue-200" },
+                  { icon: "💳", label: "Pago online", desc: "Próximamente con MercadoPago", cls: "bg-amber-50 border-amber-200 opacity-75" },
+                ].map((opt) => (
+                  <div key={opt.label} className={`flex items-center gap-3 rounded-xl border px-4 py-3 ${opt.cls}`}>
+                    <span className="text-xl shrink-0">{opt.icon}</span>
+                    <div>
+                      <p className="text-xs font-bold text-zinc-900">{opt.label}</p>
+                      <p className="text-[11px] text-zinc-500">{opt.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
         </div>
       </section>
 
