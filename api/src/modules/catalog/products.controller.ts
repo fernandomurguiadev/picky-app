@@ -18,6 +18,7 @@ import type { QueryRunner } from 'typeorm';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
 import { RlsRunner } from '../../common/decorators/rls-runner.decorator.js';
+import { PlanLimit, PlanLimitResource } from '../../common/decorators/plan-limit.decorator.js';
 import { CatalogService } from './catalog.service.js';
 import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
@@ -128,6 +129,7 @@ export class AdminProductsController {
   }
 
   @Post()
+  @PlanLimit(PlanLimitResource.PRODUCT)
   create(
     @TenantId() tenantId: string,
     @Body() dto: CreateProductDto,

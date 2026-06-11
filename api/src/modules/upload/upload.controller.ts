@@ -12,6 +12,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
+import { PlanLimit, PlanLimitResource } from '../../common/decorators/plan-limit.decorator.js';
 import { UploadService } from './upload.service.js';
 
 @Controller('upload')
@@ -20,6 +21,7 @@ export class UploadController {
   constructor(private readonly uploadService: UploadService) {}
 
   @Post('image')
+  @PlanLimit(PlanLimitResource.IMAGE)
   @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
   async uploadImage(
     @UploadedFile() file: Express.Multer.File,

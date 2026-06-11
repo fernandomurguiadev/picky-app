@@ -3,11 +3,20 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Plan } from '../../platform/entities/plan.entity.js';
+
+export enum TenantStatus {
+  ACTIVE = 'active',
+  SUSPENDED = 'suspended',
+  INACTIVE = 'inactive',
+}
 
 @Entity('tenants')
 export class Tenant {
@@ -26,6 +35,25 @@ export class Tenant {
 
   @Column({ type: 'boolean', default: false })
   isOnboardingCompleted!: boolean;
+
+  @Column({ type: 'enum', enum: TenantStatus, default: TenantStatus.ACTIVE })
+  status!: TenantStatus;
+
+  @Column({ type: 'varchar', nullable: true })
+  suspensionReason!: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  suspendedAt!: Date | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  planId!: string | null;
+
+  @ManyToOne(() => Plan, { nullable: true, eager: false })
+  @JoinColumn({ name: 'planId' })
+  plan!: Plan | null;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  planGraceUntil!: Date | null;
 
   @CreateDateColumn()
   createdAt!: Date;

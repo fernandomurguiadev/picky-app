@@ -2,6 +2,7 @@ import { AdminSidebar } from "@/components/admin/sidebar";
 import { AdminMobileNav } from "@/components/admin/mobile-nav";
 import { AdminMobileHeader } from "@/components/admin/mobile-header";
 import { AuthInitializer } from "@/components/admin/auth-initializer";
+import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 
 export default function AdminLayout({
   children,
@@ -10,6 +11,7 @@ export default function AdminLayout({
 }) {
   return (
     <AuthInitializer>
+      <ImpersonationBanner />
       <div className="flex min-h-screen bg-background">
         <AdminSidebar />
         <main className="flex-1 overflow-auto flex flex-col">

@@ -1,0 +1,31 @@
+change: landing-redesign
+status: archived
+phases_completed:
+  - propose
+  - spec
+  - implement
+created_at: 2026-06-10
+implemented_at: 2026-06-10
+archived_at: 2026-06-11
+notes: |
+  Rediseño completo de app/src/app/page.tsx.
+  Secciones implementadas:
+  - Nav: sticky con blur, logo + CTA.
+  - Hero: 2 columnas, AnimatedUrl (browser chrome + slug animado JS, align fix),
+    párrafo multi-sector (no solo gastronomía), badge "Empezá gratis, tu espacio para siempre".
+  - Stats bar: 3 métricas con íconos.
+  - Pain section: 9 cards (7 originales + #8 fotos dispersas + #9 atención presencial).
+  - Bento grid: 5 cards de solución (Camera rose col-span-2, Search teal añadidos).
+  - "Tu espacio en la nube": chips [Sin hosting, Sin mantenimiento, Sin licencias,
+    Sin técnicos, Para siempre].
+  - "Cómo funciona": layout vertical 3 pasos, paso 2 con tarjetas dual-model
+    (productos vs servicios) para mostrar que aplica a ambos modelos.
+  - Pricing: PricingSection server component, sin FALLBACK_PLANS, estado vacío
+    explícito, Number() normalization para coerción PostgreSQL → string.
+    cache: "no-store" para respetar sortOrder actualizado.
+  - CTA final: dark section, "¿Seguís respondiendo las mismas preguntas de siempre?"
+  - Footer: minimal.
+  Copy en español argentino orientado a conversión. Sin dependencias nuevas.
+  AnimatedUrl: componente propio en app/src/components/landing/animated-url.tsx,
+  slugs multi-rubro (burger, verdulería, pastelería, ropa, autos, electrónica,
+  peluquería, etc.).

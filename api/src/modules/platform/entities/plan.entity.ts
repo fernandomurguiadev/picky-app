@@ -26,6 +26,15 @@ export class Plan {
   @Column({ type: 'integer' })
   maxImages!: number; // -1 = sin límite
 
+  @Column({ type: 'integer', default: 0 })
+  priceMonthly!: number; // en centavos (0 = gratis / contactar)
+
+  @Column({ type: 'integer', default: 0 })
+  sortOrder!: number;
+
+  @Column({ type: 'text', nullable: true, default: null, select: false })
+  description!: string | null;
+
   @Column({ type: 'boolean', default: false })
   isHidden!: boolean;
 

@@ -25,6 +25,7 @@ import { PlatformImpersonationController } from './platform-impersonation.contro
 import { PlatformTenantsController } from './platform-tenants.controller.js';
 import { PlatformPlansController } from './platform-plans.controller.js';
 import { PlatformAuditLogsController } from './platform-audit-logs.controller.js';
+import { PublicPlansController } from './public-plans.controller.js';
 
 import { PlatformJwtStrategy } from './strategies/platform-jwt.strategy.js';
 import { platformJwtConfig } from '../../config/platform-jwt.config.js';
@@ -60,6 +61,7 @@ import { platformJwtConfig } from '../../config/platform-jwt.config.js';
     PlatformTenantsController,
     PlatformPlansController,
     PlatformAuditLogsController,
+    PublicPlansController,
   ],
   exports: [PlatformJwtStrategy, PassportModule, TypeOrmModule, PlatformSuspensionService],
 })

@@ -15,6 +15,7 @@ import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
 import { PlatformPlansService } from './platform-plans.service.js';
 import { PlatformCreatePlanDto } from './dto/platform-create-plan.dto.js';
 import { PlatformUpdatePlanDto } from './dto/platform-update-plan.dto.js';
+import { PlatformReorderPlansDto } from './dto/platform-reorder-plans.dto.js';
 
 @SkipRls()
 @UseGuards(PlatformAdminGuard)
@@ -41,6 +42,12 @@ export class PlatformPlansController {
   @HttpCode(HttpStatus.CREATED)
   create(@Body() dto: PlatformCreatePlanDto) {
     return this.plansService.create(dto);
+  }
+
+  @Patch('reorder')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  reorder(@Body() dto: PlatformReorderPlansDto) {
+    return this.plansService.reorder(dto.ids);
   }
 
   @Patch(':id')

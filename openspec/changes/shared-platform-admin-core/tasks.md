@@ -122,3 +122,13 @@
 | Rate limiting en `/auth/login` merchant | Media | Agregar `@Throttle` en `auth.controller.ts` |
 | MFA: sin counter Redis por admin en TOTP | Media | Complementar throttle con contador por `adminId` |
 | `dangerouslySetInnerHTML` en `[slug]/layout.tsx` | Baja | Solo CSS generado internamente — validar que no incluya input de usuario |
+
+## Post-deploy: Mejoras al módulo de Planes ✅ (2026-06-11)
+
+- [x] Plan entity: columnas `priceMonthly` (0=gratis · -1=contactar · >0=centavos ARS), `sortOrder` (int, default 0), `description` (text nullable, `select: false`).
+- [x] Migración `1781148622698`: `ADD COLUMN IF NOT EXISTS` para resiliencia ante re-ejecución.
+- [x] `PATCH /plans/reorder` declarado antes de `PATCH :id` (evita conflicto de rutas en NestJS).
+- [x] `PlatformReorderPlansDto` con `@IsArray @IsUUID('4', { each: true })`.
+- [x] `/platform/plans` admin: drag-and-drop con `@dnd-kit/core` + `@dnd-kit/sortable`, handle `GripVertical`, actualización optimista vía `qc.setQueryData` + `arrayMove`.
+- [x] `PublicPlansController`: raw SQL con `CASE WHEN EXISTS (information_schema.columns)` para descripción resiliente. `Number()` normalization sobre todos los campos numéricos (coerción PostgreSQL → string en raw queries).
+- [x] `PricingSection`: `cache: "no-store"` para respetar el `sortOrder` actualizado desde DB. Sin `FALLBACK_PLANS`. Estado vacío explícito.

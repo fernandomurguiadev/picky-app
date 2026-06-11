@@ -26,4 +26,18 @@ export class PlatformUpdatePlanDto {
   @IsInt()
   @Min(-1)
   maxImages?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(-1)
+  priceMonthly?: number; // 0 = gratis, -1 = contactar, >0 = precio en centavos
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(400)
+  description?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isHidden?: boolean;
 }

@@ -10,8 +10,10 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service.js';
+import { ImpersonateService } from './impersonate.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { ForgotPasswordDto } from './dto/forgot-password.dto.js';
@@ -26,7 +28,10 @@ import { SkipRls } from '../../common/decorators/skip-rls.decorator.js';
 @SkipRls()
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly impersonateService: ImpersonateService,
+  ) {}
 
   @Post('register')
   register(@Body() dto: RegisterDto, @Res({ passthrough: true }) res: Response) {
@@ -95,5 +100,26 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.authService.switchTenant(user.userId, dto.tenantId, res);
+  }
+
+  @Post('impersonate/exchange')
+  @HttpCode(HttpStatus.OK)
+  impersonateExchange(
+    @Body('code') code: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.impersonateService.exchange(code, res);
+  }
+
+  @Post('impersonate/end')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  impersonateEnd(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const ip = req.ip ?? req.socket.remoteAddress ?? 'unknown';
+    return this.impersonateService.end(user.actorId ?? user.userId, user.tenantId, ip, res);
   }
 }

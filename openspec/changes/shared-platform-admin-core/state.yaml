@@ -17,3 +17,15 @@ notes: |
   Deployado en admin.picky.orbitech.cloud.
   Fixes de deploy incluidos: proxy.ts (Next.js 16), BFF impersonate routes,
   Dockerfile ARGs, data-source prod paths, CORS/cookie domain via env vars.
+
+  Post-deploy (2026-06-11) — mejoras al módulo de planes:
+  - Plan entity: priceMonthly (0=gratis, -1=contactar, >0=centavos ARS),
+    sortOrder (int, default 0), description (text nullable, select: false).
+  - Migración 1781148622698: ADD COLUMN IF NOT EXISTS para resiliencia.
+  - PATCH /plans/reorder: endpoint declarado ANTES de :id para evitar conflicto
+    de rutas. DTO PlatformReorderPlansDto con @IsUUID each.
+  - /platform/plans admin: drag-and-drop con @dnd-kit, GripVertical handle,
+    optimistic update via qc.setQueryData + arrayMove.
+  - PublicPlansController: raw SQL con CASE WHEN EXISTS para descripción
+    resiliente antes de migrar. Number() normalization por coerción PG→string.
+  - PricingSection: cache: "no-store" para respetar sortOrder desde DB.

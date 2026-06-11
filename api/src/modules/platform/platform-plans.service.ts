@@ -19,7 +19,13 @@ export class PlatformPlansService {
   ) {}
 
   findAll() {
-    return this.planRepo.find({ order: { createdAt: 'ASC' } });
+    return this.planRepo.find({ order: { sortOrder: 'ASC', createdAt: 'ASC' } });
+  }
+
+  async reorder(ids: string[]): Promise<void> {
+    await Promise.all(
+      ids.map((id, index) => this.planRepo.update(id, { sortOrder: index })),
+    );
   }
 
   async findOne(id: string) {

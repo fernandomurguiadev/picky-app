@@ -21,6 +21,20 @@ export const envSchema = z.object({
   JWT_ACCESS_EXPIRATION: z.string().default('15m'),
   JWT_REFRESH_EXPIRATION: z.string().default('7d'),
 
+  // Redis
+  REDIS_HOST: z.string().default('localhost'),
+  REDIS_PORT: z.coerce.number().int().positive().default(6379),
+  REDIS_PASSWORD: z.string().optional(),
+
+  // Platform Admin JWT — RS256 key pair separado
+  PLATFORM_JWT_PRIVATE_KEY: z.string().min(1).optional(),
+  PLATFORM_JWT_PUBLIC_KEY: z.string().min(1).optional(),
+  PLATFORM_JWT_ACCESS_EXPIRATION: z.string().default('15m'),
+  PLATFORM_JWT_REFRESH_EXPIRATION: z.string().default('7d'),
+  PLATFORM_MFA_ENCRYPTION_KEY: z.string().min(32).optional(),
+  PLATFORM_ADMIN_EMAIL: z.string().email().optional(),
+  PLATFORM_ADMIN_PASSWORD: z.string().min(8).optional(),
+
   // Frontend URL (requerida para WebSocket CORS)
   FRONTEND_URL: z.string().url().optional(),
 

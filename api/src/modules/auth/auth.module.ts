@@ -8,13 +8,16 @@ import { User } from './entities/user.entity.js';
 import { TenantMembership } from './entities/tenant-membership.entity.js';
 import { Tenant } from '../tenants/entities/tenant.entity.js';
 import { StoreSettings } from '../tenants/entities/store-settings.entity.js';
+import { ImpersonationCode } from '../platform/entities/impersonation-code.entity.js';
+import { PlatformAuditLog } from '../platform/entities/platform-audit-log.entity.js';
 import { AuthService } from './auth.service.js';
+import { ImpersonateService } from './impersonate.service.js';
 import { AuthController } from './auth.controller.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Tenant, StoreSettings, TenantMembership]),
+    TypeOrmModule.forFeature([User, Tenant, StoreSettings, TenantMembership, ImpersonationCode, PlatformAuditLog]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -30,7 +33,7 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, ImpersonateService, JwtStrategy],
   controllers: [AuthController],
   exports: [JwtStrategy, PassportModule],
 })

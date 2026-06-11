@@ -5,10 +5,10 @@ import { Plan } from '../modules/platform/entities/plan.entity.js';
 import { Tenant, TenantStatus } from '../modules/tenants/entities/tenant.entity.js';
 
 const PLANS = [
-  { name: 'Free',     maxProducts: 10, maxCategories: 3,  maxStaffUsers: 1, maxImages: 10  },
-  { name: 'Starter',  maxProducts: 20, maxCategories: 8,  maxStaffUsers: 2, maxImages: 20  },
-  { name: 'Pro',      maxProducts: 40, maxCategories: 15, maxStaffUsers: 3, maxImages: 80  },
-  { name: 'Business', maxProducts: -1, maxCategories: -1, maxStaffUsers: -1, maxImages: -1 },
+  { name: 'Free',     maxProducts: 10, maxCategories: 3,  maxStaffUsers: 1, maxImages: 10,  priceMonthly: 0 },
+  { name: 'Starter',  maxProducts: 20, maxCategories: 8,  maxStaffUsers: 2, maxImages: 20,  priceMonthly: 0 },
+  { name: 'Pro',      maxProducts: 40, maxCategories: 15, maxStaffUsers: 3, maxImages: 80,  priceMonthly: 0 },
+  { name: 'Business', maxProducts: -1, maxCategories: -1, maxStaffUsers: -1, maxImages: -1, priceMonthly: 0 },
 ];
 
 async function seedPlans() {

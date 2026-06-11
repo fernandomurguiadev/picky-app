@@ -16,6 +16,7 @@ import {
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard.js';
 import { TenantId } from '../../common/decorators/tenant-id.decorator.js';
 import { RlsRunner } from '../../common/decorators/rls-runner.decorator.js';
+import { PlanLimit, PlanLimitResource } from '../../common/decorators/plan-limit.decorator.js';
 import type { QueryRunner } from 'typeorm';
 import { CatalogService } from './catalog.service.js';
 import { CreateCategoryDto } from './dto/create-category.dto.js';
@@ -33,6 +34,7 @@ export class CategoriesController {
   }
 
   @Post()
+  @PlanLimit(PlanLimitResource.CATEGORY)
   create(
     @TenantId() tenantId: string,
     @Body() dto: CreateCategoryDto,

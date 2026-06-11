@@ -487,6 +487,34 @@
         "desc": "Mirá el flujo de tus pedidos segundo a segundo desde un Kanban interactivo ultra-veloz."
       }
     },
+    "pricing": {
+      "title": "Planes para cada etapa",
+      "subtitle": "Empezá gratis y crecé cuando estés listo. Sin sorpresas.",
+      "popular": "Más popular",
+      "cta": "Empezar gratis",
+      "ctaPaid": "Próximamente",
+      "free": "Gratis",
+      "monthly": "/mes",
+      "unlimited": "Ilimitado",
+      "custom": "A medida",
+      "features": {
+        "products": "{n} productos",
+        "categories": "{n} categorías",
+        "staff": "{n} usuario staff",
+        "staffPlural": "{n} usuarios staff",
+        "images": "{n} imágenes",
+        "supportFree": "Soporte por email",
+        "supportStarter": "Soporte prioritario",
+        "supportPro": "Soporte prioritario",
+        "supportBusiness": "Soporte dedicado"
+      },
+      "plans": {
+        "free": { "name": "Free", "price": "0" },
+        "starter": { "name": "Starter", "price": "4.990" },
+        "pro": { "name": "Pro", "price": "9.990" },
+        "business": { "name": "Business", "price": "" }
+      }
+    },
     "footer": {
       "copy": "© 2026 PickyApp. Todos los derechos reservados.",
       "terms": "Términos",
