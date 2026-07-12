@@ -34,7 +34,6 @@ export class ImpersonateService {
       httpOnly: true,
       secure: this.isProduction,
       sameSite: 'strict' as const,
-      domain: this.isProduction ? (this.configService.get<string>('MERCHANT_COOKIE_DOMAIN') ?? 'picky.ar') : undefined,
     };
   }
 

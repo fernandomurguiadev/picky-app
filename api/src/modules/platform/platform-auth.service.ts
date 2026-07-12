@@ -48,7 +48,6 @@ export class PlatformAuthService {
       httpOnly: true,
       secure: this.isProduction,
       sameSite: 'strict' as const,
-      domain: this.isProduction ? (this.configService.get<string>('PLATFORM_COOKIE_DOMAIN') ?? 'admin.picky.ar') : undefined,
     };
   }
 
