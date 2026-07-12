@@ -23,7 +23,6 @@ import type { UpdateOrderStatusDto } from './dto/update-order-status.dto.js';
 import type { UpdateOrderNotesDto } from './dto/update-order-notes.dto.js';
 import type { OrdersQueryDto } from './dto/orders-query.dto.js';
 import { OrdersGateway } from './orders.gateway.js';
-import { ConfigService } from '@nestjs/config';
 import { InventoryService } from '../inventory/inventory.service.js';
 import { StockMovementType } from '../inventory/entities/stock-movement.entity.js';
 
@@ -49,7 +48,6 @@ export class OrdersService {
     private readonly productRepo: Repository<Product>,
     private readonly dataSource: DataSource,
     private readonly ordersGateway: OrdersGateway,
-    private readonly configService: ConfigService,
     private readonly inventoryService: InventoryService,
   ) {}
 
@@ -109,7 +107,6 @@ export class OrdersService {
         ? settings.deliveryCost
         : 0;
     const total = subtotal + deliveryCost;
-    const orderNumber = this.generateOrderNumber();
 
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -123,6 +120,16 @@ export class OrdersService {
         `SELECT set_config('app.current_tenant_id', $1, true)`,
         [dto.tenantId],
       );
+
+      const seqResult: { last_order_number: number }[] = await queryRunner.query(
+        `INSERT INTO tenant_order_sequences (tenant_id, last_order_number)
+         VALUES ($1, 1)
+         ON CONFLICT (tenant_id) DO UPDATE
+           SET last_order_number = tenant_order_sequences.last_order_number + 1
+         RETURNING last_order_number`,
+        [dto.tenantId],
+      );
+      const orderNumber = `#${String(seqResult[0].last_order_number).padStart(4, '0')}`;
 
       const order = queryRunner.manager.create(Order, {
         tenantId: dto.tenantId,
@@ -197,13 +204,10 @@ export class OrdersService {
       this.ordersGateway.emitOrderNew(order.tenantId, order);
       this.notifyOrderN8n(order);
 
-      const businessNumber = this.configService.get<string>(
-        'WHATSAPP_BUSINESS_NUMBER',
-        '',
-      );
       const message = `Hola, quiero confirmar mi pedido ${order.orderNumber}`;
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/${businessNumber}?text=${encodedMessage}`;
+      const whatsappUrl = settings.whatsapp
+        ? `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(message)}`
+        : null;
 
       return {
         ...order,
@@ -211,7 +215,7 @@ export class OrdersService {
         whatsappConfirmationUrl: whatsappUrl,
       } as Order & {
         whatsappConfirmationMessage: string;
-        whatsappConfirmationUrl: string;
+        whatsappConfirmationUrl: string | null;
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -372,13 +376,6 @@ export class OrdersService {
   }
 
   // ─── Helpers privados ─────────────────────────────────────────────────────
-
-  private generateOrderNumber(): string {
-    const date = new Date();
-    const yyyymmdd = date.toISOString().slice(0, 10).replace(/-/g, '');
-    const rand = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-    return `ORD-${yyyymmdd}-${rand}`;
-  }
 
   private calculateSubtotal(
     dto: CreateOrderDto | { items: CreateOrderDto['items'] },

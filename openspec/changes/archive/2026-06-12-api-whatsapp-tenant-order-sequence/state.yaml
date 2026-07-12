@@ -1,0 +1,21 @@
+id: 2026-06-12-api-whatsapp-tenant-order-sequence
+title: WhatsApp por Tenant y Número de Orden Correlativo
+type: api
+status: archived
+created: 2026-06-12
+updated: 2026-06-12
+
+scope:
+  - api
+
+stages:
+  - id: proposal
+    status: done
+  - id: design
+    status: done
+  - id: tasks
+    status: done
+  - id: implementation
+    status: done
+  - id: verify
+    status: done

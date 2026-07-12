@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Order } from './entities/order.entity.js';
 import { OrderItem } from './entities/order-item.entity.js';
+import { TenantOrderSequence } from './entities/tenant-order-sequence.entity.js';
 import { StoreSettings } from '../tenants/entities/store-settings.entity.js';
 import { Product } from '../catalog/entities/product.entity.js';
 import { OrdersService } from './orders.service.js';
@@ -18,7 +19,7 @@ import { InventoryModule } from '../inventory/inventory.module.js';
 @Module({
   imports: [
     InventoryModule,
-    TypeOrmModule.forFeature([Order, OrderItem, StoreSettings, Product]),
+    TypeOrmModule.forFeature([Order, OrderItem, StoreSettings, Product, TenantOrderSequence]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (cfg: ConfigService) => ({

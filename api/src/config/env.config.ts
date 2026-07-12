@@ -45,9 +45,6 @@ export const envSchema = z.object({
 
   // N8N Webhook
   N8N_WEBHOOK_URL: z.string().url().optional(),
-
-  // WhatsApp
-  WHATSAPP_BUSINESS_NUMBER: z.string().min(1),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

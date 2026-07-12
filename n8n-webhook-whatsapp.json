@@ -21,7 +21,7 @@
             {
               "value1": "={{ $json.body.data.message.conversation || $json.body.data.message.extendedTextMessage.text }}",
               "operation": "contains",
-              "value2": "quiero confirmar mi pedido ORD-"
+              "value2": "quiero confirmar mi pedido #"
             }
           ]
         }
@@ -33,7 +33,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const msgText = $json.body.data.message.conversation || $json.body.data.message.extendedTextMessage.text || '';\nconst match = msgText.match(/(ORD-\\d{8}-\\d{4})/);\n\nif (!match) {\n  throw new Error('No se encontro el numero de orden');\n}\n\n// El remoteJid viene como '549388XXXXXXX@s.whatsapp.net'\nconst remoteJid = $json.body.data.key.remoteJid || '';\nconst cleanNumber = remoteJid.split('@')[0];\n\nreturn {\n  orderNumber: match[1],\n  whatsappNumber: cleanNumber\n};"
+        "jsCode": "const msgText = $json.body.data.message.conversation || $json.body.data.message.extendedTextMessage.text || '';\nconst match = msgText.match(/(#\\d{4,})/);\n\nif (!match) {\n  throw new Error('No se encontro el numero de orden');\n}\n\n// El remoteJid viene como '549388XXXXXXX@s.whatsapp.net'\nconst remoteJid = $json.body.data.key.remoteJid || '';\nconst cleanNumber = remoteJid.split('@')[0];\n\nreturn {\n  orderNumber: match[1],\n  whatsappNumber: cleanNumber\n};"
       },
       "name": "Extraer Datos",
       "type": "n8n-nodes-base.code",
