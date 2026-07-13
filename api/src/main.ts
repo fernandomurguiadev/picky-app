@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import { Logger } from 'nestjs-pino';
 import helmet from 'helmet';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 
 // Leer desde env var CORS_ORIGINS (comma-separated) o usar lista de producción por defecto.
@@ -45,6 +46,16 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  const config = new DocumentBuilder()
+    .setTitle('PickyApp API')
+    .setDescription('La especificación OpenAPI para el backend de PickyApp.')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   await app.listen(process.env['PORT'] ?? 3000);
 }
