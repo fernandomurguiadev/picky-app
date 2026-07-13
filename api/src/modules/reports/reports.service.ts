@@ -71,6 +71,7 @@ export class ReportsService {
       to,
       query.categoryId,
       query.productId,
+      query.search,
     );
     const totals = this.sumTotals(byProduct);
 
@@ -84,6 +85,7 @@ export class ReportsService {
       prevTo,
       query.categoryId,
       query.productId,
+      query.search,
     );
     const prevTotals = this.sumTotals(prevByProduct);
 
@@ -100,6 +102,7 @@ export class ReportsService {
     to: Date,
     categoryId?: string,
     productId?: string,
+    search?: string,
   ): Promise<ProfitabilityByProduct[]> {
     const qb = this.orderItemRepo
       .createQueryBuilder('oi')
@@ -137,6 +140,9 @@ export class ReportsService {
     }
     if (productId) {
       qb.andWhere('oi.productId = :productId', { productId });
+    }
+    if (search) {
+      qb.andWhere('oi.productName ILIKE :search', { search: `%${search}%` });
     }
 
     const rows = await qb.getRawMany<{

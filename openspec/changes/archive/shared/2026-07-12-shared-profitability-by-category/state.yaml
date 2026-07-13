@@ -1,0 +1,25 @@
+id: 2026-07-12-shared-profitability-by-category
+title: Dos Modos de Rentabilidad — Ventas Reales y Márgenes de Catálogo
+type: shared
+status: verify
+created: 2026-07-12
+updated: 2026-07-12
+
+scope:
+  - app
+  - api
+
+stages:
+  - id: proposal
+    status: done
+  - id: design
+    status: done
+  - id: tasks
+    status: done
+  - id: implementation
+    status: done
+  - id: verify
+    status: in-progress
+    note: >
+      Código, tests y typecheck verdes. Falta verificación manual en navegador
+      (no hay entorno corriendo en esta sesión).

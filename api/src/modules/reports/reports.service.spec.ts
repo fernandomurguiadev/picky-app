@@ -104,6 +104,36 @@ describe('ReportsService', () => {
     });
   });
 
+  it('filtra por búsqueda parcial (ILIKE) sobre el nombre del producto', async () => {
+    await service.getProfitability('tenant-a', {
+      from: '2026-07-01',
+      to: '2026-07-31',
+      search: 'hambur',
+    });
+
+    expect(qbMock.andWhere).toHaveBeenCalledWith(
+      'oi.productName ILIKE :search',
+      { search: '%hambur%' },
+    );
+  });
+
+  it('combina search y categoryId en la misma consulta sin conflicto', async () => {
+    await service.getProfitability('tenant-a', {
+      from: '2026-07-01',
+      to: '2026-07-31',
+      categoryId: 'cat-1',
+      search: 'hambur',
+    });
+
+    expect(qbMock.andWhere).toHaveBeenCalledWith('p.categoryId = :categoryId', {
+      categoryId: 'cat-1',
+    });
+    expect(qbMock.andWhere).toHaveBeenCalledWith(
+      'oi.productName ILIKE :search',
+      { search: '%hambur%' },
+    );
+  });
+
   it('calcula grossMargin y no distorsiona el margen con unitsMissingCost', async () => {
     qbMock.getRawMany
       .mockResolvedValueOnce([

@@ -29,4 +29,5 @@ export interface ProfitabilityQueryParams {
   to: string;
   categoryId?: string;
   productId?: string;
+  search?: string;
 }

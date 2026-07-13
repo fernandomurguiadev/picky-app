@@ -10,7 +10,7 @@ export const reportsKeys = {
     [...reportsKeys.all, "profitability", params] as const,
 };
 
-export function useProfitability(params: ProfitabilityQueryParams) {
+export function useProfitability(params: ProfitabilityQueryParams, enabled = true) {
   return useQuery({
     queryKey: reportsKeys.profitability(params),
     queryFn: async () => {
@@ -20,6 +20,7 @@ export function useProfitability(params: ProfitabilityQueryParams) {
       );
       return data.data;
     },
+    enabled,
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status;
       // 403 (sin feature ANALYTICS o rol no admin) no se reintenta — es un estado, no un error transitorio
