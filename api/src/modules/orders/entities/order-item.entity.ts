@@ -8,6 +8,8 @@ import {
 } from 'typeorm';
 import { Order } from './order.entity.js';
 
+import { Expose } from 'class-transformer';
+
 export interface SelectedOption {
   groupId: string;
   groupName: string;
@@ -32,6 +34,10 @@ export class OrderItem {
 
   @Column({ type: 'integer' })
   unitPrice!: number;
+
+  @Expose({ groups: ['ADMIN'] })
+  @Column({ type: 'integer', nullable: true, default: null })
+  unitCost!: number | null;
 
   @Column({ type: 'integer', default: 1 })
   quantity!: number;

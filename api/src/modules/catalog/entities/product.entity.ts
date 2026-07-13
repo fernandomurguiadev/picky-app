@@ -13,6 +13,7 @@ import {
 import { Tenant } from '../../tenants/entities/tenant.entity.js';
 import { Category } from './category.entity.js';
 import type { OptionGroup } from './option-group.entity.js';
+import { Expose } from 'class-transformer';
 
 @Index(['tenantId', 'categoryId'])
 @Index(['tenantId', 'isActive'])
@@ -36,6 +37,10 @@ export class Product {
 
   @Column({ type: 'integer' })
   price!: number;
+
+  @Expose({ groups: ['ADMIN'] })
+  @Column({ type: 'integer', nullable: true, default: null })
+  costPrice!: number | null;
 
   @Column({ type: 'text', nullable: true })
   imageUrl!: string | null;
