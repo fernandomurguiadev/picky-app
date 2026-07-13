@@ -12,6 +12,7 @@ import {
   Store,
   ChevronDown,
   Warehouse,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/stores/auth.store";
@@ -39,6 +40,7 @@ export function AdminSidebar() {
       { href: "/admin/inventory", label: "Inventario", icon: Warehouse },
       { href: "/admin/orders", label: "Pedidos", icon: ShoppingBag },
     ] : []),
+    { href: "/admin/reports", label: "Rentabilidad", icon: TrendingUp },
     { href: "/admin/settings/info", label: "Configuración", icon: Settings },
   ];
 

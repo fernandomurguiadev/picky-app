@@ -81,6 +81,11 @@ export class CreateProductDto {
   @Min(0)
   price!: number;
 
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  costPrice?: number;
+
   @IsString()
   @IsOptional()
   imageUrl?: string;

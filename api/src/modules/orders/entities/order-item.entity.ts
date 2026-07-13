@@ -9,6 +9,7 @@ import {
 import { Order } from './order.entity.js';
 
 import { Expose } from 'class-transformer';
+import { UserRole } from '../../auth/entities/user.entity.js';
 
 export interface SelectedOption {
   groupId: string;
@@ -35,7 +36,9 @@ export class OrderItem {
   @Column({ type: 'integer' })
   unitPrice!: number;
 
-  @Expose({ groups: ['ADMIN'] })
+  // El rol en el JWT viaja en minúsculas (UserRole.ADMIN = 'admin') — usar el
+  // valor real del enum acá, no el string 'ADMIN', o el grupo nunca matchea.
+  @Expose({ groups: [UserRole.ADMIN] })
   @Column({ type: 'integer', nullable: true, default: null })
   unitCost!: number | null;
 

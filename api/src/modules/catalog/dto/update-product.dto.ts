@@ -84,6 +84,11 @@ export class UpdateProductDto {
   @IsOptional()
   price?: number;
 
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  costPrice?: number | null;
+
   @IsString()
   @IsOptional()
   imageUrl?: string | null;

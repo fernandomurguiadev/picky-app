@@ -46,6 +46,7 @@ export interface Product {
   name: string;
   description: string | null;
   price: number; // centavos
+  costPrice: number | null; // centavos — precio de compra, opcional
   imageUrl: string | null;
   imagePublicId: string | null;
   isFeatured: boolean;
@@ -103,6 +104,7 @@ export interface ProductFormData {
   description: string;
   categoryId: string;
   price: number; // pesos (UI) — se convierte a centavos al enviar
+  costPrice: number | null; // pesos (UI), opcional — se convierte a centavos al enviar
   imageUrl: string | null;
   imagePublicId: string | null;
   isFeatured: boolean;

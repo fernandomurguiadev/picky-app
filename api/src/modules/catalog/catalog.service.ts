@@ -242,6 +242,10 @@ export class CatalogService {
   }
 
   // ─── Products (public) ────────────────────────────────────────────────────
+  // Nota: costPrice es información comercialmente sensible del tenant. Se
+  // excluye de estas respuestas vía el serializer global por rol
+  // (`@Expose({ groups: [UserRole.ADMIN] })` en Product + TransformInterceptor),
+  // no acá — no hace falta whitelistear manualmente el DTO en cada método.
 
   async getPublicProducts(
     slug: string,
@@ -436,6 +440,7 @@ export class CatalogService {
         name: dto.name,
         description: dto.description ?? null,
         price: priceToUse,
+        costPrice: dto.costPrice ?? null,
         imageUrl: dto.imageUrl ?? null,
         isFeatured: dto.isFeatured ?? false,
         isActive: dto.isActive ?? true,
@@ -483,6 +488,7 @@ export class CatalogService {
           name: dto.name,
           description: dto.description ?? null,
           price: priceToUse,
+          costPrice: dto.costPrice ?? null,
           imageUrl: dto.imageUrl ?? null,
           isFeatured: dto.isFeatured ?? false,
           isActive: dto.isActive ?? true,

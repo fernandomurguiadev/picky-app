@@ -24,7 +24,7 @@ import { useCategories } from "@/lib/hooks/admin/use-categories";
 import { useCreateProduct, useUpdateProduct } from "@/lib/hooks/admin/use-products";
 import { useStoreSettings } from "@/lib/hooks/admin/use-store-settings";
 import { toast } from "@/components/shared/toast";
-import { fromCents, tosCents, formatCurrency } from "@/lib/utils";
+import { fromCents, tosCents, toCents, formatCurrency } from "@/lib/utils";
 import type { Product, ProductFormData } from "@/lib/types/catalog";
 
 function formatThousands(n: number): string {
@@ -77,6 +77,7 @@ const schema = z.object({
   description: z.string().max(2000),
   categoryId: z.string().uuid("Seleccioná una categoría"),
   price: z.number().min(0, "El precio no puede ser negativo"),
+  costPrice: z.number().min(0, "El precio de compra no puede ser negativo").nullable(),
   imageUrl: z.string().nullable(),
   imagePublicId: z.string().nullable(),
   isFeatured: z.boolean(),
@@ -127,6 +128,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     description: p.description ?? "",
     categoryId: p.categoryId || p.category?.id || "",
     price: fromCents(p.price),
+    costPrice: p.costPrice !== null ? fromCents(p.costPrice) : null,
     imageUrl: p.imageUrl ?? null,
     imagePublicId: p.imagePublicId ?? null,
     isFeatured: p.isFeatured,
@@ -156,6 +158,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
     description: "",
     categoryId: "",
     price: 0,
+    costPrice: null,
     imageUrl: null,
     imagePublicId: null,
     isFeatured: false,
@@ -242,6 +245,7 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
       ...values,
       description: values.description || null,
       price: tosCents(values.price),
+      costPrice: values.costPrice !== null ? toCents(values.costPrice) : null,
       optionGroups: values.optionGroups.map((og, i) => ({
         ...og,
         order: i,
@@ -401,6 +405,33 @@ export default function ProductFormPage({ product }: ProductFormPageProps) {
               {errors.price && (
                 <p className="text-sm text-destructive">{errors.price.message}</p>
               )}
+            </div>
+
+            <div className="space-y-1.5 max-w-xs">
+              <Label htmlFor="p-cost-price">Precio de compra (en pesos)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
+                  $
+                </span>
+                <Controller
+                  control={methods.control}
+                  name="costPrice"
+                  render={({ field }) => (
+                    <PriceInput
+                      id="p-cost-price"
+                      value={field.value ?? 0}
+                      onChange={(v) => field.onChange(v === 0 ? null : v)}
+                      aria-invalid={!!errors.costPrice}
+                    />
+                  )}
+                />
+              </div>
+              {errors.costPrice && (
+                <p className="text-sm text-destructive">{errors.costPrice.message}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Opcional. Se usa para calcular tu margen de ganancia — no se muestra a tus clientes.
+              </p>
             </div>
           </section>
 

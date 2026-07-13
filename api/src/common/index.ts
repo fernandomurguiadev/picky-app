@@ -18,6 +18,7 @@ export { RlsInterceptor } from './interceptors/rls.interceptor.js';
 export { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 export { RolesGuard } from './guards/roles.guard.js';
 export { TenantGuard } from './guards/tenant.guard.js';
+export { FeatureGuard } from './guards/feature.guard.js';
 
 // Decorators
 export { TenantId } from './decorators/tenant-id.decorator.js';
@@ -25,3 +26,4 @@ export { CurrentUser } from './decorators/current-user.decorator.js';
 export { Roles } from './decorators/roles.decorator.js';
 export { SkipRls } from './decorators/skip-rls.decorator.js';
 export { RlsRunner } from './decorators/rls-runner.decorator.js';
+export { RequireFeature } from './decorators/require-feature.decorator.js';

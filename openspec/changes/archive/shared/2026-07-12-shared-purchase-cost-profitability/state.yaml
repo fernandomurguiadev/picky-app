@@ -1,0 +1,45 @@
+id: 2026-07-12-shared-purchase-cost-profitability
+title: Precio de Compra y Panel de Rentabilidad
+type: shared
+status: done
+created: 2026-07-12
+updated: 2026-07-12
+archived_at: 2026-07-12
+
+scope:
+  - app
+  - api
+
+phases:
+  - id: phase-1-cost-input
+    title: Carga de costo — costPrice en Product, unitCost snapshot en OrderItem, campo en form admin
+    status: done
+  - id: phase-2-profitability-panel
+    title: Panel de Rentabilidad — endpoint de agregación, nueva sección admin, gate por rol y plan
+    status: done
+
+stages:
+  - id: proposal
+    status: done
+  - id: design
+    status: done
+  - id: tasks
+    status: done
+  - id: implementation
+    status: done
+  - id: verify
+    status: done
+
+notes: |
+  Reconciliado en implementación con 3 commits paralelos del usuario
+  (847e6c4a, 0499661b, 3a90cad3) que agregaron Swagger, cliente Orval y un
+  class-serializer global por rol (@Expose({groups}) + TransformInterceptor) —
+  se adoptó ese mecanismo como fuente única de verdad para ocultar
+  costPrice/unitCost, reemplazando el whitelist manual original. Se corrigió
+  un bug de casing en ese serializer ('ADMIN' vs 'admin' real del JWT) y el
+  mutator de Orval (esperaba 1 arg, el cliente generado llama con 2).
+
+  Pendiente post-archivado (acción del usuario, fuera del alcance del código):
+  - Ejecutar `npm run migration:run` (migración ya generada: 1783905259807-Migration.ts).
+  - Verificación manual en navegador: alta de producto con costo, pedido nuevo,
+    panel de Rentabilidad visto como ADMIN y como STAFF.

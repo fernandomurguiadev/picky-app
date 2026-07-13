@@ -84,7 +84,7 @@ export class OrdersService {
             OrderErrors.productOutOfStock(product.name),
           );
         }
-        return { ...item, unitPrice: product.price };
+        return { ...item, unitPrice: product.price, unitCost: product.costPrice };
       }),
     );
 
@@ -160,6 +160,7 @@ export class OrdersService {
           productId: item.productId,
           productName: item.productName,
           unitPrice: item.unitPrice,
+          unitCost: item.unitCost,
           quantity: item.quantity,
           selectedOptions: item.selectedOptions,
           itemNote: item.itemNote ?? null,
@@ -201,7 +202,10 @@ export class OrdersService {
       await queryRunner.commitTransaction();
 
       order.items = items;
-      this.ordersGateway.emitOrderNew(order.tenantId, order);
+      // El WS de socket.io no pasa por el TransformInterceptor (eso es solo
+      // HTTP) — el class-serializer por rol no protege este canal, así que acá
+      // sí hace falta despojar unitCost a mano antes de emitir en tiempo real.
+      this.ordersGateway.emitOrderNew(order.tenantId, this.stripItemCosts({ ...order, items }));
       this.notifyOrderN8n(order);
 
       const message = `Hola, quiero confirmar mi pedido ${order.orderNumber}`;
@@ -239,6 +243,20 @@ export class OrdersService {
   }
 
   // ─── Admin ────────────────────────────────────────────────────────────────
+
+  /**
+   * unitCost es información de margen sensible (ver spec de reports). Las
+   * respuestas HTTP ya la protegen vía el class-serializer global por rol
+   * (@Expose({ groups: [UserRole.ADMIN] }) + TransformInterceptor) — este
+   * helper solo hace falta para el canal WS de socket.io, que no pasa por
+   * ningún interceptor de Nest.
+   */
+  private stripItemCosts(order: Order): Order {
+    order.items = (order.items as OrderItem[]).map(
+      ({ unitCost: _unitCost, ...rest }) => rest,
+    );
+    return order;
+  }
 
   async getAdminOrders(
     tenantId: string,

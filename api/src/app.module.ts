@@ -25,6 +25,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module.js';
 import { InventoryModule } from './modules/inventory/inventory.module.js';
 import { PlatformModule } from './modules/platform/platform.module.js';
 import { QrFlyerModule } from './modules/qr-flyer/qr-flyer.module.js';
+import { ReportsModule } from './modules/reports/reports.module.js';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { LoggerModule } from 'nestjs-pino';
@@ -94,6 +95,7 @@ import { LoggerModule } from 'nestjs-pino';
     InventoryModule,
     PlatformModule,
     QrFlyerModule,
+    ReportsModule,
     RedisModule,
   ],
   controllers: [AppController],

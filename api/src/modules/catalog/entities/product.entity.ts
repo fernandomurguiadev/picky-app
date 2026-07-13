@@ -14,6 +14,7 @@ import { Tenant } from '../../tenants/entities/tenant.entity.js';
 import { Category } from './category.entity.js';
 import type { OptionGroup } from './option-group.entity.js';
 import { Expose } from 'class-transformer';
+import { UserRole } from '../../auth/entities/user.entity.js';
 
 @Index(['tenantId', 'categoryId'])
 @Index(['tenantId', 'isActive'])
@@ -38,7 +39,9 @@ export class Product {
   @Column({ type: 'integer' })
   price!: number;
 
-  @Expose({ groups: ['ADMIN'] })
+  // El rol en el JWT viaja en minúsculas (UserRole.ADMIN = 'admin') — usar el
+  // valor real del enum acá, no el string 'ADMIN', o el grupo nunca matchea.
+  @Expose({ groups: [UserRole.ADMIN] })
   @Column({ type: 'integer', nullable: true, default: null })
   costPrice!: number | null;
 

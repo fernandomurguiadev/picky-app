@@ -10,6 +10,7 @@ interface MetricCardProps {
   trend?: {
     value: number;
     isPositive: boolean;
+    label?: string;
   };
 }
 
@@ -47,8 +48,8 @@ export function MetricCard({ label, value, subtext, icon, className, trend }: Me
               trend.isPositive ? "text-emerald-600" : "text-destructive"
             )}
           >
-            <span>{trend.isPositive ? "▲" : "▼"}</span>
-            <span className="ml-1">{Math.abs(trend.value)}% vs ayer</span>
+            <span>{trend.value >= 0 ? "▲" : "▼"}</span>
+            <span className="ml-1">{Math.abs(trend.value)}% {trend.label ?? "vs ayer"}</span>
           </p>
         )}
 
