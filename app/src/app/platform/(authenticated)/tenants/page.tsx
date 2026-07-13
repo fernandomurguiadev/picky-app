@@ -66,12 +66,12 @@ export default function TenantsPage() {
     placeholderData: (prev) => prev,
   });
 
-  const { data: plans } = useQuery<Plan[]>({
+  const { data: rawPlans } = useQuery<any>({
     queryKey: ["platform-plans"],
-    queryFn: () =>
-      apiBffPlatform.get<Plan[]>("/plans").then((r) => r.data),
+    queryFn: () => apiBffPlatform.get("/plans").then((r) => r.data),
     staleTime: 5 * 60 * 1000,
   });
+  const plans: Plan[] = Array.isArray(rawPlans) ? rawPlans : (Array.isArray(rawPlans?.data) ? rawPlans.data : []);
 
   const suspendMutation = useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>

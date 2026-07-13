@@ -573,15 +573,18 @@ export default function PlansPage() {
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [featureModal, setFeatureModal] = useState<{ mode: "create" | "edit"; feature?: Feature } | null>(null);
 
-  const { data: plans = [], isLoading } = useQuery<Plan[]>({
+  const { data: plansData, isLoading } = useQuery<any>({
     queryKey: ["platform-plans"],
-    queryFn: () => apiBffPlatform.get<{ data: Plan[] }>("/plans").then((r) => r.data.data),
+    queryFn: () => apiBffPlatform.get("/plans").then((r) => r.data),
   });
 
-  const { data: allFeatures = [] } = useQuery<Feature[]>({
+  const { data: featuresData } = useQuery<any>({
     queryKey: ["platform-features"],
-    queryFn: () => apiBffPlatform.get<{ data: Feature[] }>("/features").then((r) => r.data.data),
+    queryFn: () => apiBffPlatform.get("/features").then((r) => r.data),
   });
+
+  const plans: Plan[] = Array.isArray(plansData) ? plansData : (Array.isArray(plansData?.data) ? plansData.data : []);
+  const allFeatures: Feature[] = Array.isArray(featuresData) ? featuresData : (Array.isArray(featuresData?.data) ? featuresData.data : []);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
